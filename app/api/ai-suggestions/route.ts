@@ -1,76 +1,93 @@
-import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import { vibesToPrompt } from '@/lib/utils/vibes'
-import type { UserVibes } from '@/lib/types/vibes'
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import { vibesToPrompt } from "@/lib/utils/vibes";
+import type { UserVibes } from "@/lib/types/vibes";
+import { createZodCompletion, defaultModel } from "@/lib/openai-client";
+import { AISuggestionsResponseSchema } from "@/lib/schemas/suggestions";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-})
+  apiKey: process.env.OPENAI_API_KEY || "",
+});
 
 export async function POST(request: NextRequest) {
   try {
     // Check if API key is configured
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: 'OpenAI API key not configured' },
+        { error: "OpenAI API key not configured" },
         { status: 500 }
-      )
+      );
     }
 
-    const { prompt, destination, category, context, vibesContext } = await request.json()
+    const { prompt, destination, category, context, vibesContext } =
+      await request.json();
 
     if (!prompt) {
       return NextResponse.json(
-        { error: 'Prompt is required' },
+        { error: "Prompt is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Build context string if provided
-    let contextString = ''
+    let contextString = "";
     if (context) {
-      const { dayInfo, existingCards, otherDays } = context
-      
+      const { dayInfo, existingCards, otherDays } = context;
+
       if (dayInfo) {
-        contextString += `\n\nCurrent Day: ${dayInfo.title || 'Day'} - ${dayInfo.date}`
+        contextString += `\n\nCurrent Day: ${dayInfo.title || "Day"} - ${
+          dayInfo.date
+        }`;
       }
-      
+
       if (existingCards && existingCards.length > 0) {
-        contextString += `\n\nExisting activities on this day:`
+        contextString += `\n\nExisting activities on this day:`;
         existingCards.forEach((card: any) => {
-          contextString += `\n- ${card.title}${card.startTime ? ` at ${card.startTime}` : ''}${card.duration ? ` (${card.duration}min)` : ''}`
-          if (card.location?.name) contextString += ` @ ${card.location.name}`
-        })
+          contextString += `\n- ${card.title}${
+            card.startTime ? ` at ${card.startTime}` : ""
+          }${card.duration ? ` (${card.duration}min)` : ""}`;
+          if (card.location?.name) contextString += ` @ ${card.location.name}`;
+        });
       }
-      
+
       if (otherDays && otherDays.length > 0) {
-        contextString += `\n\nOther days in the itinerary:`
+        contextString += `\n\nOther days in the itinerary:`;
         otherDays.forEach((day: any) => {
-          contextString += `\n- ${day.title || 'Day'} (${day.cardCount} activities)`
+          contextString += `\n- ${day.title || "Day"} (${
+            day.cardCount
+          } activities)`;
           if (day.highlights) {
-            contextString += `: ${day.highlights.join(', ')}`
+            contextString += `: ${day.highlights.join(", ")}`;
           }
-        })
+        });
       }
     }
-    
+
     // Add user vibes if provided
-    let vibesPrompt = ''
+    let vibesPrompt = "";
     if (vibesContext) {
       try {
-        const vibes: UserVibes = vibesContext
-        vibesPrompt = '\n\n' + vibesToPrompt(vibes)
+        const vibes: UserVibes = vibesContext;
+        vibesPrompt = "\n\n" + vibesToPrompt(vibes);
       } catch (error) {
-        console.warn('Failed to parse vibes context:', error)
+        console.warn("Failed to parse vibes context:", error);
       }
     }
 
     // Create a detailed prompt for OpenAI
     const systemPrompt = `You are a travel planning assistant. Generate exactly 3 specific, actionable travel suggestions in JSON format.
 Each suggestion should be realistic and specific to the destination.
-${context ? 'IMPORTANT: Consider the existing itinerary context to make complementary suggestions that fit well with what\'s already planned. Avoid duplicates and ensure good variety.' : ''}
-${vibesPrompt ? '\nIMPORTANT: Tailor all suggestions to match the user\'s travel preferences provided below. Respect their pace, budget, themes, and constraints.' : ''}
+${
+  context
+    ? "IMPORTANT: Consider the existing itinerary context to make complementary suggestions that fit well with what's already planned. Avoid duplicates and ensure good variety."
+    : ""
+}
+${
+  vibesPrompt
+    ? "\nIMPORTANT: Tailor all suggestions to match the user's travel preferences provided below. Respect their pace, budget, themes, and constraints."
+    : ""
+}
 
 Return ONLY a JSON array with this exact structure:
 [
@@ -84,76 +101,79 @@ Return ONLY a JSON array with this exact structure:
   }
 ]
 
-Make suggestions practical and specific. Include actual place names when possible.`
+Make suggestions practical and specific. Include actual place names when possible.`;
 
-    const userPrompt = `Destination: ${destination || 'the destination'}
-Category: ${category || 'general'}
+    const userPrompt = `Destination: ${destination || "the destination"}
+Category: ${category || "general"}
 Request: ${prompt}${contextString}${vibesPrompt}
 
-Give me 3 specific suggestions for ${prompt} in ${destination || 'this destination'}${context ? ' that complement the existing itinerary' : ''}${vibesPrompt ? ' that match the user\'s travel style and preferences' : ''}.`
+Give me 3 specific suggestions for ${prompt} in ${
+      destination || "this destination"
+    }${context ? " that complement the existing itinerary" : ""}${
+      vibesPrompt ? " that match the user's travel style and preferences" : ""
+    }.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+    const completion = await createZodCompletion(
+      defaultModel,
+      [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' },
-    })
+      AISuggestionsResponseSchema,
+      "aiSuggestions",
+      { temperature: 0.7 }
+    );
+    const suggestions = Array.isArray(
+      (completion.parsed as { suggestions?: any[] })?.suggestions
+    )
+      ? (completion.parsed as { suggestions: any[] }).suggestions
+      : [];
 
-    const content = completion.choices[0]?.message?.content
-    if (!content) {
-      throw new Error('No response from OpenAI')
-    }
-
-    // Parse the response
-    let suggestions
-    try {
-      const parsed = JSON.parse(content)
-      // Handle both {suggestions: [...]} and direct array formats
-      suggestions = Array.isArray(parsed) ? parsed : parsed.suggestions || []
-    } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content)
-      throw new Error('Invalid response format from OpenAI')
+    // Accept 3 valid suggestions
+    if (suggestions.length < 3) {
+      throw new Error(
+        `Only ${suggestions.length} valid suggestions generated. Please try again.`
+      );
     }
 
     // Validate and normalize the suggestions
-    const normalizedSuggestions = suggestions.slice(0, 3).map((suggestion: any) => ({
-      type: suggestion.type || 'activity',
-      title: suggestion.title || 'Untitled',
-      description: suggestion.description || '',
-      duration: suggestion.duration || 120,
-      tags: Array.isArray(suggestion.tags) ? suggestion.tags : [],
-      location: suggestion.location,
-    }))
+    const normalizedSuggestions = suggestions
+      .slice(0, 3)
+      .map((suggestion: any) => ({
+        type: suggestion.type || "activity",
+        title: suggestion.title || "Untitled",
+        description: suggestion.description || "",
+        duration: suggestion.duration || 120,
+        tags: Array.isArray(suggestion.tags) ? suggestion.tags : [],
+        location: suggestion.location,
+      }));
 
     return NextResponse.json({
       suggestions: normalizedSuggestions,
       model: completion.model,
       usage: completion.usage,
-    })
+    });
   } catch (error: any) {
-    console.error('OpenAI API error:', error)
-    
+    console.error("OpenAI API error:", error);
+
     // Handle specific OpenAI errors
     if (error?.status === 401) {
       return NextResponse.json(
-        { error: 'Invalid OpenAI API key' },
+        { error: "Invalid OpenAI API key" },
         { status: 401 }
-      )
+      );
     }
-    
+
     if (error?.status === 429) {
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
+        { error: "Rate limit exceeded. Please try again later." },
         { status: 429 }
-      )
+      );
     }
 
     return NextResponse.json(
-      { error: error?.message || 'Failed to generate suggestions' },
+      { error: error?.message || "Failed to generate suggestions" },
       { status: 500 }
-    )
+    );
   }
 }
