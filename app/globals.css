@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar for day columns */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  @apply bg-muted rounded-lg;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-lg hover:bg-muted-foreground/50;
+}
+
+/* Touch target sizing for mobile */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* 8-point spacing system utilities */
+@layer utilities {
+  .spacing-xs { @apply p-1; }      /* 4px */
+  .spacing-sm { @apply p-2; }      /* 8px */
+  .spacing-md { @apply p-3; }      /* 12px */
+  .spacing-lg { @apply p-4; }      /* 16px */
+  .spacing-xl { @apply p-6; }      /* 24px */
+  .spacing-2xl { @apply p-8; }     /* 32px */
+  
+  .gap-xs { @apply gap-1; }        /* 4px */
+  .gap-sm { @apply gap-2; }        /* 8px */
+  .gap-md { @apply gap-3; }        /* 12px */
+  .gap-lg { @apply gap-4; }        /* 16px */
+  .gap-xl { @apply gap-6; }        /* 24px */
+  .gap-2xl { @apply gap-8; }       /* 32px */
+}
+
+/* Typography system */
+@layer utilities {
+  /* Card titles - 16px semibold */
+  .text-card-title {
+    @apply text-base font-semibold leading-tight;
+  }
+  
+  /* Body text - 14px regular */
+  .text-card-body {
+    @apply text-sm font-normal leading-relaxed;
+  }
+  
+  /* Meta text - 12px muted */
+  .text-card-meta {
+    @apply text-xs text-muted-foreground;
+  }
+  
+  /* Improved contrast for readability */
+  .text-primary-high-contrast {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+  
+  .text-secondary-high-contrast {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+}
+
+/* Column sizing */
+@layer components {
+  .day-column {
+    @apply w-full;
+    min-width: 340px;
+    max-width: 360px;
+  }
+  
+  .day-column-gutter {
+    @apply gap-6; /* 24px */
+  }
+}
+
+/* Elevation system */
+@layer utilities {
+  .elevation-none {
+    @apply border shadow-none;
+  }
+  
+  .elevation-hover {
+    @apply hover:shadow-md transition-shadow;
+  }
+  
+  .elevation-drag {
+    @apply shadow-lg;
+  }
+}

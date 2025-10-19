@@ -1,0 +1,276 @@
+# Tripper - Project Intelligence
+
+## Project Overview
+Tripper is a lightning-fast, offline-first trip planning application. Think "Trello meets Linear for travel."
+
+**Core Philosophy:** Speed over features. Every interaction should feel instant.
+
+## Tech Stack Essentials
+- Next.js 15 (App Router) - Server components where possible
+- Zustand + Immer - State management with immutable updates
+- Zundo - Temporal state (undo/redo) middleware for Zustand
+- dnd-kit - Modern drag & drop (replaces react-beautiful-dnd)
+- Sonner - Beautiful toast notifications
+- Tailwind + shadcn/ui - Utility-first styling with accessible primitives
+- Zod - Runtime validation and TypeScript inference
+- date-fns - Date manipulation and formatting
+- localStorage (MVP) → Supabase (future)
+
+## Critical Implementation Paths
+
+### State Management Pattern
+Always use Zustand with Immer for mutations:
+```typescript
+set((state) => {
+  state.trips[tripId].days.push(newDay)  // Immer handles immutability
+})
+```
+
+After state changes, call `debouncedSave(get())` to persist to localStorage.
+
+### Adding Features Checklist
+1. Update types in `lib/types/index.ts`
+2. Add Zod schema in `lib/schemas/index.ts`
+3. Add store action in `lib/store/tripStore.ts` (with Immer)
+4. Create UI component in `components/`
+5. Wire up component to store
+6. Add toast notification feedback
+7. Handle edge cases (null checks, special IDs)
+8. Update seed data if needed
+9. Test with undo/redo
+
+### Drag & Drop (IMPLEMENTED)
+Use dnd-kit with these sensors:
+- Mouse: 5px activation constraint
+- Touch: 250ms delay + 5px tolerance
+- Keyboard: sortableKeyboardCoordinates
+
+**Important Patterns:**
+- Days use `horizontalListSortingStrategy`
+- Cards use `verticalListSortingStrategy`
+- Always provide stable IDs (use nanoid)
+- Use `DragOverlay` for visual feedback
+- Handle both same-list and cross-list moves in `onDragEnd`
+- Special dayId `"unassigned"` for "Things to Do" column
+
+### Component Patterns
+- Use compound components for complex UI (Card.Header, Card.Content)
+- Extract custom hooks for reusable logic (useCardActions, useUndoRedo, useKeyboardShortcuts)
+- Client components: Use 'use client' directive at top
+- Server components: Default (no directive needed)
+
+### Special Patterns Discovered
+
+**Unassigned Cards (Special ID Pattern):**
+```typescript
+// Use "unassigned" as a special dayId
+if (dayId === 'unassigned') {
+  // Handle unassigned cards array
+  trip.unassignedCards = trip.unassignedCards || [];
+  trip.unassignedCards.push(card);
+} else {
+  // Handle normal day cards
+  const day = trip.days.find(d => d.id === dayId);
+  day.cards.push(card);
+}
+```
+
+**Hydration Fix (Client-Only Rendering):**
+```typescript
+// Prevent SSR/client mismatch for dynamic content
+const [mounted, setMounted] = useState(false);
+useEffect(() => { setMounted(true); }, []);
+
+return <p>{mounted ? format(date) : rawDate}</p>;
+```
+
+**Inline Edit (Click-to-Edit):**
+```typescript
+// Intuitive editing pattern
+const [isEditing, setIsEditing] = useState(false);
+
+const handleSave = () => {
+  updateData(value);
+  setIsEditing(false);
+  toast.success('Updated');
+};
+
+return isEditing ? (
+  <Input 
+    value={value}
+    onBlur={handleSave}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') handleSave();
+      if (e.key === 'Escape') setIsEditing(false);
+    }}
+    autoFocus 
+  />
+) : (
+  <h1 onClick={() => setIsEditing(true)}>{value}</h1>
+);
+```
+
+**Zundo Temporal Store Access:**
+```typescript
+// Access undo/redo reactively
+import { useStore } from 'zustand';
+
+const { undo, redo, pastStates, futureStates } = useStore(
+  useTripStore.temporal,
+  (state) => state
+);
+```
+
+## Known Constraints
+
+### Performance Targets
+- Card creation: < 100ms
+- Drag frame rate: 60fps (16.67ms)
+- Bundle size: < 200KB initial JS
+- localStorage save: Debounced 500ms
+
+### Accessibility Requirements
+- WCAG 2.1 AA compliance mandatory
+- Touch targets: ≥ 44x44px on mobile
+- Keyboard navigation for ALL actions
+- Screen reader support
+
+### Browser Support
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Mobile: iOS 14+, Android 10+
+
+## User Preferences Discovered
+- Offline-first is non-negotiable
+- Keyboard shortcuts are first-class (not "nice to have")
+- Speed matters more than polish for MVP
+- Mobile UX must match desktop feature parity
+
+## Development Workflow
+
+### Adding a New Card Type
+1. Add type to `CardType` union in `lib/types/index.ts`
+2. Add to `CARD_TYPES` in `lib/constants.ts` (icon, color)
+3. Add template to `CARD_TEMPLATES`
+4. Update CardComposer type selector
+
+### Testing Strategy
+- Unit: Zustand store actions (add/edit/delete/move)
+- Integration: Card CRUD with Testing Library
+- E2E: Drag flows with Playwright
+- Manual: Touch gestures on real mobile device
+
+## Common Pitfalls to Avoid
+❌ Don't mutate state directly - always use Zustand's set()
+❌ Don't forget to call debouncedSave() after state changes
+❌ Don't use server components in client-only contexts (drag/drop)
+❌ Don't skip keyboard navigation when adding mouse interactions
+❌ Don't assume localStorage is available (SSR/SSG checks needed)
+❌ Don't forget null checks on optional properties (card.links, card.tags)
+❌ Don't format dates on server - causes hydration errors (use mounted state)
+❌ Don't access zundo temporal store directly - use useStore(store.temporal)
+
+## Future Architecture Decisions
+- When adding Supabase: Keep localStorage as fallback
+- When adding collaboration: Use Yjs or Automerge (CRDTs)
+- When adding mobile app: Share types/schemas with React Native
+- When adding AI: Use streaming responses for suggestions
+
+## File Organization
+```
+lib/
+  ├── types/       # TypeScript interfaces
+  ├── schemas/     # Zod validation schemas
+  ├── store/       # Zustand state management
+  ├── utils/       # Pure utility functions
+  └── constants.ts # App-wide constants
+
+components/
+  ├── board/       # Board, DayColumn, AddDay
+  ├── cards/       # TripCard, CardComposer
+  └── ui/          # shadcn/ui primitives
+
+app/
+  ├── (trip)/      # Trip-related routes
+  └── demo/        # Demo trip page
+```
+
+## Evolution Notes
+- Started with focus on MVP speed (2-3 evenings timeline)
+- Prioritized localStorage over cloud sync for simplicity
+- Chose dnd-kit over react-beautiful-dnd (maintenance)
+- Using App Router despite learning curve (future-proof)
+
+### Key Learnings (Phases 1-3)
+1. **Unassigned Cards Pattern:** Use special dayId `"unassigned"` instead of creating fake days
+2. **Dynamic Dates:** Recalculate dates on day reorder to maintain chronological order
+3. **Hydration Fixes:** Use `mounted` state for client-only rendering (dates, dynamic content)
+4. **Undo/Redo:** Access via `useStore(useTripStore.temporal)` for reactive updates
+5. **Toast Notifications:** Keep messages brief, show for all mutations
+6. **Inline Editing:** Click-to-edit pattern with Enter/Escape handling is intuitive
+7. **Defensive Programming:** Always null-check optional properties before accessing
+8. **Client-Only Components:** Mark with 'use client' and handle SSR appropriately
+
+## Roadmap: Phases 4-8 (Fully Planned)
+
+### Phase 4: Utilities & Polish (1 evening)
+- Export/import (JSON)
+- Accessibility audit (WCAG 2.1 AA)
+- Mobile optimizations
+- Performance tuning (Lighthouse 95+)
+- **Result:** Production-ready MVP
+
+### Phase 5: Multi-Select & Bulk Operations (1 evening)
+- Multi-select with Shift/Ctrl modifiers
+- Checkbox overlays on cards
+- Floating action bar for bulk operations
+- Drag multiple cards as groups
+- Full keyboard navigation
+- **Key Decision:** Use Set<string> for O(1) selection lookup
+
+### Phase 6: Cloud Sync & Authentication (2 evenings)
+- Supabase integration (PostgreSQL + Auth + Realtime)
+- Email/password + social auth
+- Optimistic updates with rollback
+- Background sync every 30s
+- Last-write-wins conflict resolution
+- **Key Decision:** Supabase chosen over Firebase for better PostgreSQL
+
+### Phase 7: Advanced Features & AI (3-4 evenings)
+- AI day planner (GPT-4 for complex planning)
+- Mapbox maps integration
+- Travel time calculations
+- Natural language card creation
+- Basic collaboration (share, comments)
+- **Key Decisions:** 
+  - Mapbox > Google Maps (pricing)
+  - GPT-4 for planning, GPT-4o-mini for quick suggestions
+
+### Phase 8: Mobile & Real-Time Collaboration (4-6 evenings)
+- Progressive Web App (PWA)
+- React Native mobile apps (iOS/Android)
+- Yjs CRDTs for real-time collaboration
+- Live cursors and presence
+- Trip templates marketplace
+- Budget tracking and PDF export
+- **Key Decisions:**
+  - PWA first (faster to ship)
+  - Yjs for CRDTs (battle-tested)
+  - PostHog for analytics, Sentry for errors
+
+## Version Milestones
+- **MVP (Post-Phase 4):** Offline planner, no auth
+- **v1.0 (Post-Phase 6):** Cloud sync, auth, multi-select
+- **v1.5 (Post-Phase 7):** AI features, maps, collaboration
+- **v2.0 (Post-Phase 8):** Mobile apps, real-time, premium features
+
+## Monetization (Planned for v2.0)
+- **Free:** 5 trips, basic AI (10/month), localStorage only
+- **Pro ($8/mo):** Unlimited trips/AI, cloud sync, collaboration (5 people)
+- **Teams ($20/mo):** Unlimited collaborators, real-time, analytics, SSO
+
+## Timeline Estimate
+- **Phases 1-3:** 3 evenings (✅ COMPLETE)
+- **Phases 4-8:** 11-14 evenings (⏳ PLANNED)
+- **Total to v2.0:** 14-17 evenings (48-66 hours)
