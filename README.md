@@ -2,72 +2,6 @@
 
 > Lightning-fast, offline-first trip planning. Think "Trello meets Linear for travel."
 
-![Phase 1 Complete](https://img.shields.io/badge/Phase%201-Complete-brightgreen)
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-
-## 🚀 Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Open demo trip
-open http://localhost:3000/demo
-```
-
-## ✨ Features (Phase 1 - COMPLETE)
-
-- ✅ **Board Layout** - Horizontal scrolling day columns
-- ✅ **Card Types** - Activity 🎯, Meal 🍽️, Transit 🚗, Note 📝
-- ✅ **CRUD Operations** - Create, read, update, delete, duplicate cards
-- ✅ **Time Management** - Start/end times, duration, visual display
-- ✅ **Rich Details** - Locations, costs, tags, notes, links
-- ✅ **Offline First** - All data persists to localStorage (auto-save)
-- ✅ **Type Safe** - Full TypeScript with Zod validation
-- ✅ **Beautiful UI** - Tailwind CSS + shadcn/ui components
-
-## 🎯 Roadmap
-
-### Phase 2: Drag & Drop (Next Up)
-- [ ] Sortable days (horizontal)
-- [ ] Sortable cards (vertical)
-- [ ] Cross-column dragging
-- [ ] Inline card editing
-- [ ] Keyboard navigation
-
-### Phase 3: Power Features
-- [ ] Undo/redo
-- [ ] Keyboard shortcuts (Enter, ↑↓, Cmd+Z, Cmd+K)
-- [ ] Multi-select
-- [ ] Command palette
-
-### Phase 4: Polish
-- [ ] JSON export/import
-- [ ] Share read-only links
-- [ ] Mobile touch enhancements
-- [ ] Accessibility audit
-
-### v1.0: Cloud Sync
-- [ ] Supabase integration
-- [ ] User authentication
-- [ ] Multi-device sync
-
-### v1.5: Collaboration
-- [ ] Real-time multiplayer (Yjs)
-- [ ] Comments
-- [ ] Activity log
-
-### v2.0: Intelligence
-- [ ] Map integration
-- [ ] Route optimization
-- [ ] Budget tracking
-- [ ] AI recommendations
-
 ## 🛠 Tech Stack
 
 | Layer | Technology | Why |
@@ -133,15 +67,6 @@ All data is automatically saved to localStorage with a 500ms debounce. Your trip
 | `Backspace` | Delete |
 | `Cmd+K` | Command palette |
 
-## 🧪 Testing (Coming Soon)
-
-```bash
-# Unit tests
-npm test
-
-# E2E tests
-npm run test:e2e
-```
 
 ## 📦 Build & Deploy
 
@@ -155,21 +80,6 @@ npm start
 # Deploy to Vercel (recommended)
 vercel
 ```
-
-## 🤝 Contributing
-
-This is a personal project, but suggestions and feedback are welcome! Open an issue or reach out.
-
-## 📄 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/) - The React framework
-- [dnd-kit](https://dndkit.com/) - Drag and drop toolkit
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
-- [Zustand](https://github.com/pmndrs/zustand) - State management
 
 ---
 
