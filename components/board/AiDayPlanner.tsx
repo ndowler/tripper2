@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useTripStore } from '@/lib/store/tripStore';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Loader2, MapPin, Clock, DollarSign, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { nanoid } from 'nanoid';
-import type { Card, CardType } from '@/lib/types';
+import React, { useState, useEffect } from "react";
+import { useTripStore } from "@/lib/store/tripStore";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Sparkles, Loader2, MapPin, Clock, DollarSign, X } from "lucide-react";
+import { toast } from "sonner";
+import { nanoid } from "nanoid";
+import type { Card, CardType } from "@/lib/types";
 
 interface AiDayPlannerProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   tripId: string;
-  dayId: string;
+  dayId?: string | undefined;
   destination?: string;
 }
 
@@ -32,11 +32,17 @@ interface GeneratedCard {
   };
 }
 
-export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: AiDayPlannerProps) {
-  const [location, setLocation] = useState(destination || '');
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('22:00');
-  const [notes, setNotes] = useState('');
+export function AiDayPlanner({
+  isOpen,
+  onClose,
+  tripId,
+  dayId,
+  destination,
+}: AiDayPlannerProps) {
+  const [location, setLocation] = useState(destination || "");
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("22:00");
+  const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -46,7 +52,7 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
 
   const handleGenerate = async () => {
     if (!location.trim()) {
-      toast.error('Please enter a location');
+      toast.error("Please enter a location");
       return;
     }
 
@@ -54,10 +60,10 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
     setGeneratedCards([]);
 
     try {
-      const response = await fetch('/api/ai-day-plan', {
-        method: 'POST',
+      const response = await fetch("/api/ai-day-plan", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           location,
@@ -70,24 +76,26 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to generate day plan');
+        throw new Error(error.error || "Failed to generate day plan");
       }
 
       const data = await response.json();
-      console.log('AI Day Plan response:', data);
+      console.log("AI Day Plan response:", data);
       const cards = data.cards || [];
-      console.log('Extracted cards:', cards);
-      
+      console.log("Extracted cards:", cards);
+
       if (cards.length === 0) {
-        throw new Error('AI returned no activities. Please try again with different inputs.');
+        throw new Error(
+          "AI returned no activities. Please try again with different inputs."
+        );
       }
-      
+
       setGeneratedCards(cards);
       setShowPreview(true);
       toast.success(`Day plan generated! ${cards.length} activities 🎉`);
     } catch (error: any) {
-      console.error('AI day plan error:', error);
-      toast.error(error.message || 'Failed to generate day plan');
+      console.error("AI day plan error:", error);
+      toast.error(error.message || "Failed to generate day plan");
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +103,7 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
 
   const handleAddAll = () => {
     let addedCount = 0;
-    
+
     generatedCards.forEach((card, index) => {
       setTimeout(() => {
         addCard(tripId, dayId, {
@@ -109,10 +117,10 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
           location: card.location ? { name: card.location } : undefined,
           cost: card.cost,
           links: [],
-          status: 'pending',
-        } as Omit<Card, 'createdAt' | 'updatedAt'>);
+          status: "pending",
+        } as Omit<Card, "createdAt" | "updatedAt">);
         addedCount++;
-        
+
         if (addedCount === generatedCards.length) {
           toast.success(`Added ${addedCount} activities!`);
           onClose();
@@ -123,10 +131,10 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
   };
 
   const resetForm = () => {
-    setLocation(destination || '');
-    setStartTime('09:00');
-    setEndTime('22:00');
-    setNotes('');
+    setLocation(destination || "");
+    setStartTime("09:00");
+    setEndTime("22:00");
+    setNotes("");
     setGeneratedCards([]);
     setShowPreview(false);
   };
@@ -141,15 +149,15 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !isLoading) {
+      if (e.key === "Escape" && !isLoading) {
         resetForm();
         onClose();
       }
     };
-    
+
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
     }
   }, [isOpen, isLoading, onClose]);
 
@@ -158,11 +166,11 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => !isLoading && handleClose()}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-background rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
@@ -191,152 +199,169 @@ export function AiDayPlanner({ isOpen, onClose, tripId, dayId, destination }: Ai
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-            {!showPreview ? (
-              <div className="space-y-4">
+          {!showPreview ? (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Location <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., Rome, Italy"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Location <span className="text-destructive">*</span>
+                    Start Time
                   </label>
                   <Input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g., Rome, Italy"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Start Time</label>
-                    <Input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">End Time</label>
-                    <Input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Additional Notes (Optional)
+                    End Time
                   </label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Any specific requests? (e.g., must see Colosseum, prefer vegetarian food)"
-                    rows={3}
+                  <Input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
-
-                {userVibes && (
-                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                    <p className="text-sm text-muted-foreground">
-                      ✨ Using your travel preferences: {userVibes.comfort.pace_score <= 40 ? 'Relaxed pace' : 
-                      userVibes.comfort.pace_score <= 60 ? 'Moderate pace' : 'Active pace'}, 
-                      €{userVibes.logistics.budget_ppd}/day budget, {userVibes.comfort.walking_km_per_day}km walking
-                    </p>
-                  </div>
-                )}
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Preview ({generatedCards.length} activities)</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPreview(false)}
-                  >
-                    Edit Inputs
-                  </Button>
-                </div>
 
-                {generatedCards.map((card, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-lg border bg-card hover:border-primary/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium">{card.title}</h4>
-                      <span className="text-xs px-2 py-1 rounded-md bg-secondary">
-                        {card.type}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{card.description}</p>
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      {card.startTime && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {card.startTime} ({card.duration}min)
-                        </div>
-                      )}
-                      {card.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {card.location}
-                        </div>
-                      )}
-                      {card.cost && (
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          {card.cost.currency === 'EUR' ? '€' : '$'}{card.cost.amount}
-                        </div>
-                      )}
-                    </div>
-                    {card.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {card.tags.map((tag, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Additional Notes (Optional)
+                </label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any specific requests? (e.g., must see Colosseum, prefer vegetarian food)"
+                  rows={3}
+                  disabled={isLoading}
+                />
+              </div>
+
+              {userVibes && (
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <p className="text-sm text-muted-foreground">
+                    ✨ Using your travel preferences:{" "}
+                    {userVibes.comfort.pace_score <= 40
+                      ? "Relaxed pace"
+                      : userVibes.comfort.pace_score <= 60
+                      ? "Moderate pace"
+                      : "Active pace"}
+                    , €{userVibes.logistics.budget_ppd}/day budget,{" "}
+                    {userVibes.comfort.walking_km_per_day}km walking
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">
+                  Preview ({generatedCards.length} activities)
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPreview(false)}
+                >
+                  Edit Inputs
+                </Button>
+              </div>
+
+              {generatedCards.map((card, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border bg-card hover:border-primary/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium">{card.title}</h4>
+                    <span className="text-xs px-2 py-1 rounded-md bg-secondary">
+                      {card.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {card.description}
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {card.startTime && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {card.startTime} ({card.duration}min)
+                      </div>
+                    )}
+                    {card.location && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {card.location}
+                      </div>
+                    )}
+                    {card.cost && (
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-3 h-3" />
+                        {card.cost.currency === "EUR" ? "€" : "$"}
+                        {card.cost.amount}
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
+                  {card.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {card.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="p-6 border-t flex justify-between">
-            <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+            Cancel
+          </Button>
+
+          {!showPreview ? (
+            <Button
+              onClick={handleGenerate}
+              disabled={isLoading || !location.trim()}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate Day Plan
+                </>
+              )}
             </Button>
-            
-            {!showPreview ? (
-              <Button onClick={handleGenerate} disabled={isLoading || !location.trim()}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Day Plan
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleAddAll}>
-                Add All {generatedCards.length} Activities
-              </Button>
-            )}
+          ) : (
+            <Button onClick={handleAddAll}>
+              Add All {generatedCards.length} Activities
+            </Button>
+          )}
         </div>
       </div>
     </div>

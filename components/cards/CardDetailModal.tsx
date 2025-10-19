@@ -1,122 +1,156 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useTripStore } from '@/lib/store/tripStore'
-import type { Card, CardType } from '@/lib/types'
+import { useState, useEffect } from "react";
+import { useTripStore } from "@/lib/store/tripStore";
+import type { Card, CardType } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { CARD_TYPES } from '@/lib/constants'
-import { toast } from 'sonner'
-import { Activity, Utensils, Car, FileText, Clock, MapPin, DollarSign, Tag, Link2, X, Navigation, Globe, Plane, Hotel, ShoppingBag, Ticket, Circle } from 'lucide-react'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { CARD_TYPES } from "@/lib/constants";
+import { toast } from "sonner";
+import {
+  Activity,
+  Utensils,
+  Car,
+  FileText,
+  Clock,
+  MapPin,
+  DollarSign,
+  Tag,
+  Link2,
+  X,
+  Navigation,
+  Globe,
+  Plane,
+  Hotel,
+  ShoppingBag,
+  Ticket,
+  Circle,
+} from "lucide-react";
 
 interface CardDetailModalProps {
-  card: Card
-  tripId: string
-  dayId: string
-  open: boolean
-  onClose: () => void
+  card: Card;
+  tripId: string;
+  dayId: string;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDetailModalProps) {
-  const updateCard = useTripStore(state => state.updateCard)
-  
-  const [title, setTitle] = useState(card.title)
-  const [startTime, setStartTime] = useState(card.startTime || '')
-  const [endTime, setEndTime] = useState(card.endTime || '')
-  const [location, setLocation] = useState(card.location?.name || '')
-  const [address, setAddress] = useState(card.location?.address || '')
-  const [notes, setNotes] = useState(card.notes || '')
-  const [cost, setCost] = useState(card.cost?.amount.toString() || '')
-  const [currency, setCurrency] = useState(card.cost?.currency || 'USD')
-  const [tagInput, setTagInput] = useState('')
-  const [tags, setTags] = useState<string[]>(card.tags || [])
-  const [links, setLinks] = useState<string[]>(card.links || [])
-  const [linkInput, setLinkInput] = useState('')
-  const [status, setStatus] = useState(card.status)
-  const [thumbnail, setThumbnail] = useState(card.thumbnail || '')
-  
+export function CardDetailModal({
+  card,
+  tripId,
+  dayId,
+  open,
+  onClose,
+}: CardDetailModalProps) {
+  const updateCard = useTripStore((state) => state.updateCard);
+
+  const [title, setTitle] = useState(card.title);
+  const [startTime, setStartTime] = useState(card.startTime || "");
+  const [endTime, setEndTime] = useState(card.endTime || "");
+  const [location, setLocation] = useState(card.location?.name || "");
+  const [address, setAddress] = useState(card.location?.address || "");
+  const [notes, setNotes] = useState(card.notes || "");
+  const [cost, setCost] = useState(card.cost?.amount.toString() || "");
+  const [currency, setCurrency] = useState(card.cost?.currency || "USD");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>(card.tags || []);
+  const [links, setLinks] = useState<string[]>(card.links || []);
+  const [linkInput, setLinkInput] = useState("");
+  const [status, setStatus] = useState(card.status);
+  const [thumbnail, setThumbnail] = useState(card.thumbnail || "");
+
   // Reset form when card changes
   useEffect(() => {
-    setTitle(card.title)
-    setStartTime(card.startTime || '')
-    setEndTime(card.endTime || '')
-    setLocation(card.location?.name || '')
-    setAddress(card.location?.address || '')
-    setNotes(card.notes || '')
-    setCost(card.cost?.amount.toString() || '')
-    setCurrency(card.cost?.currency || 'USD')
-    setTags(card.tags || [])
-    setLinks(card.links || [])
-    setStatus(card.status)
-    setThumbnail(card.thumbnail || '')
-  }, [card])
-  
+    setTitle(card.title);
+    setStartTime(card.startTime || "");
+    setEndTime(card.endTime || "");
+    setLocation(card.location?.name || "");
+    setAddress(card.location?.address || "");
+    setNotes(card.notes || "");
+    setCost(card.cost?.amount.toString() || "");
+    setCurrency(card.cost?.currency || "USD");
+    setTags(card.tags || []);
+    setLinks(card.links || []);
+    setStatus(card.status);
+    setThumbnail(card.thumbnail || "");
+  }, [card]);
+
   const handleSave = () => {
     updateCard(tripId, dayId, card.id, {
       title,
       startTime: startTime || undefined,
       endTime: endTime || undefined,
-      location: location ? {
-        name: location,
-        address: address || undefined,
-      } : undefined,
+      location: location
+        ? {
+            name: location,
+            address: address || undefined,
+          }
+        : undefined,
       notes: notes || undefined,
-      cost: cost ? {
-        amount: parseFloat(cost),
-        currency,
-      } : undefined,
+      cost: cost
+        ? {
+            amount: parseFloat(cost),
+            currency,
+          }
+        : undefined,
       tags,
       links,
       status,
       thumbnail: thumbnail || undefined,
-    })
-    toast.success('Card updated')
-    onClose()
-  }
-  
+    });
+    toast.success("Card updated");
+    onClose();
+  };
+
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()])
-      setTagInput('')
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
     }
-  }
-  
+  };
+
   const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag))
-  }
-  
+    setTags(tags.filter((t) => t !== tag));
+  };
+
   const handleAddLink = () => {
     if (linkInput.trim() && !links.includes(linkInput.trim())) {
-      setLinks([...links, linkInput.trim()])
-      setLinkInput('')
+      setLinks([...links, linkInput.trim()]);
+      setLinkInput("");
     }
-  }
-  
+  };
+
   const handleRemoveLink = (link: string) => {
-    setLinks(links.filter(l => l !== link))
-  }
-  
+    setLinks(links.filter((l) => l !== link));
+  };
+
   const handleLearnMore = () => {
-    const query = location ? `${title} ${location}` : title
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank')
-  }
-  
+    const query = location ? `${title} ${location}` : title;
+    window.open(
+      `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+      "_blank"
+    );
+  };
+
   const handleNavigate = () => {
-    const query = address || location || title
-    window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank')
-  }
-  
-  const cardType = CARD_TYPES[card.type]
-  
+    const query = address || location || title;
+    window.open(
+      `https://www.google.com/maps/search/${encodeURIComponent(query)}`,
+      "_blank"
+    );
+  };
+
+  const cardType = CARD_TYPES[card.type];
+
   const getTypeIcon = (type: CardType) => {
     const icons = {
       activity: Activity,
@@ -128,12 +162,12 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
       shopping: ShoppingBag,
       entertainment: Ticket,
       note: FileText,
-    }
-    return icons[type]
-  }
-  
-  const TypeIcon = getTypeIcon(card.type)
-  
+    };
+    return icons[type];
+  };
+
+  const TypeIcon = getTypeIcon(card.type);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -143,7 +177,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
             <span>{cardType.label}</span>
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           {/* Title */}
           <div className="space-y-2">
@@ -166,28 +200,41 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               placeholder="Activity title..."
             />
           </div>
-          
+
           {/* Status */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Booking Status</label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { value: 'pending', label: 'Pending', color: 'bg-gray-300', textColor: 'text-gray-700' },
-                { value: 'todo', label: 'To Do', color: 'bg-gray-400', textColor: 'text-gray-800' },
-                { value: 'tentative', label: 'Tentative', color: 'bg-amber-500', textColor: 'text-amber-900' },
-                { value: 'booked', label: 'Booked', color: 'bg-blue-500', textColor: 'text-blue-900' },
-                { value: 'confirmed', label: 'Confirmed', color: 'bg-green-500', textColor: 'text-green-900' },
-                { value: 'completed', label: 'Completed', color: 'bg-gray-500', textColor: 'text-gray-900' },
-              ].map(({ value, label, color, textColor }) => (
+                { value: "pending", label: "Pending", color: "bg-gray-300" },
+                { value: "todo", label: "To Do", color: "bg-gray-400" },
+                {
+                  value: "tentative",
+                  label: "Tentative",
+                  color: "bg-amber-500",
+                },
+                { value: "booked", label: "Booked", color: "bg-blue-500" },
+                {
+                  value: "confirmed",
+                  label: "Confirmed",
+                  color: "bg-green-500",
+                },
+                {
+                  value: "completed",
+                  label: "Completed",
+                  color: "bg-gray-500",
+                },
+              ].map(({ value, label, color }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setStatus(value as any)}
                   className={`
                     flex items-center gap-2 px-3 py-2 rounded-md border-2 text-sm font-medium transition-all
-                    ${status === value 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-gray-200 hover:border-gray-300 bg-background'
+                    ${
+                      status === value
+                        ? "border-primary bg-primary/10"
+                        : "border-gray-200 hover:border-gray-300 bg-background"
                     }
                   `}
                 >
@@ -197,7 +244,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               ))}
             </div>
           </div>
-          
+
           {/* Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -223,7 +270,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               />
             </div>
           </div>
-          
+
           {/* Location */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -256,7 +303,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               className="text-sm"
             />
           </div>
-          
+
           {/* Cost */}
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-2 space-y-2">
@@ -282,7 +329,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               />
             </div>
           </div>
-          
+
           {/* Notes */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Notes</label>
@@ -293,7 +340,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               rows={4}
             />
           </div>
-          
+
           {/* Tags */}
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-1">
@@ -304,10 +351,14 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               <Input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), handleAddTag())
+                }
                 placeholder="Add a tag..."
               />
-              <Button type="button" onClick={handleAddTag} size="sm">Add</Button>
+              <Button type="button" onClick={handleAddTag} size="sm">
+                Add
+              </Button>
             </div>
             <div className="flex flex-wrap gap-1">
               {tags.map((tag) => (
@@ -323,7 +374,7 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               ))}
             </div>
           </div>
-          
+
           {/* Links */}
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-1">
@@ -334,11 +385,15 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
               <Input
                 value={linkInput}
                 onChange={(e) => setLinkInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLink())}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), handleAddLink())
+                }
                 placeholder="https://..."
                 type="url"
               />
-              <Button type="button" onClick={handleAddLink} size="sm">Add</Button>
+              <Button type="button" onClick={handleAddLink} size="sm">
+                Add
+              </Button>
             </div>
             <div className="space-y-1">
               {links.map((link, i) => (
@@ -364,12 +419,14 @@ export function CardDetailModal({ card, tripId, dayId, open, onClose }: CardDeta
             </div>
           </div>
         </div>
-        
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
