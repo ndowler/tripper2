@@ -1,172 +1,174 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Sparkles, Loader2, Check, X } from 'lucide-react'
-import { useTripStore } from '@/lib/store/tripStore'
-import { nanoid } from 'nanoid'
-import { toast } from 'sonner'
-import type { CardType, Card, Day } from '@/lib/types'
-import { SuggestionDetailModal } from './SuggestionDetailModal'
-
-interface AISuggestion {
-  type: CardType
-  title: string
-  description: string
-  duration?: number
-  tags: string[]
-  location?: string
-}
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Sparkles, Loader2, Check, X } from "lucide-react";
+import { useTripStore } from "@/lib/store/tripStore";
+import { nanoid } from "nanoid";
+import { toast } from "sonner";
+import { SuggestionDetailModal } from "./SuggestionDetailModal";
+import { AISuggestion } from "@/lib/types/suggestions";
 
 interface AiCardSuggestionProps {
-  tripId: string
-  dayId: string
-  onClose: () => void
+  tripId: string;
+  dayId: string;
+  onClose: () => void;
 }
 
-export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionProps) {
-  const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [customPrompt, setCustomPrompt] = useState('')
-  const [hasGenerated, setHasGenerated] = useState(false)
-  const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null)
-  const [showDetailModal, setShowDetailModal] = useState(false)
-  
-  const trip = useTripStore(state => state.trips[tripId])
-  const addCard = useTripStore(state => state.addCard)
-  
-  const currentDay = dayId === 'unassigned' 
-    ? null 
-    : trip?.days.find(d => d.id === dayId)
-  
-  const existingCards = dayId === 'unassigned'
-    ? trip?.unassignedCards || []
-    : currentDay?.cards || []
+export function AiCardSuggestion({
+  tripId,
+  dayId,
+  onClose,
+}: AiCardSuggestionProps) {
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] =
+    useState<AISuggestion | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  const trip = useTripStore((state) => state.trips[tripId]);
+  const addCard = useTripStore((state) => state.addCard);
+
+  const currentDay =
+    dayId === "unassigned" ? null : trip?.days.find((d) => d.id === dayId);
+
+  const existingCards =
+    dayId === "unassigned"
+      ? trip?.unassignedCards || []
+      : currentDay?.cards || [];
 
   const generateSuggestions = async (prompt?: string) => {
-    const promptToUse = prompt || customPrompt || (
-      currentDay 
-        ? `activities for ${currentDay.title || 'this day'}` 
-        : 'activities to add to the trip'
-    )
-    
-    setIsLoading(true)
-    setSuggestions([])
-    setSelectedIndex(null)
-    setHasGenerated(true)
-    
+    const promptToUse =
+      prompt ||
+      customPrompt ||
+      (currentDay
+        ? `activities for ${currentDay.title || "this day"}`
+        : "activities to add to the trip");
+
+    setIsLoading(true);
+    setSuggestions([]);
+    setSelectedIndex(null);
+    setHasGenerated(true);
+
     try {
       // Build context from the itinerary
       const context = {
-        dayInfo: currentDay ? {
-          title: currentDay.title,
-          date: currentDay.date,
-        } : null,
-        existingCards: existingCards.map(card => ({
+        dayInfo: currentDay
+          ? {
+              title: currentDay.title,
+              date: currentDay.date,
+            }
+          : null,
+        existingCards: existingCards.map((card) => ({
           title: card.title,
           type: card.type,
           startTime: card.startTime,
           duration: card.duration,
           location: card.location,
         })),
-        otherDays: trip?.days
-          .filter(d => d.id !== dayId)
-          .map(d => ({
-            title: d.title,
-            date: d.date,
-            cardCount: d.cards.length,
-            highlights: d.cards.slice(0, 3).map(c => c.title),
-          })) || [],
-      }
-      
-      const response = await fetch('/api/ai-suggestions', {
-        method: 'POST',
+        otherDays:
+          trip?.days
+            .filter((d) => d.id !== dayId)
+            .map((d) => ({
+              title: d.title,
+              date: d.date,
+              cardCount: d.cards.length,
+              highlights: d.cards.slice(0, 3).map((c) => c.title),
+            })) || [],
+      };
+
+      const response = await fetch("/api/ai-suggestions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt: promptToUse,
-          destination: trip?.title || 'the destination',
-          category: 'contextual',
+          destination: trip?.title || "the destination",
+          category: "contextual",
           context,
         }),
-      })
-      
+      });
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to fetch suggestions')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to fetch suggestions");
       }
-      
-      const data = await response.json()
-      setSuggestions(data.suggestions || [])
-      toast.success('AI suggestions ready!')
+
+      const data = await response.json();
+      setSuggestions(data.suggestions || []);
+      toast.success("AI suggestions ready!");
     } catch (error: any) {
-      console.error('AI suggestion error:', error)
-      toast.error(error.message || 'Failed to get AI suggestions')
-      onClose()
+      console.error("AI suggestion error:", error);
+      toast.error(error.message || "Failed to get AI suggestions");
+      onClose();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-  
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (customPrompt.trim()) {
-      generateSuggestions(customPrompt.trim())
+      generateSuggestions(customPrompt.trim());
     }
-  }
-  
+  };
+
   const handleQuickPrompt = (prompt: string) => {
-    setCustomPrompt(prompt)
-    generateSuggestions(prompt)
-  }
-  
+    setCustomPrompt(prompt);
+    generateSuggestions(prompt);
+  };
+
   const handleClickSuggestion = (suggestion: AISuggestion, index: number) => {
-    setSelectedSuggestion(suggestion)
-    setShowDetailModal(true)
-  }
-  
+    setSelectedSuggestion(suggestion);
+    setShowDetailModal(true);
+  };
+
   const handleAddFromModal = () => {
-    if (!selectedSuggestion) return
-    
+    if (!selectedSuggestion) return;
+
     addCard(tripId, dayId, {
       id: nanoid(),
       type: selectedSuggestion.type,
       title: selectedSuggestion.title,
       duration: selectedSuggestion.duration,
-      location: selectedSuggestion.location ? { name: selectedSuggestion.location } : undefined,
+      location: selectedSuggestion.location
+        ? { name: selectedSuggestion.location }
+        : undefined,
       notes: selectedSuggestion.description,
       tags: selectedSuggestion.tags,
       links: [],
-      status: 'pending',
-    })
-    
-    toast.success(`Added: ${selectedSuggestion.title}`)
-    setShowDetailModal(false)
-    setSelectedSuggestion(null)
-    
+      status: "pending",
+    });
+
+    toast.success(`Added: ${selectedSuggestion.title}`);
+    setShowDetailModal(false);
+    setSelectedSuggestion(null);
+
     // Close after a brief delay
     setTimeout(() => {
-      onClose()
-    }, 500)
-  }
-  
+      onClose();
+    }, 500);
+  };
+
   const handleBackToSuggestions = () => {
-    setShowDetailModal(false)
-    setSelectedSuggestion(null)
-  }
-  
+    setShowDetailModal(false);
+    setSelectedSuggestion(null);
+  };
+
   // Quick prompt suggestions
   const quickPrompts = [
-    'dinner spot nearby',
-    'morning activity',
-    'coffee break',
-    'evening entertainment',
-  ]
-  
+    "dinner spot nearby",
+    "morning activity",
+    "coffee break",
+    "evening entertainment",
+  ];
+
   return (
     <div className="bg-card rounded-lg border p-3 space-y-3">
       {/* Header */}
@@ -177,7 +179,9 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
           </div>
           <div>
             <h3 className="font-medium text-sm">AI Suggestions</h3>
-            <p className="text-xs text-muted-foreground">Tell me what you need</p>
+            <p className="text-xs text-muted-foreground">
+              Tell me what you need
+            </p>
           </div>
         </div>
         <Button
@@ -185,14 +189,14 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
           size="icon"
           className="h-8 w-8"
           onClick={(e) => {
-            e.stopPropagation()
-            onClose()
+            e.stopPropagation();
+            onClose();
           }}
         >
           <X className="w-4 h-4" />
         </Button>
       </div>
-      
+
       {/* Custom Prompt Input */}
       {!hasGenerated && (
         <>
@@ -209,7 +213,7 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
               Generate Suggestions
             </Button>
           </form>
-          
+
           {/* Quick Prompts */}
           <div className="space-y-1.5">
             <p className="text-xs text-muted-foreground">Quick suggestions:</p>
@@ -227,15 +231,17 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
           </div>
         </>
       )}
-      
+
       {/* Loading State */}
       {isLoading && (
         <div className="py-8 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
-          <p className="text-sm text-muted-foreground">Generating smart suggestions...</p>
+          <p className="text-sm text-muted-foreground">
+            Generating smart suggestions...
+          </p>
         </div>
       )}
-      
+
       {/* Suggestions */}
       {!isLoading && suggestions.length > 0 && (
         <div className="space-y-2">
@@ -256,8 +262,12 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
                   </div>
                   {suggestion.tags && suggestion.tags.length > 0 && (
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {suggestion.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                      {suggestion.tags.slice(0, 3).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-xs"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -274,7 +284,7 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
           ))}
         </div>
       )}
-      
+
       {/* Action Buttons */}
       {!isLoading && suggestions.length > 0 && (
         <div className="flex gap-2">
@@ -283,9 +293,9 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
             size="sm"
             className="flex-1"
             onClick={() => {
-              setHasGenerated(false)
-              setSuggestions([])
-              setCustomPrompt('')
+              setHasGenerated(false);
+              setSuggestions([]);
+              setCustomPrompt("");
             }}
           >
             ← New Search
@@ -301,7 +311,7 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
           </Button>
         </div>
       )}
-      
+
       {/* Detail Modal */}
       <SuggestionDetailModal
         suggestion={selectedSuggestion}
@@ -309,7 +319,8 @@ export function AiCardSuggestion({ tripId, dayId, onClose }: AiCardSuggestionPro
         onClose={() => setShowDetailModal(false)}
         onAdd={handleAddFromModal}
         onBack={handleBackToSuggestions}
+        onSave={() => {}}
       />
     </div>
-  )
+  );
 }

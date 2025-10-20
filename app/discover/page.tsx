@@ -1,53 +1,59 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTripStore } from '@/lib/store/tripStore';
-import { SuggestionGrid } from '@/components/vibes/SuggestionGrid';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { SuggestionCard } from '@/lib/types/suggestions';
-import { saveSuggestionsToTrip } from '@/lib/utils/suggestions';
-import { getVibesSummary, hasCompletedVibes } from '@/lib/utils/vibes';
-import { Sparkles, Loader2, ArrowRight, Settings } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useTripStore } from "@/lib/store/tripStore";
+import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { SuggestionCard } from "@/lib/types/suggestions";
+import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
+import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
+import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
+import { toast } from "sonner";
+import { BackNavbar } from "@/components/navbar/BackNavbar";
 
-type PageStep = 'input' | 'loading' | 'results' | 'error';
+type PageStep = "input" | "loading" | "results" | "error";
 
 export default function DiscoverPage() {
   const router = useRouter();
-  const currentTripId = useTripStore(state => state.currentTripId);
-  const currentTrip = useTripStore(state => state.getCurrentTrip());
-  const userVibes = useTripStore(state => state.userVibes);
-  const addCard = useTripStore(state => state.addCard);
+  const currentTripId = useTripStore((state) => state.currentTripId);
+  const currentTrip = useTripStore((state) => state.getCurrentTrip());
+  const userVibes = useTripStore((state) => state.userVibes);
+  const addCard = useTripStore((state) => state.addCard);
 
-  const [step, setStep] = useState<PageStep>('input');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [step, setStep] = useState<PageStep>("input");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
   const hasVibes = hasCompletedVibes(userVibes);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleGenerate = async () => {
     if (!city.trim()) {
-      toast.error('Please enter a city name');
+      toast.error("Please enter a city name");
       return;
     }
 
-    setStep('loading');
+    setStep("loading");
     setError(null);
     setProgress(0);
 
     // Fake progress animation
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 95) {
           clearInterval(progressInterval);
           return 95;
@@ -57,9 +63,9 @@ export default function DiscoverPage() {
     }, 400);
 
     try {
-      const response = await fetch('/api/vibe-suggestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/vibe-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           destination: {
             city: city.trim(),
@@ -76,28 +82,32 @@ export default function DiscoverPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate suggestions');
+        throw new Error(errorData.error || "Failed to generate suggestions");
       }
 
       const data = await response.json();
       setSuggestions(data.suggestions);
-      
+
       // Pre-select all suggestions
-      const allIds = new Set(data.suggestions.map((s: SuggestionCard) => s.id));
+      const allIds = new Set(
+        data.suggestions.map((s: SuggestionCard) => s.id) as string[]
+      );
       setSelectedIds(allIds);
-      
-      setStep('results');
-      toast.success(`Generated ${data.suggestions.length} personalized suggestions!`);
+
+      setStep("results");
+      toast.success(
+        `Generated ${data.suggestions.length} personalized suggestions!`
+      );
     } catch (err: any) {
       clearInterval(progressInterval);
-      setError(err.message || 'Something went wrong. Please try again.');
-      setStep('error');
-      toast.error(err.message || 'Failed to generate suggestions');
+      setError(err.message || "Something went wrong. Please try again.");
+      setStep("error");
+      toast.error(err.message || "Failed to generate suggestions");
     }
   };
 
   const handleToggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -109,7 +119,7 @@ export default function DiscoverPage() {
   };
 
   const handleSelectAll = () => {
-    const allIds = new Set(suggestions.map(s => s.id));
+    const allIds = new Set(suggestions.map((s) => s.id));
     setSelectedIds(allIds);
   };
 
@@ -119,39 +129,48 @@ export default function DiscoverPage() {
 
   const handleSaveSelected = () => {
     if (!currentTripId) {
-      toast.error('No active trip. Please create a trip first.');
+      toast.error("No active trip. Please create a trip first.");
       return;
     }
 
-    const selectedSuggestions = suggestions.filter(s => selectedIds.has(s.id));
-    
+    const selectedSuggestions = suggestions.filter((s) =>
+      selectedIds.has(s.id)
+    );
+
     if (selectedSuggestions.length === 0) {
-      toast.error('Please select at least one suggestion');
+      toast.error("Please select at least one suggestion");
       return;
     }
 
     saveSuggestionsToTrip(selectedSuggestions, currentTripId, addCard);
-    
-    toast.success(`Saved ${selectedSuggestions.length} suggestions to Things to Do!`);
-    
+
+    toast.success(
+      `Saved ${selectedSuggestions.length} suggestions to Things to Do!`
+    );
+
     // Navigate to board after short delay
     setTimeout(() => {
-      router.push('/demo');
+      router.push("/demo");
     }, 1000);
   };
 
   const handleSaveSingle = (suggestion: SuggestionCard) => {
     if (!currentTripId) {
-      toast.error('No active trip. Please create a trip first.');
+      toast.error("No active trip. Please create a trip first.");
       return;
     }
 
     saveSuggestionsToTrip([suggestion], currentTripId, addCard);
-    toast.success('Saved to Things to Do!');
+    toast.success("Saved to Things to Do!");
   };
 
   return (
     <div className="min-h-screen bg-background">
+      <BackNavbar
+        tripId={currentTripId}
+        isHydrated={isHydrated}
+        setIsHydrated={setIsHydrated}
+      />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -166,7 +185,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Input Section */}
-        {step === 'input' && (
+        {step === "input" && (
           <div className="max-w-2xl mx-auto">
             <Card className="p-6 space-y-6">
               {/* Destination Inputs */}
@@ -180,7 +199,7 @@ export default function DiscoverPage() {
                     placeholder="e.g., Rome, Tokyo, Paris"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                   />
                 </div>
 
@@ -221,16 +240,16 @@ export default function DiscoverPage() {
               </div>
 
               {/* Vibes Preview */}
-              {hasVibes ? (
+              {isHydrated && hasVibes ? (
                 <div className="bg-secondary/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-sm">Your Travel Style</h3>
-                    <Link href="/preferences">
-                      <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm">
+                      <Link href="/preferences">
                         <Settings className="w-4 h-4 mr-1" />
                         Edit
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {getVibesSummary(userVibes!)}
@@ -239,14 +258,15 @@ export default function DiscoverPage() {
               ) : (
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
                   <p className="text-sm text-amber-900 dark:text-amber-100 mb-2">
-                    Get better suggestions by completing your travel preferences!
+                    Get better suggestions by completing your travel
+                    preferences!
                   </p>
-                  <Link href="/vibes">
-                    <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm">
+                    <Link href="/vibes">
                       <Sparkles className="w-4 h-4 mr-2" />
                       Take Vibes Quiz
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               )}
 
@@ -265,7 +285,7 @@ export default function DiscoverPage() {
         )}
 
         {/* Loading Section */}
-        {step === 'loading' && (
+        {step === "loading" && (
           <div className="max-w-xl mx-auto">
             <Card className="p-8">
               <div className="text-center space-y-6">
@@ -276,10 +296,10 @@ export default function DiscoverPage() {
                   </h2>
                   <p className="text-muted-foreground">
                     Creating 20 perfect picks for {city}
-                    {hasVibes && ' based on your travel style'}
+                    {hasVibes && " based on your travel style"}
                   </p>
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -296,25 +316,25 @@ export default function DiscoverPage() {
         )}
 
         {/* Error Section */}
-        {step === 'error' && (
+        {step === "error" && (
           <div className="max-w-xl mx-auto">
             <Card className="p-8">
               <div className="text-center space-y-4">
                 <div className="text-4xl">⚠️</div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Something went wrong
+                  </h2>
                   <p className="text-muted-foreground">{error}</p>
                 </div>
-                <Button onClick={() => setStep('input')}>
-                  Try Again
-                </Button>
+                <Button onClick={() => setStep("input")}>Try Again</Button>
               </div>
             </Card>
           </div>
         )}
 
         {/* Results Section */}
-        {step === 'results' && (
+        {step === "results" && (
           <div className="space-y-6">
             {/* Results Header */}
             <div className="flex items-center justify-between">
@@ -327,7 +347,7 @@ export default function DiscoverPage() {
                   {suggestions.length} suggestions • {selectedIds.size} selected
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setStep('input')}>
+              <Button variant="outline" onClick={() => setStep("input")}>
                 New Search
               </Button>
             </div>
@@ -337,12 +357,22 @@ export default function DiscoverPage() {
               <Card className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="font-medium">{selectedIds.size} selected</span>
-                    <Button variant="ghost" size="sm" onClick={handleDeselectAll}>
+                    <span className="font-medium">
+                      {selectedIds.size} selected
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDeselectAll}
+                    >
                       Deselect All
                     </Button>
                     {selectedIds.size < suggestions.length && (
-                      <Button variant="ghost" size="sm" onClick={handleSelectAll}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSelectAll}
+                      >
                         Select All
                       </Button>
                     )}
@@ -378,4 +408,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-

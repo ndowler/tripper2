@@ -1,26 +1,29 @@
-'use client'
+"use client";
 
-import { type Trip } from '@/lib/types'
-import { SortableCard } from '@/components/cards/SortableCard'
-import { CardComposer } from '@/components/cards/CardComposer'
-import { Inbox } from 'lucide-react'
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
-import { useDroppable } from '@dnd-kit/core'
+import { type Trip } from "@/lib/types";
+import { SortableCard } from "@/components/cards/SortableCard";
+import { CardComposer } from "@/components/cards/CardComposer";
+import { Inbox } from "lucide-react";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 
 interface ThingsToDoColumnProps {
-  trip: Trip
+  trip: Trip;
 }
 
 export function ThingsToDoColumn({ trip }: ThingsToDoColumnProps) {
-  const unassignedCards = trip.unassignedCards || []
-  
+  const unassignedCards = trip.unassignedCards || [];
+
   const { setNodeRef } = useDroppable({
-    id: 'unassigned',
+    id: "unassigned",
     data: {
-      type: 'unassigned',
+      type: "unassigned",
     },
-  })
-  
+  });
+
   return (
     <div
       ref={setNodeRef}
@@ -31,19 +34,17 @@ export function ThingsToDoColumn({ trip }: ThingsToDoColumnProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Inbox className="w-4 h-4 text-muted-foreground" />
-            <h2 className="font-semibold text-lg">
-              Things to Do
-            </h2>
+            <h2 className="font-semibold text-lg">Things to Do</h2>
             <span className="text-xs text-muted-foreground">
               · Drag to a day when ready to schedule
             </span>
           </div>
         </div>
       </div>
-      
+
       {/* Cards - Horizontal Scroll */}
       <SortableContext
-        items={unassignedCards.map(c => c.id)}
+        items={unassignedCards.map((c) => c.id)}
         strategy={horizontalListSortingStrategy}
       >
         <div className="p-4 overflow-x-auto">
@@ -63,7 +64,7 @@ export function ThingsToDoColumn({ trip }: ThingsToDoColumnProps) {
                 </div>
               ))
             )}
-            
+
             {/* Add card composer */}
             <div className="flex-shrink-0 w-80">
               <CardComposer tripId={trip.id} dayId="unassigned" />
@@ -72,5 +73,5 @@ export function ThingsToDoColumn({ trip }: ThingsToDoColumnProps) {
         </div>
       </SortableContext>
     </div>
-  )
+  );
 }

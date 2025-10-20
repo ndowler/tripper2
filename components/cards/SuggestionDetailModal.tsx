@@ -1,37 +1,41 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SuggestionCard } from '@/lib/types/suggestions';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SuggestionCard } from "@/lib/types/suggestions";
 import {
   formatDuration,
   formatPriceTier,
   getDaypartInfo,
   getCategoryEmoji,
   getGoogleSearchUrl,
-} from '@/lib/utils/suggestions';
-import { ExternalLink, Plus, Search } from 'lucide-react';
+} from "@/lib/utils/suggestions";
+import { ExternalLink, Plus, Search } from "lucide-react";
 
 interface SuggestionDetailModalProps {
   suggestion: SuggestionCard | null;
   isOpen: boolean;
   onClose: () => void;
+  onAdd: () => void;
   onSave: (suggestion: SuggestionCard) => void;
+  onBack: () => void;
 }
 
 export function SuggestionDetailModal({
   suggestion,
   isOpen,
   onClose,
+  onAdd,
   onSave,
+  onBack,
 }: SuggestionDetailModalProps) {
   if (!suggestion) return null;
 
@@ -66,18 +70,24 @@ export function SuggestionDetailModal({
           {/* Description */}
           <div>
             <h3 className="font-semibold mb-2">About</h3>
-            <p className="text-sm text-foreground/80">{suggestion.description}</p>
+            <p className="text-sm text-foreground/80">
+              {suggestion.description}
+            </p>
           </div>
 
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Duration</p>
-              <p className="font-medium">{formatDuration(suggestion.est_duration_min)}</p>
+              <p className="font-medium">
+                {formatDuration(suggestion.est_duration_min)}
+              </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Price</p>
-              <p className="font-medium">{formatPriceTier(suggestion.price_tier)}</p>
+              <p className="font-medium">
+                {formatPriceTier(suggestion.price_tier)}
+              </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Best Time</p>
@@ -119,7 +129,10 @@ export function SuggestionDetailModal({
               <h3 className="font-semibold mb-2">Why this suggestion?</h3>
               <ul className="space-y-1">
                 {suggestion.reasons.map((reason, idx) => (
-                  <li key={idx} className="text-sm text-foreground/80 flex gap-2">
+                  <li
+                    key={idx}
+                    className="text-sm text-foreground/80 flex gap-2"
+                  >
                     <span className="text-primary">•</span>
                     <span>{reason}</span>
                   </li>
@@ -132,11 +145,12 @@ export function SuggestionDetailModal({
           {suggestion.booking && (
             <div>
               <h3 className="font-semibold mb-2">Booking</h3>
-              {suggestion.booking.requires && suggestion.booking.requires.length > 0 && (
-                <p className="text-sm text-foreground/80 mb-2">
-                  Requires: {suggestion.booking.requires.join(', ')}
-                </p>
-              )}
+              {suggestion.booking.requires &&
+                suggestion.booking.requires.length > 0 && (
+                  <p className="text-sm text-foreground/80 mb-2">
+                    Requires: {suggestion.booking.requires.join(", ")}
+                  </p>
+                )}
               {suggestion.booking.url && (
                 <Button variant="outline" size="sm" asChild>
                   <a
@@ -164,8 +178,8 @@ export function SuggestionDetailModal({
                   key={idx}
                   className={`h-2 flex-1 rounded ${
                     idx < Math.round(suggestion.confidence * 5)
-                      ? 'bg-primary'
-                      : 'bg-secondary'
+                      ? "bg-primary"
+                      : "bg-secondary"
                   }`}
                 />
               ))}
@@ -184,11 +198,7 @@ export function SuggestionDetailModal({
               Close
             </Button>
           </div>
-          <Button 
-            variant="secondary" 
-            className="w-full"
-            asChild
-          >
+          <Button variant="secondary" className="w-full">
             <a
               href={getGoogleSearchUrl(suggestion)}
               target="_blank"

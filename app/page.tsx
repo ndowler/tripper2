@@ -5,10 +5,10 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl text-center space-y-8">
-        <h1 className="text-6xl font-bold tracking-tight">
+        <h1 className="text-6xl font-bold tracking-tight select-none">
           ✈️ Tripper
         </h1>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-xl text-muted-foreground select-none">
           Fast, offline-first trip planning. Like Trello, but for travel.
         </p>
         
@@ -29,7 +29,7 @@ export default function Home() {
           </Link>
         </div>
         
-        <div className="mt-12 text-sm text-muted-foreground">
+        <div className="mt-12 text-sm text-muted-foreground select-none">
           <p>✨ Drag & drop • ⌨️ Keyboard shortcuts • 📱 Mobile-friendly • ✈️ Offline-first</p>
         </div>
       </div>

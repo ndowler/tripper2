@@ -1,31 +1,38 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTripStore } from '@/lib/store/tripStore'
-import { Board } from '@/components/board/Board'
+import { useEffect, use, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTripStore } from "@/lib/store/tripStore";
+import { Board } from "@/components/board/Board";
 
-export default function TripPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
-  const trips = useTripStore((state) => state.trips)
-  const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
-  
-  const trip = trips[params.id]
+export default function TripPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const router = useRouter();
+  const trips = useTripStore((state) => state.trips);
+  const setCurrentTrip = useTripStore((state) => state.setCurrentTrip);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  const { id } = use(params);
+  const trip = trips[id];
 
   useEffect(() => {
+    setIsHydrated(true);
     if (trip) {
-      setCurrentTrip(trip.id)
+      setCurrentTrip(trip.id);
     }
-  }, [trip, setCurrentTrip])
+  }, [trip, setCurrentTrip]);
 
   useEffect(() => {
-    // If trip doesn't exist, redirect to trips page
-    if (!trip) {
-      router.push('/trips')
+    // If trip doesn't exist after hydration, redirect to trips page
+    if (isHydrated && !trip) {
+      router.push("/trips");
     }
-  }, [trip, router])
+  }, [trip, router, isHydrated]);
 
-  if (!trip) {
+  if (!isHydrated || !trip) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -33,9 +40,8 @@ export default function TripPage({ params }: { params: { id: string } }) {
           <p className="text-muted-foreground">Loading trip...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  return <Board trip={trip} />
+  return <Board trip={trip} />;
 }
-
