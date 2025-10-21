@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { type Card } from "@/lib/types";
+import type { InfoCard } from "@/lib/types";
 import { Card as UICard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 interface TripCardProps {
-  card: Card;
+  card: InfoCard;
   tripId: string;
   dayId: string;
   isDragging?: boolean;

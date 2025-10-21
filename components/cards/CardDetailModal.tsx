@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTripStore } from "@/lib/store/tripStore";
-import type { Card, CardType } from "@/lib/types";
+import type { InfoCard, CardType } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 
 interface CardDetailModalProps {
-  card: Card;
+  card: InfoCard;
   tripId: string;
   dayId: string;
   open: boolean;
