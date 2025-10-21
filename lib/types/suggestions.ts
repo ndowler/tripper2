@@ -51,11 +51,14 @@ export interface AISuggestion extends SuggestionCard {
 export interface DiscoveryRequest {
   destination: {
     city: string;
+    state?: string;
     country?: string;
     start?: string; // ISO date
     end?: string; // ISO date
   };
+  vibes?: any; // UserVibes (optional for LLM)
   vibe_profile?: any; // UserVibes (optional for LLM)
+  limit?: number; // Number of suggestions to generate
 }
 
 export interface DiscoveryResponse {

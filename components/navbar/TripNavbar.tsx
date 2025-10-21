@@ -178,7 +178,7 @@ export function Navbar({
                   <Button
                     variant="ghost"
                     // size="icon"
-                    title="Discover things to do"
+                    // title="Discover things to do"
                     className="lg:px-3"
                   >
                     <Compass className="w-4 h-4 lg:mr-2" />
@@ -203,7 +203,7 @@ export function Navbar({
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="More actions"
+                          // title="More actions"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </Button>

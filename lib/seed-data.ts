@@ -8,7 +8,10 @@ export function createDemoTrip(): Trip {
     id: "demo-trip",
     title: "Rome & Florence Adventure",
     description: "A week exploring the best of Italy",
-    destination: "Rome, Italy",
+    destination: {
+      city: "Rome",
+      country: "Italy",
+    },
     timezone: "Europe/Rome",
     createdAt: now,
     updatedAt: now,
