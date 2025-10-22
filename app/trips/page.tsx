@@ -1,17 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 import { useTripStore } from "@/lib/store/tripStore";
-import { TripGrid } from "@/components/trips/TripGrid";
-import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
-import { NewTripModal } from "@/components/trips/NewTripModal";
-import { EditTripModal } from "@/components/trips/EditTripModal";
-import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Trip } from "@/lib/types";
 import Link from "next/link";
+import { TripGrid } from "@/components/trips/TripGrid";
+import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
+import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
+import { NewTripModal } from "@/components/trips/NewTripModal";
+import { EditTripModal } from "@/components/trips/EditTripModal";
+import { ModeToggle } from "@/components/ui/theme-toggler";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function TripsPage() {
   const getAllTrips = useTripStore((state) => state.getAllTrips);
@@ -38,16 +45,18 @@ export default function TripsPage() {
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/">
+            {/* <Link href="/">
               <Button variant="ghost" title="Home">
-                <span className="sr-only">Home</span>
+                Home
               </Button>
-            </Link>
+            </Link> */}
             <div>
-              <h1 className="text-2xl font-bold select-none">✈️ My Trips</h1>
+              <h1 className="text-2xl font-bold select-none text-start">
+                ✈️ My Trips
+              </h1>
               {isHydrated && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {trips.length} {trips.length === 1 ? "trip" : "trips"}
+                <p className="text-sm text-muted-foreground mt-1 select-none text-start">
+                  {trips.length} {trips.length === 1 ? "Trip" : "Trips"}
                 </p>
               )}
             </div>
@@ -58,6 +67,23 @@ export default function TripsPage() {
               <PlusCircle className="h-5 w-5" />
               New Trip
             </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <Link href="/discover">
+                  <Button variant="outline" className="gap-2">
+                    <Search className="h-5 w-5" />
+                    <span className="hidden md:inline">Discover</span>
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Discover Trips</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <ModeToggle />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Theme</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </header>

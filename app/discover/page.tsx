@@ -3,17 +3,17 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useTripStore } from "@/lib/store/tripStore";
-import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { BackNavbar } from "@/components/navbar/BackNavbar";
+import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
 import { SuggestionCard } from "@/lib/types/suggestions";
 import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
 import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
-import { toast } from "sonner";
-import { BackNavbar } from "@/components/navbar/BackNavbar";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
