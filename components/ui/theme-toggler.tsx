@@ -3,8 +3,6 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +10,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
+import { Switch } from "@/components/ui/switch";
+
+export function ThemeMenuItems() {
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+  const icon = React.useMemo(() => {
+    return isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />;
+  }, [isDark]);
+
+  return (
+    <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+      <div className="flex items-center justify-between w-full">
+        {icon}
+        {isDark ? "Dark" : "Light"}
+        <Switch
+          checked={isDark}
+          onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+          className="ml-2"
+        />
+      </div>
+    </DropdownMenuItem>
+  );
+}
 
 export function ModeToggle() {
   const { setTheme } = useTheme();

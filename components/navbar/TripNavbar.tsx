@@ -7,7 +7,9 @@ import {
   Home,
   Inbox,
   MoreVertical,
+  Redo2,
   Share2,
+  Undo2,
 } from "lucide-react";
 
 import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
@@ -15,18 +17,16 @@ import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import { EditableHeader } from "@/components/board/EditableHeader";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/theme-toggler";
+import { ModeToggle, ThemeMenuItems } from "@/components/ui/theme-toggler";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { CustomTooltip } from "../ui/custom-tooltip";
+import { ButtonGroup } from "../ui/button-group";
+import { Separator } from "../ui/separator";
 
 interface NavbarProps {
   trip: {
@@ -123,30 +123,27 @@ export function Navbar({
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
           >
             {/* To-Do Toggle */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
-                  title="To-Do"
-                >
-                  <div className="flex items-center gap-1">
-                    <Inbox className="w-4 h-4" />
-                    <span className="hidden sm:inline">To-Do</span>
-                    <span className="text-xs font-medium rounded-full pl-2">
-                      {trip.unassignedCards && trip.unassignedCards.length > 0
-                        ? trip.unassignedCards.length
-                        : 0}
-                    </span>
-                  </div>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">To-Do List</TooltipContent>
-            </Tooltip>
+            <CustomTooltip content="To-Do List" side="bottom">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
+                title="To-Do"
+              >
+                <div className="flex items-center gap-1">
+                  <Inbox className="w-4 h-4" />
+                  <span className="hidden sm:inline">To-Do</span>
+                  <span className="text-xs font-medium rounded-full pl-2">
+                    {trip.unassignedCards && trip.unassignedCards.length > 0
+                      ? trip.unassignedCards.length
+                      : 0}
+                  </span>
+                </div>
+              </Button>
+            </CustomTooltip>
 
             {/* Undo/Redo */}
-            {/* <div id="undo-redo" className="flex gap-1">
+            <div id="undo-redo" className="flex gap-1">
               <ButtonGroup className="border rounded-lg">
                 <Button
                   variant="ghost"
@@ -174,57 +171,52 @@ export function Navbar({
                   <Redo2 className="w-4 h-4" />
                 </Button>
               </ButtonGroup>
-            </div> */}
+            </div>
 
             {/* Actions */}
-            <Tooltip>
+            <CustomTooltip content="Discover More" side="bottom">
               <Link href="/discover">
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    // size="icon"
-                    // title="Discover things to do"
-                    className="lg:px-3"
-                  >
-                    <Compass className="w-4 h-4 lg:mr-2" />
-                    <span className="hidden lg:inline whitespace-nowrap">
-                      Discover
-                    </span>
-                  </Button>
-                </TooltipTrigger>
+                <Button
+                  variant="outline"
+                  // size="icon"
+                  // title="Discover things to do"
+                  className="lg:px-3"
+                >
+                  <Compass className="w-4 h-4 lg:mr-2" />
+                  <span className="hidden lg:inline whitespace-nowrap">
+                    Discover
+                  </span>
+                </Button>
               </Link>
-              <TooltipContent side="bottom">Discover More</TooltipContent>
-            </Tooltip>
+            </CustomTooltip>
             {/* Actions Dropdown - hidden on lg+ */}
             <div className="flex items-center">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div id="actions-dropdown" className="lg:hidden">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          // title="More actions"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Download className="w-4 h-4 mr-2" />
-                          Export JSON
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">More actions</TooltipContent>
-              </Tooltip>
+              <CustomTooltip content="More actions" side="bottom">
+                <div id="actions-dropdown" className="lg:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        // title="More actions"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                      <ThemeMenuItems />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CustomTooltip>
             </div>
 
             {/* Full Actions - visible on lg+ */}
@@ -235,10 +227,9 @@ export function Navbar({
               <Button variant="outline" size="icon" title="Share">
                 <Share2 className="w-4 h-4" />
               </Button>
+              {/* Theme Toggle */}
+              <ModeToggle />
             </div>
-            {/* Theme Toggle */}
-
-            <ModeToggle />
           </div>
         </div>
       </div>
