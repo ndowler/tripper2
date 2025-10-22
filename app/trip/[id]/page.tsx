@@ -4,6 +4,7 @@ import { useEffect, use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTripStore } from "@/lib/store/tripStore";
 import { Board } from "@/components/board/Board";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripPage({
   params,
@@ -33,14 +34,7 @@ export default function TripPage({
   }, [trip, router, isHydrated]);
 
   if (!isHydrated || !trip) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading trip...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner loadingText="Loading your trip..." />;
   }
 
   return <Board trip={trip} />;

@@ -14,6 +14,7 @@ import { SuggestionCard } from "@/lib/types/suggestions";
 import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
 import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
@@ -164,6 +165,10 @@ export default function DiscoverPage() {
     toast.success("Saved to Things to Do!");
   };
 
+  if (!isHydrated) {
+    return <LoadingSpinner loadingText="Loading Discover page..." />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <BackNavbar
@@ -178,8 +183,10 @@ export default function DiscoverPage() {
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">AI Discovery</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Discover Things to Do</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="text-4xl font-bold mb-2 select-none">
+            Discover Things to Do
+          </h1>
+          <p className="text-muted-foreground text-lg select-none">
             Get 20 personalized suggestions powered by AI
           </p>
         </div>

@@ -1,24 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PlusCircle, Search } from "lucide-react";
-import { useTripStore } from "@/lib/store/tripStore";
-
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import type { Trip } from "@/lib/types";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import type { Trip } from "@/lib/types";
+import { useTripStore } from "@/lib/store/tripStore";
+import { PlusCircle, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { TripGrid } from "@/components/trips/TripGrid";
 import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
 import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
 import { NewTripModal } from "@/components/trips/NewTripModal";
 import { EditTripModal } from "@/components/trips/EditTripModal";
 import { ModeToggle } from "@/components/ui/theme-toggler";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { CustomTooltip } from "@/components/ui/custom-tooltip";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripsPage() {
   const getAllTrips = useTripStore((state) => state.getAllTrips);
@@ -34,6 +30,9 @@ export default function TripsPage() {
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // Only render after hydration
+  if (!isHydrated) return LoadingSpinner("Loading your trips...");
 
   const handleDuplicate = (trip: Trip) => {
     duplicateTrip(trip.id);
@@ -60,36 +59,33 @@ export default function TripsPage() {
                 </p>
               )}
             </div>
-            <Button
-              onClick={() => setIsNewTripModalOpen(true)}
-              className="gap-2"
-            >
-              <PlusCircle className="h-5 w-5" />
-              New Trip
-            </Button>
-            <Tooltip>
-              <TooltipTrigger>
-                <Link href="/discover">
-                  <Button variant="outline" className="gap-2">
-                    <Search className="h-5 w-5" />
-                    <span className="hidden md:inline">Discover</span>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Discover Trips</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ModeToggle />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Theme</TooltipContent>
-            </Tooltip>
+            <CustomTooltip content="Create a new trip" side="bottom">
+              <Button
+                onClick={() => setIsNewTripModalOpen(true)}
+                className="gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                New Trip
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip content="Discover more!" side="bottom">
+              <Link href="/discover">
+                <Button variant="outline" className="gap-2">
+                  <Search className="h-5 w-5" />
+                  <span className="hidden md:inline">Discover</span>
+                </Button>
+              </Link>
+            </CustomTooltip>
+
+            <CustomTooltip content="Theme" side="bottom">
+              <ModeToggle />
+            </CustomTooltip>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {isHydrated && trips.length === 0 ? (
+        {trips.length === 0 ? (
           <EmptyTripsState onCreateTrip={() => setIsNewTripModalOpen(true)} />
         ) : (
           <TripGrid
