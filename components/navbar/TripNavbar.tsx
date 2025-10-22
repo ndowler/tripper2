@@ -2,14 +2,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Compass,
   Download,
+  Home,
   Inbox,
   MoreVertical,
-  Redo2,
   Share2,
-  Undo2,
 } from "lucide-react";
 
 import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
@@ -104,7 +102,7 @@ export function Navbar({
             <div id="back-button" className="flex justify-start">
               <Link href="/trips">
                 <Button variant="ghost" size="icon" title="Back to all trips">
-                  <ArrowLeft className="w-4 h-4" />
+                  <Home className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -125,58 +123,65 @@ export function Navbar({
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
           >
             {/* To-Do Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
-              title="To-Do"
-              className="flex items-center gap-1"
-            >
-              <Inbox className="w-4 h-4" />
-              <span className="hidden sm:inline">To-Do</span>
-              {trip.unassignedCards && trip.unassignedCards.length > 0 && (
-                <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                  {trip.unassignedCards.length}
-                </span>
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
+                  title="To-Do"
+                >
+                  <div className="flex items-center gap-1">
+                    <Inbox className="w-4 h-4" />
+                    <span className="hidden sm:inline">To-Do</span>
+                    <span className="text-xs font-medium rounded-full pl-2">
+                      {trip.unassignedCards && trip.unassignedCards.length > 0
+                        ? trip.unassignedCards.length
+                        : 0}
+                    </span>
+                  </div>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">To-Do List</TooltipContent>
+            </Tooltip>
 
             {/* Undo/Redo */}
-            <div id="undo-redo" className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo (Cmd+Z)"
-                onClick={() => {
-                  undo();
-                  toast.success("Undone");
-                }}
-                disabled={!canUndo}
-              >
-                <Undo2 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo (Cmd+Shift+Z)"
-                onClick={() => {
-                  redo();
-                  toast.success("Redone");
-                }}
-                disabled={!canRedo}
-              >
-                <Redo2 className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="w-px h-6 bg-border mx-2" />
+            {/* <div id="undo-redo" className="flex gap-1">
+              <ButtonGroup className="border rounded-lg">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Undo (Cmd+Z)"
+                  onClick={() => {
+                    undo();
+                    toast.success("Undone");
+                  }}
+                  disabled={!canUndo}
+                >
+                  <Undo2 className="w-4 h-4" />
+                </Button>
+                <Separator orientation="vertical" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Redo (Cmd+Shift+Z)"
+                  onClick={() => {
+                    redo();
+                    toast.success("Redone");
+                  }}
+                  disabled={!canRedo}
+                >
+                  <Redo2 className="w-4 h-4" />
+                </Button>
+              </ButtonGroup>
+            </div> */}
 
             {/* Actions */}
             <Tooltip>
               <Link href="/discover">
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     // size="icon"
                     // title="Discover things to do"
                     className="lg:px-3"
@@ -188,11 +193,8 @@ export function Navbar({
                   </Button>
                 </TooltipTrigger>
               </Link>
-              <TooltipContent side="bottom">
-                Discover things to do!
-              </TooltipContent>
+              <TooltipContent side="bottom">Discover More</TooltipContent>
             </Tooltip>
-            <div className="w-px h-6 bg-border mx-2"></div>
             {/* Actions Dropdown - hidden on lg+ */}
             <div className="flex items-center">
               <Tooltip>
@@ -201,7 +203,7 @@ export function Navbar({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
                           // title="More actions"
                         >
@@ -227,13 +229,15 @@ export function Navbar({
 
             {/* Full Actions - visible on lg+ */}
             <div id="full-actions" className="hidden lg:flex gap-2">
-              <Button variant="ghost" size="icon" title="Export JSON">
+              <Button variant="outline" size="icon" title="Export JSON">
                 <Download className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" title="Share">
+              <Button variant="outline" size="icon" title="Share">
                 <Share2 className="w-4 h-4" />
               </Button>
             </div>
+            {/* Theme Toggle */}
+
             <ModeToggle />
           </div>
         </div>
