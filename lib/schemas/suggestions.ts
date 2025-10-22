@@ -70,7 +70,8 @@ export const AISuggestionsSchema = z.object({
   startTime: z
     .string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
-    .optional(), // HH:MM 24-hour format
+    .optional()
+    .nullable(), // HH:MM 24-hour format
 });
 
 export const AISuggestionsResponseSchema = z.object({
@@ -81,7 +82,11 @@ export const AIDayPlanCardSchema = z.object({
   type: z.enum(suggestionTypes),
   title: z.string().max(60),
   description: z.string().max(160),
-  startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/), // HH:MM 24-hour format
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+    .optional()
+    .nullable(), // HH:MM 24-hour format
   duration: z.number().int().min(15).max(480),
   tags: z.array(z.string()).max(5),
   location: z.string().optional().nullable(),
