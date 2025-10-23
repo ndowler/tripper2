@@ -1,3 +1,5 @@
+"use client";
+
 import { UserVibes } from "@/lib/types/vibes";
 import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 

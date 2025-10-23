@@ -1,3 +1,5 @@
+"use client";
+
 import { UserVibes } from "@/lib/types/vibes";
 import { FoodAdventurousness } from "./food/FoodAdventurousness";
 import { DietaryConstraints } from "./food/DietaryConstraints";

@@ -1,4 +1,5 @@
 "use client";
+
 import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 
 const adventurousnessOptions = {
