@@ -73,7 +73,9 @@ export default function VibesQuizPage() {
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">Vibes Quiz</span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">What's your travel style?</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            What&apos;s your travel style?
+          </h1>
           <p className="text-muted-foreground">
             Answer 10 quick questions to get personalized AI suggestions
           </p>
@@ -213,7 +215,7 @@ export default function VibesQuizPage() {
                   updateAnswer({
                     comfort: {
                       ...answers.comfort!,
-                      daypart_bias: value as any,
+                      daypart_bias: value as "early" | "balanced" | "late",
                     },
                   })
                 }
@@ -272,22 +274,22 @@ export default function VibesQuizPage() {
                   {
                     value: 40,
                     emoji: "💸",
-                    label: "€30-50 - budget-conscious",
+                    label: "$30-50 - budget-conscious",
                   },
                   {
                     value: 75,
                     emoji: "💳",
-                    label: "€50-100 - moderate spending",
+                    label: "$50-100 - moderate spending",
                   },
                   {
                     value: 150,
                     emoji: "💼",
-                    label: "€100-200 - comfortable budget",
+                    label: "$100-200 - comfortable budget",
                   },
                   {
                     value: 250,
                     emoji: "👑",
-                    label: "€200+ - luxury experience",
+                    label: "$200+ - luxury experience",
                   },
                 ]}
                 value={answers.logistics?.budget_ppd ?? null}
