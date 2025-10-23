@@ -15,6 +15,7 @@ import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
 import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
+import { current } from "immer";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
@@ -171,11 +172,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <BackNavbar
-        tripId={currentTripId}
-        isHydrated={isHydrated}
-        setIsHydrated={setIsHydrated}
-      />
+      <BackNavbar trip={currentTrip} />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
