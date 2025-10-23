@@ -1,17 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
+import type { Trip } from "@/lib/types";
 import { useTripStore } from "@/lib/store/tripStore";
+import { PlusCircle, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { TripGrid } from "@/components/trips/TripGrid";
+import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
 import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
 import { NewTripModal } from "@/components/trips/NewTripModal";
 import { EditTripModal } from "@/components/trips/EditTripModal";
-import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import type { Trip } from "@/lib/types";
-import Link from "next/link";
+import { ModeToggle } from "@/components/ui/theme-toggler";
+import { CustomTooltip } from "@/components/ui/custom-tooltip";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripsPage() {
   const getAllTrips = useTripStore((state) => state.getAllTrips);
@@ -28,6 +31,9 @@ export default function TripsPage() {
     setIsHydrated(true);
   }, []);
 
+  // Only render after hydration
+  if (!isHydrated) return LoadingSpinner("Loading your trips...");
+
   const handleDuplicate = (trip: Trip) => {
     duplicateTrip(trip.id);
     toast.success(`"${trip.title}" duplicated`);
@@ -38,32 +44,48 @@ export default function TripsPage() {
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/">
+            {/* <Link href="/">
               <Button variant="ghost" title="Home">
-                <span className="sr-only">Home</span>
+                Home
               </Button>
-            </Link>
+            </Link> */}
             <div>
-              <h1 className="text-2xl font-bold select-none">✈️ My Trips</h1>
+              <h1 className="text-2xl font-bold select-none text-start">
+                ✈️ My Trips
+              </h1>
               {isHydrated && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {trips.length} {trips.length === 1 ? "trip" : "trips"}
+                <p className="text-sm text-muted-foreground mt-1 select-none text-start">
+                  {trips.length} {trips.length === 1 ? "Trip" : "Trips"}
                 </p>
               )}
             </div>
-            <Button
-              onClick={() => setIsNewTripModalOpen(true)}
-              className="gap-2"
-            >
-              <PlusCircle className="h-5 w-5" />
-              New Trip
-            </Button>
+            <CustomTooltip content="Create a new trip" side="bottom">
+              <Button
+                onClick={() => setIsNewTripModalOpen(true)}
+                className="gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                New Trip
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip content="Discover more!" side="bottom">
+              <Link href="/discover">
+                <Button variant="outline" className="gap-2">
+                  <Search className="h-5 w-5" />
+                  <span className="hidden md:inline">Discover</span>
+                </Button>
+              </Link>
+            </CustomTooltip>
+
+            <CustomTooltip content="Theme" side="bottom">
+              <ModeToggle />
+            </CustomTooltip>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {isHydrated && trips.length === 0 ? (
+        {trips.length === 0 ? (
           <EmptyTripsState onCreateTrip={() => setIsNewTripModalOpen(true)} />
         ) : (
           <TripGrid

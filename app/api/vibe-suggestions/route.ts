@@ -15,35 +15,40 @@ export async function POST(request: NextRequest) {
     }
 
     const body: DiscoveryRequest = await request.json();
-    const { destination, vibe_profile } = body;
+    console.log("Vibe Suggestions request body:", body);
+    const { destination, vibes, vibe_profile, limit } = body;
 
-    if (!destination?.city) {
+    if (!destination) {
       return NextResponse.json(
-        { error: "Destination city is required" },
+        { error: "Destination is required" },
         { status: 400 }
       );
     }
 
+    // If vibe_profile is not provided, use vibes
+    const vibeProfile = vibe_profile || vibes;
+
     // Build vibes context
     let vibesPrompt = "";
-    if (vibe_profile) {
+    if (vibeProfile) {
       try {
-        const vibes: UserVibes = vibe_profile;
+        const vibes: UserVibes = vibeProfile;
         vibesPrompt = "\n\n" + vibesToPrompt(vibes);
       } catch (error) {
         console.warn("Failed to parse vibes context:", error);
       }
     }
-
+    console.log("Vibes Prompt:", vibesPrompt);
     // Calculate max theme weight for category cap logic
     const themeWeights = vibe_profile?.taste?.theme_weights || {};
     const maxThemeWeight = Math.max(
       ...Object.values(themeWeights).map((w: any) => w || 0),
       0
     );
-
+    console.log("Max theme weight:", maxThemeWeight);
+    console.log("Vibes Prompt:", vibesPrompt);
     const systemPrompt = `You are a precise trip-planning card generator.
-Return ONLY valid JSON array of 20 objects that match the provided schema.
+Return ONLY valid JSON array of ${limit} objects that match the provided schema.
 Do not invent exact prices or hours. Use general price_tier 0..3.
 Prefer well-known, safe, and open-to-the-public options inside the destination.
 Keep titles < 60 chars; descriptions ≤ 160 chars; max 5 tags.
@@ -57,11 +62,6 @@ CRITICAL RULES:
 - If dietary constraints exist, ensure food items comply (e.g., no pork, vegetarian, etc.)
 - Use "area" with neighborhood names (e.g., Trastevere, Shibuya, SoHo) when helpful
 - Set "media.emoji" to a fitting emoji (🍝, 🖼️, ☕, 🌅…)
-- Generate stable looking "id" values like "${destination.city
-      .toLowerCase()
-      .slice(0, 3)}-001", "${destination.city
-      .toLowerCase()
-      .slice(0, 3)}-002", etc.
 
 ${
   vibesPrompt
@@ -70,19 +70,13 @@ ${
 }`;
 
     const userPrompt = `DESTINATION:
-- city: ${destination.city}
-- country: ${destination.country || "N/A"}
-- dates: ${destination.start || "N/A"} to ${
-      destination.end || "N/A"
-    } (approximate; use for seasonal context only)
+  ${destination}
 
 ${vibesPrompt ? `VIBE_PROFILE:\n${vibesPrompt}` : ""}
 
 INSTRUCTIONS:
-Generate exactly 20 SuggestionCard objects as a JSON array for ${
-      destination.city
-    }${destination.country ? `, ${destination.country}` : ""}.
-Return ONLY the JSON array of 20 objects.`;
+Generate exactly ${limit} SuggestionCard objects as a JSON array for ${destination}.
+Return ONLY the JSON array of ${limit} objects.`;
 
     const completion = await createZodCompletion(
       defaultModel,
@@ -100,8 +94,8 @@ Return ONLY the JSON array of 20 objects.`;
       ? (completion.parsed as { suggestions: any[] }).suggestions
       : [];
 
-    // Accept 10-20 valid suggestions
-    if (suggestions.length < 10) {
+    // Accept 5-20 valid suggestions
+    if (suggestions.length < 5 || suggestions.length > 20) {
       throw new Error(
         `Only ${suggestions.length} valid suggestions generated. Please try again.`
       );

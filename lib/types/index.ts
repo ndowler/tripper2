@@ -37,7 +37,7 @@ export interface Cost {
   currency: string;
 }
 
-export interface Card {
+export interface InfoCard {
   id: string;
   type: CardType;
   title: string;
@@ -59,17 +59,21 @@ export interface Day {
   id: string;
   date: string; // ISO date string "2024-10-15"
   title?: string; // "Day in Rome", "Travel Day"
-  cards: Card[];
+  cards: InfoCard[];
 }
 
 export interface Trip {
   id: string;
   title: string;
   description?: string;
-  destination?: string; // e.g., "Rome, Italy"
+  destination?: {
+    city: string;
+    state?: string;
+    country?: string;
+  };
   timezone: string;
   days: Day[];
-  unassignedCards: Card[]; // Cards not yet assigned to a day
+  unassignedCards: InfoCard[]; // Cards not yet assigned to a day
   createdAt: Date;
   updatedAt: Date;
 }
@@ -127,13 +131,13 @@ export interface TripStore {
   addCard: (
     tripId: string,
     dayId: string | undefined,
-    card: Omit<Card, "createdAt" | "updatedAt">
+    card: Omit<InfoCard, "createdAt" | "updatedAt">
   ) => void;
   updateCard: (
     tripId: string,
     dayId: string | undefined,
     cardId: string,
-    updates: Partial<Card>
+    updates: Partial<InfoCard>
   ) => void;
   deleteCard: (
     tripId: string,
@@ -171,5 +175,9 @@ export interface TripStore {
   // Utility
   getCurrentTrip: () => Trip | null;
   getDayById: (tripId: string, dayId: string) => Day | null;
-  getCardById: (tripId: string, dayId: string, cardId: string) => Card | null;
+  getCardById: (
+    tripId: string,
+    dayId: string,
+    cardId: string
+  ) => InfoCard | null;
 }

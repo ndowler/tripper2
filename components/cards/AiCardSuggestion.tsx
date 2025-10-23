@@ -319,7 +319,7 @@ export function AiCardSuggestion({
         onClose={() => setShowDetailModal(false)}
         onAdd={handleAddFromModal}
         onBack={handleBackToSuggestions}
-        onSave={() => {}}
+        onSave={handleAddFromModal}
       />
     </div>
   );

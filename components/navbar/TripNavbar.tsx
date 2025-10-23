@@ -2,9 +2,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Compass,
   Download,
+  Home,
   Inbox,
   MoreVertical,
   Redo2,
@@ -17,18 +17,16 @@ import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import { EditableHeader } from "@/components/board/EditableHeader";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/theme-toggler";
+import { ModeToggle, ThemeMenuItems } from "@/components/ui/theme-toggler";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { CustomTooltip } from "../ui/custom-tooltip";
+import { ButtonGroup } from "../ui/button-group";
+import { Separator } from "../ui/separator";
 
 interface NavbarProps {
   trip: {
@@ -104,7 +102,7 @@ export function Navbar({
             <div id="back-button" className="flex justify-start">
               <Link href="/trips">
                 <Button variant="ghost" size="icon" title="Back to all trips">
-                  <ArrowLeft className="w-4 h-4" />
+                  <Home className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -125,116 +123,113 @@ export function Navbar({
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
           >
             {/* To-Do Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
-              title="To-Do"
-              className="flex items-center gap-1"
-            >
-              <Inbox className="w-4 h-4" />
-              <span className="hidden sm:inline">To-Do</span>
-              {trip.unassignedCards && trip.unassignedCards.length > 0 && (
-                <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                  {trip.unassignedCards.length}
-                </span>
-              )}
-            </Button>
+            <CustomTooltip content="To-Do List" side="bottom">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
+                title="To-Do"
+              >
+                <div className="flex items-center gap-1">
+                  <Inbox className="w-4 h-4" />
+                  <span className="hidden sm:inline">To-Do</span>
+                  <span className="text-xs font-medium rounded-full pl-2">
+                    {trip.unassignedCards && trip.unassignedCards.length > 0
+                      ? trip.unassignedCards.length
+                      : 0}
+                  </span>
+                </div>
+              </Button>
+            </CustomTooltip>
 
             {/* Undo/Redo */}
             <div id="undo-redo" className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo (Cmd+Z)"
-                onClick={() => {
-                  undo();
-                  toast.success("Undone");
-                }}
-                disabled={!canUndo}
-              >
-                <Undo2 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo (Cmd+Shift+Z)"
-                onClick={() => {
-                  redo();
-                  toast.success("Redone");
-                }}
-                disabled={!canRedo}
-              >
-                <Redo2 className="w-4 h-4" />
-              </Button>
+              <ButtonGroup className="border rounded-lg">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Undo (Cmd+Z)"
+                  onClick={() => {
+                    undo();
+                    toast.success("Undone");
+                  }}
+                  disabled={!canUndo}
+                >
+                  <Undo2 className="w-4 h-4" />
+                </Button>
+                <Separator orientation="vertical" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Redo (Cmd+Shift+Z)"
+                  onClick={() => {
+                    redo();
+                    toast.success("Redone");
+                  }}
+                  disabled={!canRedo}
+                >
+                  <Redo2 className="w-4 h-4" />
+                </Button>
+              </ButtonGroup>
             </div>
 
-            <div className="w-px h-6 bg-border mx-2" />
-
             {/* Actions */}
-            <Tooltip>
+            <CustomTooltip content="Discover More" side="bottom">
               <Link href="/discover">
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    // size="icon"
-                    title="Discover things to do"
-                    className="lg:px-3"
-                  >
-                    <Compass className="w-4 h-4 lg:mr-2" />
-                    <span className="hidden lg:inline whitespace-nowrap">
-                      Discover
-                    </span>
-                  </Button>
-                </TooltipTrigger>
+                <Button
+                  variant="outline"
+                  // size="icon"
+                  // title="Discover things to do"
+                  className="lg:px-3"
+                >
+                  <Compass className="w-4 h-4 lg:mr-2" />
+                  <span className="hidden lg:inline whitespace-nowrap">
+                    Discover
+                  </span>
+                </Button>
               </Link>
-              <TooltipContent side="bottom">
-                Discover things to do!
-              </TooltipContent>
-            </Tooltip>
-            <div className="w-px h-6 bg-border mx-2"></div>
+            </CustomTooltip>
             {/* Actions Dropdown - hidden on lg+ */}
             <div className="flex items-center">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div id="actions-dropdown" className="lg:hidden">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="More actions"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Download className="w-4 h-4 mr-2" />
-                          Export JSON
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">More actions</TooltipContent>
-              </Tooltip>
+              <CustomTooltip content="More actions" side="bottom">
+                <div id="actions-dropdown" className="lg:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        // title="More actions"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                      <ThemeMenuItems />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CustomTooltip>
             </div>
 
             {/* Full Actions - visible on lg+ */}
             <div id="full-actions" className="hidden lg:flex gap-2">
-              <Button variant="ghost" size="icon" title="Export JSON">
+              <Button variant="outline" size="icon" title="Export JSON">
                 <Download className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" title="Share">
+              <Button variant="outline" size="icon" title="Share">
                 <Share2 className="w-4 h-4" />
               </Button>
+              {/* Theme Toggle */}
+              <ModeToggle />
             </div>
-            <ModeToggle />
           </div>
         </div>
       </div>

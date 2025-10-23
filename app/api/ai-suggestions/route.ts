@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { vibesToPrompt } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { AISuggestionsResponseSchema } from "@/lib/schemas/suggestions";
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
-});
 
 export async function POST(request: NextRequest) {
   try {

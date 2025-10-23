@@ -184,7 +184,7 @@ export function Board({ trip }: BoardProps) {
               {/* Vibes Card */}
               {mounted && <VibesCard />}
 
-              <div className="flex gap-6 w-full justify-center grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="flex gap-6 w-full justify-center grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {/* Day Columns - Horizontal Layout (No drag-drop, reorder via date change) */}
                 {trip.days.map((day, index) => (
                   <DayColumn
@@ -196,7 +196,7 @@ export function Board({ trip }: BoardProps) {
                 ))}
 
                 {/* Add day button */}
-                <div className="flex-shrink-0" style={{ minWidth: "360px" }}>
+                <div className="flex-shrink-0 w-[360px]">
                   <AddDayButton tripId={trip.id} activeDayId={activeDayId} />
                 </div>
               </div>
