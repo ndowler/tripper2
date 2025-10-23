@@ -1,7 +1,7 @@
 // User Vibes & Preferences Types
 
 export type DaypartBias = "early" | "balanced" | "late";
-export type SurpriseLevel = 0 | 1 | 2;
+// export type SurpriseLevel = 0 | 1 | 2;
 
 export interface ProfilePreferences {
   home_airport?: string;
@@ -27,7 +27,7 @@ export interface LogisticsPreferences {
   transit_modes_allowed: string[]; // metro, tram, train, bus, rideshare, taxi
   crowd_tolerance: number; // 1-5: 1=avoid lines, 5=big sights fine
   budget_ppd: number; // per person per day (excluding hotel)
-  surprise_level: SurpriseLevel; // 0=no surprises, 1=few twists, 2=surprise daily
+  surprise_level: number; // 0=no surprises, 1=few twists, 2=surprise daily
 }
 
 export interface AccessibilityPreferences {

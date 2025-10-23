@@ -253,7 +253,7 @@ export function createDemoTrip(): Trip {
               name: "St. Peter's Basilica",
               address: "Piazza San Pietro, 00120 Città del Vaticano",
             },
-            notes: "Free entry. Consider climbing the dome (€10)",
+            notes: "Free entry. Consider climbing the dome ($10)",
             tags: ["free", "optional-upgrade"],
             links: [],
             status: "pending" as const,

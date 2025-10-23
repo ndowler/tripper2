@@ -23,6 +23,13 @@ export type CardStatus =
   | "tentative"
   | "todo";
 
+export type FlightClass =
+  | "economy"
+  | "premium"
+  | "business"
+  | "first"
+  | "coach";
+
 export interface Location {
   name: string;
   address?: string;
@@ -103,6 +110,17 @@ export interface DragData {
   index: number;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  homeAirport: {
+    code: string;
+    name: string;
+    city: string;
+    country: string;
+  };
+}
+
 /**
  * Store state types
  */
@@ -112,6 +130,7 @@ export interface TripStore {
   currentTripId: string | null;
   viewPrefs: ViewPrefs;
   userVibes: UserVibes | null;
+  userProfile?: UserProfile | null;
 
   // Trip actions
   addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">) => void;

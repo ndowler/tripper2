@@ -139,7 +139,7 @@ export function getCardCategory(
   cardType: string
 ): keyof typeof CATEGORY_COLORS {
   for (const [category, types] of Object.entries(CARD_CATEGORIES)) {
-    if (types.includes(cardType as any)) {
+    if (types.includes(cardType as keyof typeof CARD_TYPES)) {
       return category as keyof typeof CATEGORY_COLORS;
     }
   }
@@ -189,13 +189,69 @@ export const STATUS_CONFIG = {
   todo: {
     label: "To Do",
     color: "bg-gray-400",
+    textColor: "text-gray-700",
   },
   pending: {
     label: "Pending",
     color: "bg-gray-300",
+    textColor: "text-gray-700",
   },
   completed: {
     label: "Completed",
     color: "bg-gray-500",
+    textColor: "text-gray-700",
   },
 } as const;
+
+export const US_STATE_CODES = Object.freeze([
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+]) as readonly string[];

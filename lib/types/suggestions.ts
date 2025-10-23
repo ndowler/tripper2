@@ -3,6 +3,7 @@
  */
 
 import { CardType } from ".";
+import { UserVibes } from "./vibes";
 
 export type Daypart = "morning" | "afternoon" | "evening" | "night" | "any";
 
@@ -29,6 +30,9 @@ export interface SuggestionCard {
   tags: string[]; // Max 5 tags
   est_duration_min: number; // 15-480 minutes
   best_time: Daypart;
+  startTime?: string;
+  endTime?: string;
+  cost?: string | number;
   price_tier: PriceTier;
   area?: string; // Neighborhood (e.g., "Trastevere")
   booking?: {
@@ -40,12 +44,29 @@ export interface SuggestionCard {
   };
   confidence: number; // 0-1 (model's self-score)
   reasons?: string[]; // Max 3 short bullets explaining match
+  type?: CardType;
+  location?: string;
+  duration?: number;
 }
 
-export interface AISuggestion extends SuggestionCard {
-  type: CardType;
-  duration?: number;
-  location?: string;
+export interface AiSuggestionContext {
+  dayInfo: {
+    title?: string;
+    date?: string;
+  } | null;
+  existingCards: {
+    title: string;
+    type: string;
+    startTime?: string;
+    duration?: number;
+    location?: { name?: string } | string | undefined;
+  }[];
+  otherDays: {
+    title?: string;
+    date?: string;
+    cardCount: number;
+    highlights: string[];
+  }[];
 }
 
 export interface DiscoveryRequest {
@@ -56,13 +77,13 @@ export interface DiscoveryRequest {
     start?: string; // ISO date
     end?: string; // ISO date
   };
-  vibes?: any; // UserVibes (optional for LLM)
-  vibe_profile?: any; // UserVibes (optional for LLM)
+  vibes?: UserVibes; // UserVibes (optional for LLM)
+  vibe_profile?: UserVibes; // UserVibes (optional for LLM)
   limit?: number; // Number of suggestions to generate
 }
 
 export interface DiscoveryResponse {
   suggestions: SuggestionCard[];
   model?: string;
-  usage?: any;
+  usage?: number;
 }

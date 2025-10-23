@@ -47,7 +47,7 @@ export function getDefaultVibes(): UserVibes {
 export function vibesToJSON(
   vibes: UserVibes,
   tripId?: string
-): Record<string, any> {
+): Record<string, UserVibes[keyof UserVibes] | string> {
   // Apply trip overrides if tripId provided
   const effectiveVibes =
     tripId && vibes.trip_overrides?.[tripId]
@@ -91,7 +91,13 @@ function mergeVibes(base: UserVibes, overrides: Partial<UserVibes>): UserVibes {
  */
 export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
   const json = vibesToJSON(vibes, tripId);
-  const { comfort, taste, logistics, vibe_packs } = json;
+
+  // Extract with proper typing
+  const comfort = json.comfort as UserVibes["comfort"];
+  const taste = json.taste as UserVibes["taste"];
+  const logistics = json.logistics as UserVibes["logistics"];
+  const access = json.access as UserVibes["access"];
+  const vibe_packs = json.vibe_packs as UserVibes["vibe_packs"];
 
   const paceDesc =
     comfort.pace_score <= 30
@@ -124,7 +130,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
       : "fine with popular busy attractions";
 
   const topThemes = Object.entries(taste.theme_weights)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 3)
     .map(
       ([theme, weight]) => `${theme} (${Math.round((weight as number) * 100)}%)`
@@ -135,7 +141,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
 - Pace: ${paceDesc} (${comfort.pace_score}/100)
 - Walking: ${comfort.walking_km_per_day}km per day
 - Timing: ${daypartDesc}
-- Budget: €${logistics.budget_ppd} per person per day (excl. hotel)
+- Budget: $${logistics.budget_ppd} per person per day (excl. hotel)
 - Food style: ${foodDesc}
 - Crowd tolerance: ${crowdDesc}
 - Transit: ${logistics.transit_modes_allowed.join(", ")}
@@ -159,15 +165,11 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
     prompt += `\n- Dietary: ${taste.dietary_constraints.join(", ")}`;
   }
 
-  if (
-    json.access.wheelchair ||
-    json.access.low_steps ||
-    json.access.motion_sickness
-  ) {
+  if (access.wheelchair || access.low_steps || access.motion_sickness) {
     const accessNeeds = [];
-    if (json.access.wheelchair) accessNeeds.push("wheelchair accessible");
-    if (json.access.low_steps) accessNeeds.push("minimal steps");
-    if (json.access.motion_sickness)
+    if (access.wheelchair) accessNeeds.push("wheelchair accessible");
+    if (access.low_steps) accessNeeds.push("minimal steps");
+    if (access.motion_sickness)
       accessNeeds.push("motion sickness (avoid winding roads)");
     prompt += `\n- Accessibility: ${accessNeeds.join(", ")}`;
   }
@@ -255,12 +257,12 @@ export function getVibesSummary(vibes: UserVibes): string {
   const budget = vibes.logistics.budget_ppd;
   const budgetStr =
     budget <= 50
-      ? "€€"
+      ? "$$"
       : budget <= 100
-      ? "€€€"
+      ? "$$$"
       : budget <= 200
-      ? "€€€€"
-      : "€€€€€";
+      ? "$$$$"
+      : "$$$$$";
 
   const daypart =
     vibes.comfort.daypart_bias === "early"
