@@ -1,82 +1,89 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { nanoid } from 'nanoid'
-import { format } from 'date-fns'
-import { useTripStore } from '@/lib/store/tripStore'
-import { DEFAULT_TIMEZONE } from '@/lib/constants'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { nanoid } from "nanoid";
+import { format } from "date-fns";
+import { useTripStore } from "@/lib/store/tripStore";
+import { DEFAULT_TIMEZONE } from "@/lib/constants";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { BasicInput } from "../basic/BasicInput";
+import { BasicTextarea } from "../basic/BasicTextarea";
 
 interface NewTripModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
-  const router = useRouter()
-  const addTrip = useTripStore((state) => state.addTrip)
-  const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
+const DEFAULT_START_DATE = () => format(new Date(), "yyyy-MM-dd");
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [destination, setDestination] = useState('')
-  const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
+  const router = useRouter();
+  const addTrip = useTripStore((state) => state.addTrip);
+  const setCurrentTrip = useTripStore((state) => state.setCurrentTrip);
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [destination, setDestination] = useState("");
+  const [startDate, setStartDate] = useState(DEFAULT_START_DATE());
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setDestination("");
+    setStartDate(DEFAULT_START_DATE());
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!title.trim()) {
-      toast.error('Please enter a trip title')
-      return
+      toast.error("Please enter a trip title");
+      return;
     }
 
-    const tripId = nanoid()
-    const dayId = nanoid()
+    const tripId = nanoid();
+    const dayId = nanoid();
 
     addTrip({
       id: tripId,
       title: title.trim(),
       description: description.trim() || undefined,
-      destination: destination.trim() || undefined,
+      destination: destination.trim()
+        ? { city: destination.trim() }
+        : undefined,
       timezone: DEFAULT_TIMEZONE,
       days: [
         {
           id: dayId,
           date: startDate,
-          title: 'Day 1',
+          title: "Day 1",
           cards: [],
         },
       ],
       unassignedCards: [],
-    })
+    });
 
-    setCurrentTrip(tripId)
-    toast.success('Trip created!')
-    
-    // Reset form
-    setTitle('')
-    setDescription('')
-    setDestination('')
-    setStartDate(format(new Date(), 'yyyy-MM-dd'))
-    
-    onOpenChange(false)
-    
-    // Navigate to the new trip
-    router.push(`/trip/${tripId}`)
-  }
+    setCurrentTrip(tripId);
+    toast.success("Trip created!");
+
+    resetForm();
+    onOpenChange(false);
+    router.push(`/trip/${tripId}`);
+  };
 
   const handleCancel = () => {
-    setTitle('')
-    setDescription('')
-    setDestination('')
-    setStartDate(format(new Date(), 'yyyy-MM-dd'))
-    onOpenChange(false)
-  }
+    resetForm();
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,56 +96,39 @@ export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">
-              Trip Title <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Summer in Italy"
-              required
-              autoFocus
-            />
-          </div>
+          <BasicInput
+            id="title"
+            label="Trip Title"
+            value={title}
+            onChange={(value) => setTitle(value)}
+            placeholder="e.g., Summer in Italy"
+            required
+            autoFocus
+          />
+          <BasicTextarea
+            id="description"
+            label="Description"
+            value={description}
+            onChange={(value) => setDescription(value)}
+            placeholder="e.g., 2-week adventure through Tuscany"
+            rows={3}
+          />
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-2">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g., 2-week adventure through Tuscany"
-              rows={3}
-            />
-          </div>
+          <BasicInput
+            id="destination"
+            label="Destination"
+            value={destination}
+            onChange={(value) => setDestination(value)}
+            placeholder="e.g., Rome, Italy"
+          />
 
-          <div>
-            <label htmlFor="destination" className="block text-sm font-medium mb-2">
-              Destination
-            </label>
-            <Input
-              id="destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="e.g., Rome, Italy"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="startDate" className="block text-sm font-medium mb-2">
-              Start Date
-            </label>
-            <Input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
+          <BasicInput
+            id="startDate"
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={(value) => setStartDate(value)}
+          />
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel}>
@@ -149,6 +139,5 @@ export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-
