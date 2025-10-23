@@ -7,7 +7,7 @@ import { useTripStore } from "@/lib/store/tripStore";
 import { getDefaultVibes } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 
-// Section components
+// Modular Section components
 import { PreferencesHeader } from "./sections/PreferencesHeader";
 import { ComfortSection } from "./sections/ComfortSection";
 import { FoodSection } from "./sections/FoodSection";
@@ -45,7 +45,10 @@ export default function PreferencesPage() {
     router.push("/demo");
   };
 
-  const updatePreference = (section: keyof UserVibes, updates: any) => {
+  const updatePreference = (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => {
     setPreferences((prev) => {
       if (Array.isArray(updates)) {
         return {
@@ -58,7 +61,9 @@ export default function PreferencesPage() {
         ...prev,
         [section]:
           typeof prevSectionValue === "object" &&
-          !Array.isArray(prevSectionValue)
+          !Array.isArray(prevSectionValue) &&
+          typeof updates === "object" &&
+          !Array.isArray(updates)
             ? { ...prevSectionValue, ...updates }
             : updates,
       };
@@ -68,32 +73,38 @@ export default function PreferencesPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Preferences Header */}
         <PreferencesHeader
           title="Travel Preferences"
           description="Adjust your preferences to get personalized AI suggestions"
           handleSave={handleSave}
         />
         <div className="space-y-6">
+          {/* Comfort Section */}
           <ComfortSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Food Section */}
           <FoodSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Logistics Section */}
           <LogisticsSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Vibe Packs Section */}
           <VibePacksSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Accessibility Section */}
           <AccessibilitySection
             preferences={preferences}
             updatePreference={updatePreference}
