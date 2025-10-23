@@ -80,9 +80,9 @@ export function AiDayPlanner({
       }
 
       const data = await response.json();
-      console.log("AI Day Plan response:", data);
+      // console.log("AI Day Plan response:", data);
       const cards = data.cards || [];
-      console.log("Extracted cards:", cards);
+      // console.log("Extracted cards:", cards);
 
       if (cards.length === 0) {
         throw new Error(

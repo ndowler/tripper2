@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: DiscoveryRequest = await request.json();
-    console.log("Vibe Suggestions request body:", body);
+    // console.log("Vibe Suggestions request body:", body);
     const { destination, vibes, vibe_profile } = body;
 
     if (!destination) {
@@ -86,7 +86,7 @@ Return ONLY the JSON array of objects.`;
       "vibeSuggestions",
       { temperature: 0.7 }
     );
-    console.log("Vibe Suggestions completion:", completion);
+    // console.log("Vibe Suggestions completion:", completion);
     const suggestions = Array.isArray(
       (completion.parsed as { suggestions?: SuggestionCard[] })?.suggestions
     )
