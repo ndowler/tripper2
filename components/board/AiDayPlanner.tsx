@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTripStore } from "@/lib/store/tripStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Loader2, MapPin, Clock, DollarSign, X } from "lucide-react";
 import { toast } from "sonner";
 import { nanoid } from "nanoid";
-import type { Card, CardType } from "@/lib/types";
+import type { InfoCard, CardType } from "@/lib/types";
 
 interface AiDayPlannerProps {
   isOpen?: boolean;
@@ -93,9 +93,13 @@ export function AiDayPlanner({
       setGeneratedCards(cards);
       setShowPreview(true);
       toast.success(`Day plan generated! ${cards.length} activities 🎉`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("AI day plan error:", error);
-      toast.error(error.message || "Failed to generate day plan");
+      const errorMessage =
+        error && typeof error === "object" && "message" in error
+          ? (error as { message?: string }).message
+          : "Failed to generate day plan";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +122,7 @@ export function AiDayPlanner({
           cost: card.cost,
           links: [],
           status: "pending",
-        } as Omit<Card, "createdAt" | "updatedAt">);
+        } as Omit<InfoCard, "createdAt" | "updatedAt">);
         addedCount++;
 
         if (addedCount === generatedCards.length) {
@@ -130,14 +134,14 @@ export function AiDayPlanner({
     });
   };
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setLocation(destination || "");
     setStartTime("09:00");
     setEndTime("22:00");
     setNotes("");
     setGeneratedCards([]);
     setShowPreview(false);
-  };
+  }, [destination]);
 
   const handleClose = () => {
     if (!isLoading) {
@@ -159,7 +163,7 @@ export function AiDayPlanner({
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
     }
-  }, [isOpen, isLoading, onClose]);
+  }, [isOpen, isLoading, onClose, resetForm]);
 
   if (!isOpen) return null;
 
@@ -260,7 +264,7 @@ export function AiDayPlanner({
                       : userVibes.comfort.pace_score <= 60
                       ? "Moderate pace"
                       : "Active pace"}
-                    , €{userVibes.logistics.budget_ppd}/day budget,{" "}
+                    , ${userVibes.logistics.budget_ppd}/day budget,{" "}
                     {userVibes.comfort.walking_km_per_day}km walking
                   </p>
                 </div>

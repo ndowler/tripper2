@@ -31,23 +31,23 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
   }, []);
 
   // Calculate totals
-  const totalTimeBlocked = day.cards.reduce((sum, card) => {
-    return sum + (card.duration || 0);
-  }, 0);
+  // const totalTimeBlocked = day.cards.reduce((sum, card) => {
+  //   return sum + (card.duration || 0);
+  // }, 0);
 
   const totalSpend = day.cards.reduce((sum, card) => {
     return sum + (card.cost?.amount || 0);
   }, 0);
 
   // Format time blocked (e.g., "6h 30m")
-  const formatTimeBlocked = (minutes: number) => {
-    if (minutes === 0) return "";
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours && mins) return `${hours}h ${mins}m`;
-    if (hours) return `${hours}h`;
-    return `${mins}m`;
-  };
+  // const formatTimeBlocked = (minutes: number) => {
+  //   if (minutes === 0) return "";
+  //   const hours = Math.floor(minutes / 60);
+  //   const mins = minutes % 60;
+  //   if (hours && mins) return `${hours}h ${mins}m`;
+  //   if (hours) return `${hours}h`;
+  //   return `${mins}m`;
+  // };
 
   // Get primary currency from first card with cost
   const primaryCurrency =
