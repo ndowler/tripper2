@@ -7,7 +7,7 @@ import { useTripStore } from "@/lib/store/tripStore";
 import { getDefaultVibes } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 
-// Section components
+// Modular Section components
 import { PreferencesHeader } from "./sections/PreferencesHeader";
 import { ComfortSection } from "./sections/ComfortSection";
 import { FoodSection } from "./sections/FoodSection";

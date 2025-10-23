@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import type { UserVibes } from "@/lib/types/vibes";
 import { Textarea } from "@/components/ui/textarea";

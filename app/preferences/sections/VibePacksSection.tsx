@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { VIBE_PACKS, type UserVibes } from "@/lib/types/vibes";
 import { Button } from "@/components/ui/button";

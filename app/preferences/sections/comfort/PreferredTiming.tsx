@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 import { UserVibes } from "@/lib/types/vibes";
 import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 

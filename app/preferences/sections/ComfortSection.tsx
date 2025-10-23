@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import type { DaypartBias, UserVibes } from "@/lib/types/vibes";
 import { TripPace } from "@/app/preferences/sections/comfort/TripPace";

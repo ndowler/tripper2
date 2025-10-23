@@ -1,4 +1,5 @@
 "use client";
+
 import { Input } from "@/components/ui/input";
 import { PreferenceInput } from "@/app/preferences/components/PreferenceInput";
 

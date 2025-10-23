@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react";
+
 import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 
 const walkingDistances = {
