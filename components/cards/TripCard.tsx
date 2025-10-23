@@ -209,6 +209,8 @@ export function TripCard({
                 <Image
                   src={card.thumbnail}
                   alt={card.title}
+                  width={24}
+                  height={24}
                   className="w-6 h-6 rounded object-cover"
                 />
               )}
