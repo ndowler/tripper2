@@ -3,6 +3,8 @@ import { vibesToPrompt } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { AISuggestionsResponseSchema } from "@/lib/schemas/suggestions";
+import { InfoCard } from "@/lib/types";
+import { AiSuggestionContext, SuggestionCard } from "@/lib/types/suggestions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
 
       if (existingCards && existingCards.length > 0) {
         contextString += `\n\nExisting activities on this day:`;
-        existingCards.forEach((card: any) => {
+        existingCards.forEach((card: InfoCard) => {
           contextString += `\n- ${card.title}${
             card.startTime ? ` at ${card.startTime}` : ""
           }${card.duration ? ` (${card.duration}min)` : ""}`;
@@ -47,12 +49,16 @@ export async function POST(request: NextRequest) {
 
       if (otherDays && otherDays.length > 0) {
         contextString += `\n\nOther days in the itinerary:`;
-        otherDays.forEach((day: any) => {
-          contextString += `\n- ${day.title || "Day"} (${
-            day.cardCount
-          } activities)`;
-          if (day.highlights) {
-            contextString += `: ${day.highlights.join(", ")}`;
+        otherDays.forEach((dayGroup: AiSuggestionContext) => {
+          if (Array.isArray(dayGroup.otherDays)) {
+            dayGroup.otherDays.forEach((otherDay) => {
+              contextString += `\n- ${otherDay.title || "Day"} (${
+                otherDay.cardCount
+              } activities)`;
+              if (otherDay.highlights && otherDay.highlights.length > 0) {
+                contextString += `: ${otherDay.highlights.join(", ")}`;
+              }
+            });
           }
         });
       }
@@ -71,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Create a detailed prompt for OpenAI
     const systemPrompt = `You are a travel planning assistant. Generate exactly 3 specific, actionable travel suggestions in JSON format.
-Each suggestion should be realistic and specific to the destination.
+Each suggestion should be realistic and specific to the destination, ${destination}.
 ${
   context
     ? "IMPORTANT: Consider the existing itinerary context to make complementary suggestions that fit well with what's already planned. Avoid duplicates and ensure good variety."
@@ -82,18 +88,6 @@ ${
     ? "\nIMPORTANT: Tailor all suggestions to match the user's travel preferences provided below. Respect their pace, budget, themes, and constraints."
     : ""
 }
-
-Return ONLY a JSON array with this exact structure:
-[
-  {
-    "type": "activity" | "restaurant" | "hotel" | "transit" | "entertainment" | "shopping",
-    "title": "Specific name or activity",
-    "description": "Brief 1-2 sentence description with why it fits the itinerary",
-    "duration": number (in minutes),
-    "tags": ["tag1", "tag2"],
-    "location": "Specific location or address if applicable"
-  }
-]
 
 Make suggestions practical and specific. Include actual place names when possible.`;
 
@@ -113,14 +107,15 @@ Give me 3 specific suggestions for ${prompt} in ${
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      destination,
       AISuggestionsResponseSchema,
       "aiSuggestions",
       { temperature: 0.7 }
     );
     const suggestions = Array.isArray(
-      (completion.parsed as { suggestions?: any[] })?.suggestions
+      (completion.parsed as { suggestions?: SuggestionCard[] })?.suggestions
     )
-      ? (completion.parsed as { suggestions: any[] }).suggestions
+      ? (completion.parsed as { suggestions: SuggestionCard[] }).suggestions
       : [];
 
     // Accept 3 valid suggestions
@@ -133,7 +128,7 @@ Give me 3 specific suggestions for ${prompt} in ${
     // Validate and normalize the suggestions
     const normalizedSuggestions = suggestions
       .slice(0, 3)
-      .map((suggestion: any) => ({
+      .map((suggestion: SuggestionCard) => ({
         type: suggestion.type || "activity",
         title: suggestion.title || "Untitled",
         description: suggestion.description || "",
@@ -147,18 +142,21 @@ Give me 3 specific suggestions for ${prompt} in ${
       model: completion.model,
       usage: completion.usage,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI API error:", error);
 
+    // Type guard for error object
+    const err = error as { status?: number; message?: string };
+
     // Handle specific OpenAI errors
-    if (error?.status === 401) {
+    if (err.status === 401) {
       return NextResponse.json(
         { error: "Invalid OpenAI API key" },
         { status: 401 }
       );
     }
 
-    if (error?.status === 429) {
+    if (err.status === 429) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },
         { status: 429 }
@@ -166,7 +164,7 @@ Give me 3 specific suggestions for ${prompt} in ${
     }
 
     return NextResponse.json(
-      { error: error?.message || "Failed to generate suggestions" },
+      { error: err.message || "Failed to generate suggestions" },
       { status: 500 }
     );
   }

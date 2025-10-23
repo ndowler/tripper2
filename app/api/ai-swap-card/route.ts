@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { SwapCardResponseSchema } from "@/lib/schemas/suggestions";
+import { SuggestionCard } from "@/lib/types/suggestions";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,28 +43,6 @@ ${
 
     const systemPrompt = `You are a travel planning assistant. Generate 2-3 similar alternatives to a given activity.
 
-IMPORTANT: Return ONLY valid JSON with this exact structure:
-{
-  "suggestions": [
-    {
-      "title": "Activity name",
-      "description": "2-3 sentences about this activity",
-      "location": {
-        "name": "Specific place name",
-        "address": "Full address (optional)"
-      },
-      "duration": 120,
-      "cost": {
-        "amount": 50,
-        "currency": "USD"
-      },
-      "tags": ["tag1", "tag2"],
-      "confidence": 0.85,
-      "reasoning": "Why this is a good alternative"
-    }
-  ]
-}
-
 Rules:
 - Generate 2-3 alternatives that are SIMILAR to the original activity
 - Same general category and vibe
@@ -87,20 +66,21 @@ Generate 2-3 similar alternatives that match the same vibe and category.`;
         { role: "user", content: userPrompt },
         { role: "system", content: systemPrompt },
       ],
+      destination,
       SwapCardResponseSchema,
       "aiSwapCard",
       { temperature: 0.8, max_output_tokens: 2000 }
     );
 
     const suggestions = Array.isArray(
-      (completion.parsed as { suggestions?: any[] })?.suggestions
+      (completion.parsed as { suggestions?: SuggestionCard[] })?.suggestions
     )
-      ? (completion.parsed as { suggestions: any[] }).suggestions
+      ? (completion.parsed as { suggestions: SuggestionCard[] }).suggestions
       : [];
 
     // Basic validation - at least have title and description
     const validSuggestions = suggestions.filter(
-      (s: any) => s.title && s.description
+      (s: SuggestionCard) => s.title && s.description
     );
 
     if (validSuggestions.length === 0) {
@@ -108,10 +88,13 @@ Generate 2-3 similar alternatives that match the same vibe and category.`;
     }
 
     return NextResponse.json({ suggestions: validSuggestions });
-  } catch (error: any) {
-    console.error("Error in AI swap card:", error);
+  } catch (error: unknown) {
+    console.error("OpenAI API error:", error);
+
+    // Type guard for error object
+    const err = error as { status?: number; message?: string };
     return NextResponse.json(
-      { error: error.message || "Failed to generate alternatives" },
+      { error: err.message || "Failed to generate alternatives" },
       { status: 500 }
     );
   }

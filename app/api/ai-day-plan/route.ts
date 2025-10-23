@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { vibesToPrompt } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
-import { AIDayPlanResponseSchema } from "@/lib/schemas/suggestions";
+import { SuggestionCardSchema } from "@/lib/schemas/suggestions";
+import { SuggestionCard } from "@/lib/types/suggestions";
+
+interface AIResponse {
+  cards?: SuggestionCard[];
+  activities?: SuggestionCard[];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,30 +40,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const systemPrompt = `You are an expert travel planner. Generate a complete, realistic day itinerary in JSON format.
+    const systemPrompt = `You are an expert travel planner. Generate a complete, realistic day itinerary in JSON format for ${location}.
 ${
   vibesPrompt
     ? "CRITICAL: Tailor the entire itinerary to match the user's travel preferences. Respect their pace, budget, theme interests, crowd tolerance, walking limits, and all other preferences."
     : ""
-}
-
-Return a JSON object with a "cards" array containing 5-8 activities with this exact structure:
-{
-  "cards": [
-    {
-      "type": "activity" | "restaurant" | "meal" | "transit" | "entertainment" | "shopping",
-      "title": "Specific name or activity",
-      "description": "Brief description",
-      "startTime": "HH:MM" (24-hour format),
-      "duration": number (in minutes),
-      "tags": ["tag1", "tag2"],
-      "location": "Specific location or address",
-      "cost": {
-        "amount": number,
-        "currency": "USD"
-      }
-    }
-  ]
 }
 
 Requirements:
@@ -90,15 +77,16 @@ Create a complete day itinerary for ${location}${
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      AIDayPlanResponseSchema,
+      location,
+      SuggestionCardSchema,
       "aiDayPlan",
       { temperature: 0.7 }
     );
 
-    let cards: any[] = [];
+    let cards: SuggestionCard[] = [];
 
     try {
-      const parsed = completion.parsed as { cards?: any[]; activities?: any[] };
+      const parsed = completion.parsed as AIResponse;
       // console.log("Parsed OpenAI response:", JSON.stringify(parsed, null, 2));
       cards = Array.isArray(parsed.cards)
         ? parsed.cards
@@ -117,7 +105,7 @@ Create a complete day itinerary for ${location}${
     }
 
     // Normalize the cards
-    const normalizedCards = cards.slice(0, 8).map((card: any) => ({
+    const normalizedCards = cards.slice(0, 8).map((card: SuggestionCard) => ({
       type: card.type || "activity",
       title: card.title || "Untitled",
       description: card.description || "",
@@ -133,17 +121,18 @@ Create a complete day itinerary for ${location}${
       model: completion.model,
       usage: completion.usage,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { status?: number; message?: string };
     console.error("AI Day Plan error:", error);
 
-    if (error?.status === 401) {
+    if (err?.status === 401) {
       return NextResponse.json(
         { error: "Invalid OpenAI API key" },
         { status: 401 }
       );
     }
 
-    if (error?.status === 429) {
+    if (err?.status === 429) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },
         { status: 429 }
@@ -151,7 +140,7 @@ Create a complete day itinerary for ${location}${
     }
 
     return NextResponse.json(
-      { error: error?.message || "Failed to generate day plan" },
+      { error: err?.message || "Failed to generate day plan" },
       { status: 500 }
     );
   }

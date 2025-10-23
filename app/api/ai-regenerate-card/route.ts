@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
-import { AISuggestionsSchema } from "@/lib/schemas/suggestions"; // Only import the base Schema, array schema not needed here
+import { AISuggestionsSchema } from "@/lib/schemas/suggestions";
+import { SuggestionCard } from "@/lib/types/suggestions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
 
       if (existingCards && existingCards.length > 0) {
         contextString += `\n\nOther activities in this day:`;
-        existingCards.forEach((card: any) => {
+        existingCards.forEach((card: SuggestionCard) => {
           contextString += `\n- ${card.title} (${card.type})${
             card.startTime ? ` at ${card.startTime}` : ""
           }`;
@@ -72,6 +73,7 @@ Generate ONE alternative ${cardType} suggestion for ${
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      destination,
       AISuggestionsSchema,
       "aiSuggestions",
       { temperature: 0.8 }
@@ -103,17 +105,20 @@ Generate ONE alternative ${cardType} suggestion for ${
         startTime: normalizedCard.startTime || timeSlot,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI API error:", error);
 
-    if (error?.status === 401) {
+    // Type guard for error object
+    const err = error as { status?: number; message?: string };
+
+    if (err?.status === 401) {
       return NextResponse.json(
         { error: "Invalid OpenAI API key" },
         { status: 401 }
       );
     }
 
-    if (error?.status === 429) {
+    if (err?.status === 429) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },
         { status: 429 }
@@ -121,7 +126,7 @@ Generate ONE alternative ${cardType} suggestion for ${
     }
 
     return NextResponse.json(
-      { error: error?.message || "Failed to regenerate card" },
+      { error: err?.message || "Failed to regenerate card" },
       { status: 500 }
     );
   }
