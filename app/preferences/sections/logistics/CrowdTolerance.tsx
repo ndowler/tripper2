@@ -1,5 +1,7 @@
+"use client";
+
 import { UserVibes } from "@/lib/types/vibes";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 
 const crowdOptions = {
   1: "😌 Avoid lines - Prefer off-peak times",

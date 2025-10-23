@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { VIBE_PACKS, type UserVibes } from "@/lib/types/vibes";
 import { Button } from "@/components/ui/button";
@@ -6,7 +8,10 @@ import { SectionCard } from "../components/SectionCard";
 
 interface VibePacksSectionProps {
   preferences: UserVibes;
-  updatePreference: (section: keyof UserVibes, updates: any) => void;
+  updatePreference: (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => void;
   isMounted: boolean;
 }
 export function VibePacksSection({

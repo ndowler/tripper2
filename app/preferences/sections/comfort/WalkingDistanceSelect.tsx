@@ -1,6 +1,7 @@
 "use client";
-import * as React from "react";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
+
+import { UserVibes } from "@/lib/types/vibes";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 
 const walkingDistances = {
   "3": "3km - Minimal walking",
@@ -11,7 +12,7 @@ const walkingDistances = {
 };
 
 interface WalkingDistanceSelectProps {
-  preferences: any;
+  preferences: UserVibes;
   onChange: (value: string) => void;
 }
 

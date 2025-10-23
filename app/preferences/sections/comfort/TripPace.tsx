@@ -1,9 +1,11 @@
 "use client";
+
 import { Input } from "@/components/ui/input";
+import { UserVibes } from "@/lib/types/vibes";
 import { PreferenceInput } from "@/app/preferences/components/PreferenceInput";
 
 interface TripPaceProps {
-  preferences: any;
+  preferences: UserVibes;
   onChange?: (value: string) => void;
 }
 

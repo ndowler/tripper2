@@ -1,4 +1,5 @@
 "use client";
+
 import { UserVibes } from "@/lib/types/vibes";
 import { Input } from "@/components/ui/input";
 import { PreferenceInput } from "@/app/preferences/components/PreferenceInput";

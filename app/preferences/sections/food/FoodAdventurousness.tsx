@@ -1,5 +1,7 @@
 "use client";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
+
+import { UserVibes } from "@/lib/types/vibes";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 
 const adventurousnessOptions = {
   1: "🍽️ Low – Prefer familiar foods",
@@ -9,7 +11,7 @@ const adventurousnessOptions = {
 };
 
 interface FoodAdventurousnessProps {
-  preferences: any;
+  preferences: UserVibes;
   onChange: (value: string) => void;
 }
 export function FoodAdventurousness({
