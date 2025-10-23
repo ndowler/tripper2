@@ -26,6 +26,7 @@ import {
   ChevronUp,
   GripVertical,
 } from "lucide-react";
+import Image from "next/image";
 
 interface TripCardProps {
   card: InfoCard;
@@ -205,7 +206,7 @@ export function TripCard({
           {card.location && (
             <div className="flex items-center gap-2">
               {card.thumbnail && (
-                <img
+                <Image
                   src={card.thumbnail}
                   alt={card.title}
                   className="w-6 h-6 rounded object-cover"

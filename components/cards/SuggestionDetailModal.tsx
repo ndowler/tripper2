@@ -19,23 +19,24 @@ import {
   getGoogleSearchUrl,
 } from "@/lib/utils/suggestions";
 import { ExternalLink, Plus, Search } from "lucide-react";
+import {
+  MetadataItem,
+  SectionHeading,
+  ExternalLinkButton,
+} from "./ModalComponents";
 
 interface SuggestionDetailModalProps {
   suggestion: SuggestionCard | null;
   isOpen: boolean;
   onClose: () => void;
-  onAdd: () => void;
   onSave: (suggestion: SuggestionCard) => void;
-  onBack: () => void;
 }
 
 export function SuggestionDetailModal({
   suggestion,
   isOpen,
   onClose,
-  onAdd,
   onSave,
-  onBack,
 }: SuggestionDetailModalProps) {
   if (!suggestion) return null;
 
@@ -69,7 +70,7 @@ export function SuggestionDetailModal({
         <div className="space-y-6 mt-4">
           {/* Description */}
           <div>
-            <h3 className="font-semibold mb-2">About</h3>
+            <SectionHeading>About</SectionHeading>
             <p className="text-sm text-foreground/80">
               {suggestion.description}
             </p>
@@ -77,35 +78,28 @@ export function SuggestionDetailModal({
 
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Duration</p>
-              <p className="font-medium">
-                {formatDuration(suggestion.est_duration_min)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Price</p>
-              <p className="font-medium">
-                {formatPriceTier(suggestion.price_tier)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Best Time</p>
-              <p className="font-medium">
-                {daypartInfo.emoji} {daypartInfo.label}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Category</p>
-              <p className="font-medium capitalize">{suggestion.category}</p>
-            </div>
+            <MetadataItem
+              label="Duration"
+              value={formatDuration(suggestion.est_duration_min)}
+            />
+            <MetadataItem
+              label="Price"
+              value={formatPriceTier(suggestion.price_tier)}
+            />
+            <MetadataItem
+              label="Best Time"
+              value={`${daypartInfo.emoji} ${daypartInfo.label}`}
+            />
+            <MetadataItem
+              label="Category"
+              value={<span className="capitalize">{suggestion.category}</span>}
+            />
           </div>
 
           {/* Area */}
           {suggestion.area && (
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Location</p>
-              <p className="font-medium">📍 {suggestion.area}</p>
+              <MetadataItem label="Location" value={`📍 ${suggestion.area}`} />
             </div>
           )}
 
@@ -126,7 +120,7 @@ export function SuggestionDetailModal({
           {/* Why this suggestion? */}
           {suggestion.reasons && suggestion.reasons.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2">Why this suggestion?</h3>
+              <SectionHeading>Why this suggestion?</SectionHeading>
               <ul className="space-y-1">
                 {suggestion.reasons.map((reason, idx) => (
                   <li
@@ -144,7 +138,7 @@ export function SuggestionDetailModal({
           {/* Booking Info */}
           {suggestion.booking && (
             <div>
-              <h3 className="font-semibold mb-2">Booking</h3>
+              <SectionHeading>Booking</SectionHeading>
               {suggestion.booking.requires &&
                 suggestion.booking.requires.length > 0 && (
                   <p className="text-sm text-foreground/80 mb-2">
@@ -152,17 +146,12 @@ export function SuggestionDetailModal({
                   </p>
                 )}
               {suggestion.booking.url && (
-                <Button variant="outline" size="sm" asChild>
-                  <a
-                    href={suggestion.booking.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Visit Website
-                  </a>
-                </Button>
+                <ExternalLinkButton
+                  href={suggestion.booking.url}
+                  icon={<ExternalLink className="w-4 h-4" />}
+                >
+                  Visit Website
+                </ExternalLinkButton>
               )}
             </div>
           )}
@@ -192,24 +181,22 @@ export function SuggestionDetailModal({
           <div className="flex gap-3">
             <Button onClick={handleSave} className="flex-1">
               <Plus className="w-4 h-4 mr-2" />
-              Save to Things to Do
+              Save Things to Do
             </Button>
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
           </div>
-          <Button variant="secondary" className="w-full">
-            <a
-              href={getGoogleSearchUrl(suggestion)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2"
-            >
-              <Search className="w-4 h-4" />
+          <ExternalLinkButton
+            href={getGoogleSearchUrl(suggestion)}
+            icon={<Search className="w-4 h-4" />}
+            variant="secondary"
+          >
+            <span className="flex items-center justify-center gap-2">
               Learn More on Google
               <ExternalLink className="w-3 h-3" />
-            </a>
-          </Button>
+            </span>
+          </ExternalLinkButton>
         </div>
       </DialogContent>
     </Dialog>
