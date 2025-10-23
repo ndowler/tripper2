@@ -4,6 +4,7 @@
 .env
 .env.local
 bun.lock
+.backups
 
 # dependencies
 /node_modules
