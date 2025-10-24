@@ -34,7 +34,7 @@ function EmptyVibesCard() {
       </p>
       <div className="flex flex-row items-center justify-center">
         <Link href="/vibes" passHref>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm">
             <Sparkles className="w-4 h-4" />
             Take Vibes Quiz
           </Button>
