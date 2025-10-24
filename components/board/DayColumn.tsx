@@ -9,10 +9,25 @@ import { AiDayPlanner } from "./AiDayPlanner";
 import { format } from "date-fns";
 import { Calendar, MoreVertical, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "../ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface DayColumnProps {
   day: Day;
@@ -24,6 +39,11 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
   const [mounted, setMounted] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    morning: true,
+    afternoon: true,
+    evening: true,
+  });
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -96,24 +116,24 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <h2 className="font-semibold text-base">
+                <Calendar className="w-5 h-5 text-muted-foreground" />
+                <Badge className="select-none">
                   {day.title || `Day ${index + 1}`}
-                </h2>
+                </Badge>
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                <span>
+              <div className="flex items-center gap-3 text-xs mt-0.5">
+                <span className="select-none">
                   {mounted
                     ? format(new Date(day.date), "EEEE, MMM d")
                     : day.date}
                 </span>
                 {totalSpend > 0 && (
                   <>
-                    <span>•</span>
-                    <span>
+                    <span className="select-none">•</span>
+                    <Badge className="select-none">
                       {currencySymbol}
                       {totalSpend}
-                    </span>
+                    </Badge>
                   </>
                 )}
               </div>
@@ -130,15 +150,23 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
             >
               <Sparkles className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsEditModalOpen(true)}
-              aria-label="Edit day"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Day options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                  Edit Day
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -148,104 +176,181 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
         items={day.cards.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]">
-          {day.cards.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground text-sm text-center">
-              No plans yet
-              <br />
-              <span className="text-xs">Add your first card</span>
-            </div>
-          ) : hasScheduledCards ? (
-            <>
-              {/* Morning Section */}
-              {cardsByTimeOfDay.morning.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs font-medium uppercase tracking-wide">
-                      Morning
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-3">
+            {day.cards.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm text-center">
+                No plans yet
+                <br />
+                <span className="text-xs">Add your first card</span>
+              </div>
+            ) : hasScheduledCards ? (
+              <>
+                {/* Morning Section */}
+                {cardsByTimeOfDay.morning.length > 0 && (
+                  <Collapsible
+                    open={expandedSections.morning}
+                    onOpenChange={(open) =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        morning: open,
+                      }))
+                    }
+                  >
+                    <div className="space-y-3">
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="flex items-center gap-2 w-full hover:opacity-80 transition-opacity"
+                        >
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform ${
+                              expandedSections.morning ? "" : "-rotate-90"
+                            }`}
+                          />
+                          <div className="text-xs font-medium uppercase tracking-wide">
+                            Morning
+                          </div>
+                          <Badge variant="secondary" className="select-none">
+                            {cardsByTimeOfDay.morning.length}
+                          </Badge>
+                          <Separator className="flex-1" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-3">
+                        {cardsByTimeOfDay.morning.map((card) => (
+                          <SortableCard
+                            key={card.id}
+                            card={card}
+                            tripId={tripId}
+                            dayId={day.id}
+                          />
+                        ))}
+                      </CollapsibleContent>
                     </div>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-                  {cardsByTimeOfDay.morning.map((card) => (
-                    <SortableCard
-                      key={card.id}
-                      card={card}
-                      tripId={tripId}
-                      dayId={day.id}
-                    />
-                  ))}
-                </div>
-              )}
+                  </Collapsible>
+                )}
 
-              {/* Afternoon Section */}
-              {cardsByTimeOfDay.afternoon.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs font-medium uppercase tracking-wide">
-                      Afternoon
+                {/* Afternoon Section */}
+                {cardsByTimeOfDay.afternoon.length > 0 && (
+                  <Collapsible
+                    open={expandedSections.afternoon}
+                    onOpenChange={(open) =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        afternoon: open,
+                      }))
+                    }
+                  >
+                    <div className="space-y-3">
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity"
+                        >
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform ${
+                              expandedSections.afternoon ? "" : "-rotate-90"
+                            }`}
+                          />
+                          <div className="text-xs font-medium uppercase tracking-wide">
+                            Afternoon
+                          </div>
+                          <Badge variant="secondary" className="select-none">
+                            {cardsByTimeOfDay.afternoon.length}
+                          </Badge>
+                          <Separator className="flex-1" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-3">
+                        {cardsByTimeOfDay.afternoon.map((card) => (
+                          <SortableCard
+                            key={card.id}
+                            card={card}
+                            tripId={tripId}
+                            dayId={day.id}
+                          />
+                        ))}
+                      </CollapsibleContent>
                     </div>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-                  {cardsByTimeOfDay.afternoon.map((card) => (
-                    <SortableCard
-                      key={card.id}
-                      card={card}
-                      tripId={tripId}
-                      dayId={day.id}
-                    />
-                  ))}
-                </div>
-              )}
+                  </Collapsible>
+                )}
 
-              {/* Evening Section */}
-              {cardsByTimeOfDay.evening.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs font-medium uppercase tracking-wide">
-                      Evening
+                {/* Evening Section */}
+                {cardsByTimeOfDay.evening.length > 0 && (
+                  <Collapsible
+                    open={expandedSections.evening}
+                    onOpenChange={(open) =>
+                      setExpandedSections((prev) => ({
+                        ...prev,
+                        evening: open,
+                      }))
+                    }
+                  >
+                    <div className="space-y-3">
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity bg-transparent"
+                        >
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform ${
+                              expandedSections.evening ? "" : "-rotate-90"
+                            }`}
+                          />
+                          <div className="text-xs font-medium uppercase tracking-wide">
+                            Evening
+                          </div>
+                          <Badge variant="secondary" className="select-none">
+                            {cardsByTimeOfDay.evening.length}
+                          </Badge>
+                          <Separator className="flex-1" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-3">
+                        {cardsByTimeOfDay.evening.map((card) => (
+                          <SortableCard
+                            key={card.id}
+                            card={card}
+                            tripId={tripId}
+                            dayId={day.id}
+                          />
+                        ))}
+                      </CollapsibleContent>
                     </div>
-                    <div className="flex-1 h-px bg-gray-200" />
+                  </Collapsible>
+                )}
+
+                {/* Unscheduled Cards */}
+                {cardsByTimeOfDay.unscheduled.length > 0 && (
+                  <div className="space-y-3">
+                    {cardsByTimeOfDay.unscheduled.map((card) => (
+                      <SortableCard
+                        key={card.id}
+                        card={card}
+                        tripId={tripId}
+                        dayId={day.id}
+                      />
+                    ))}
                   </div>
-                  {cardsByTimeOfDay.evening.map((card) => (
-                    <SortableCard
-                      key={card.id}
-                      card={card}
-                      tripId={tripId}
-                      dayId={day.id}
-                    />
-                  ))}
-                </div>
-              )}
+                )}
+              </>
+            ) : (
+              // All cards unscheduled - no time sections
+              day.cards.map((card) => (
+                <SortableCard
+                  key={card.id}
+                  card={card}
+                  tripId={tripId}
+                  dayId={day.id}
+                />
+              ))
+            )}
 
-              {/* Unscheduled Cards */}
-              {cardsByTimeOfDay.unscheduled.length > 0 && (
-                <div className="space-y-3">
-                  {cardsByTimeOfDay.unscheduled.map((card) => (
-                    <SortableCard
-                      key={card.id}
-                      card={card}
-                      tripId={tripId}
-                      dayId={day.id}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            // All cards unscheduled - no time sections
-            day.cards.map((card) => (
-              <SortableCard
-                key={card.id}
-                card={card}
-                tripId={tripId}
-                dayId={day.id}
-              />
-            ))
-          )}
-
-          {/* Add card composer */}
-          <CardComposer tripId={tripId} dayId={day.id} />
-        </div>
+            {/* Add card composer */}
+            <CardComposer tripId={tripId} dayId={day.id} />
+          </div>
+        </ScrollArea>
       </SortableContext>
 
       {/* Edit Modal */}

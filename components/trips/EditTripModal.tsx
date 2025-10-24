@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useTripStore } from "@/lib/store/tripStore";
+import { type Trip, EditTripData } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { type Trip, EditTripData } from "@/lib/types";
+import { FieldGroup, FieldSet } from "@/components/ui/field";
 import { BasicInput } from "../basic/BasicInput";
 import { BasicTextarea } from "../basic/BasicTextarea";
 
@@ -85,43 +86,44 @@ export function EditTripModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] select-none">
         <DialogHeader>
           <DialogTitle>Edit Trip</DialogTitle>
           <DialogDescription>Update your trip details</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <BasicInput
-            id="edit-title"
-            label="Trip Title"
-            value={formData.title}
-            onChange={(value) => handleInputChange("title", value)}
-            placeholder="e.g., Summer in Italy"
-            required
-            autoFocus
-          />
-          <BasicTextarea
-            id="edit-description"
-            label="Description"
-            value={formData.description}
-            onChange={(value) => handleInputChange("description", value)}
-            placeholder="e.g., 2-week adventure through Tuscany"
-            rows={3}
-          />
-
-          <BasicInput
-            id="edit-destination"
-            label="Destination"
-            value={formData.destination.city}
-            onChange={(value) =>
-              setFormData((prev) => ({
-                ...prev,
-                destination: { ...prev.destination, city: value },
-              }))
-            }
-            placeholder="e.g., Rome, Italy"
-          />
+        <FieldSet onSubmit={handleSubmit}>
+          <FieldGroup>
+            <BasicInput
+              id="edit-title"
+              label="Trip Title"
+              value={formData.title}
+              onChange={(value) => handleInputChange("title", value)}
+              placeholder="e.g., Summer in Italy"
+              required
+              autoFocus
+            />
+            <BasicTextarea
+              id="edit-description"
+              label="Description"
+              value={formData.description}
+              onChange={(value) => handleInputChange("description", value)}
+              placeholder="e.g., 2-week adventure through Tuscany"
+              rows={3}
+            />
+            <BasicInput
+              id="edit-destination"
+              label="Destination"
+              value={formData.destination.city}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  destination: { ...prev.destination, city: value },
+                }))
+              }
+              placeholder="e.g., Rome, Italy"
+            />
+          </FieldGroup>
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel}>
@@ -129,7 +131,7 @@ export function EditTripModal({
             </Button>
             <Button type="submit">Save Changes</Button>
           </div>
-        </form>
+        </FieldSet>
       </DialogContent>
     </Dialog>
   );

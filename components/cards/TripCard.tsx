@@ -1,32 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import type { InfoCard } from "@/lib/types";
-import { Card as UICard } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  CARD_TYPES,
-  getCardCategory,
-  CATEGORY_COLORS,
-  CURRENCY_SYMBOLS,
-} from "@/lib/constants";
-import { formatTimeDisplay } from "@/lib/utils/time";
-import { useTripStore } from "@/lib/store/tripStore";
-import { CardDetailModal } from "./CardDetailModal";
-import { StatusDot } from "./StatusDot";
+import Image from "next/image";
 import { toast } from "sonner";
 import {
   Clock,
-  MapPin,
   Copy,
-  Trash2,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
   GripVertical,
+  MapPin,
+  Trash2,
 } from "lucide-react";
-import Image from "next/image";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card as UICard } from "@/components/ui/card";
+import { DeleteDialog } from "@/components/board/DeleteDialog";
+import { CardDetailModal } from "./CardDetailModal";
+import { StatusDot } from "./StatusDot";
+
+import { useTripStore } from "@/lib/store/tripStore";
+import type { InfoCard } from "@/lib/types";
+import {
+  CARD_TYPES,
+  CATEGORY_COLORS,
+  CURRENCY_SYMBOLS,
+  getCardCategory,
+} from "@/lib/constants";
+import { formatTimeDisplay } from "@/lib/utils/time";
 
 interface TripCardProps {
   card: InfoCard;
@@ -50,14 +53,6 @@ export function TripCard({
   const cardType = CARD_TYPES[card.type];
   const category = getCardCategory(card.type);
   const categoryBorderColor = CATEGORY_COLORS[category];
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Delete this card?")) {
-      deleteCard(tripId, dayId, card.id);
-      toast.success("Card deleted");
-    }
-  };
 
   const handleDuplicate = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -159,15 +154,26 @@ export function TripCard({
                 >
                   <Copy className="w-3 h-3" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={handleDelete}
-                  title="Delete"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+                <DeleteDialog
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  }
+                  title="Delete Card"
+                  description="Are you sure you want to delete this card? This action cannot be undone."
+                  onConfirm={() => {
+                    deleteCard(tripId, dayId, card.id);
+                    toast.success("Card deleted");
+                    setIsModalOpen(false);
+                  }}
+                />
               </div>
             </div>
           </div>
