@@ -1,115 +1,129 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useTripStore } from '@/lib/store/tripStore'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
-import type { Trip } from '@/lib/types'
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useTripStore } from "@/lib/store/tripStore";
+import { type Trip, EditTripData } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FieldGroup, FieldSet } from "@/components/ui/field";
+import { BasicInput } from "../basic/BasicInput";
+import { BasicTextarea } from "../basic/BasicTextarea";
 
 interface EditTripModalProps {
-  trip: Trip | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  trip: Trip | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) {
-  const updateTrip = useTripStore((state) => state.updateTrip)
+export function EditTripModal({
+  trip,
+  open,
+  onOpenChange,
+}: EditTripModalProps) {
+  const updateTrip = useTripStore((state) => state.updateTrip);
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [destination, setDestination] = useState('')
+  const [formData, setFormData] = useState<EditTripData>({
+    title: "",
+    description: "",
+    destination: { city: "" },
+  });
 
   useEffect(() => {
     if (trip) {
-      setTitle(trip.title)
-      setDescription(trip.description || '')
-      setDestination(trip.destination || '')
+      setFormData({
+        title: trip.title,
+        description: trip.description || "",
+        destination: trip.destination || { city: "" },
+      });
     }
-  }, [trip])
+  }, [trip]);
+
+  const handleInputChange = (field: keyof EditTripData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!trip) return
+    if (!trip) return;
 
-    if (!title.trim()) {
-      toast.error('Please enter a trip title')
-      return
+    if (!formData.title.trim()) {
+      toast.error("Please enter a trip title");
+      return;
     }
 
     updateTrip(trip.id, {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      destination: destination.trim() || undefined,
-    })
+      title: formData.title.trim(),
+      description: formData.description.trim() || undefined,
+      destination: formData.destination.city.trim()
+        ? { city: formData.destination.city.trim() }
+        : undefined,
+    });
 
-    toast.success('Trip updated!')
-    onOpenChange(false)
-  }
+    toast.success("Trip updated!");
+    onOpenChange(false);
+  };
 
   const handleCancel = () => {
     if (trip) {
-      setTitle(trip.title)
-      setDescription(trip.description || '')
-      setDestination(trip.destination || '')
+      setFormData({
+        title: trip.title,
+        description: trip.description || "",
+        destination: trip.destination || { city: "" },
+      });
     }
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
-  if (!trip) return null
+  if (!trip) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] select-none">
         <DialogHeader>
           <DialogTitle>Edit Trip</DialogTitle>
-          <DialogDescription>
-            Update your trip details
-          </DialogDescription>
+          <DialogDescription>Update your trip details</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div>
-            <label htmlFor="edit-title" className="block text-sm font-medium mb-2">
-              Trip Title <span className="text-destructive">*</span>
-            </label>
-            <Input
+        <FieldSet onSubmit={handleSubmit}>
+          <FieldGroup>
+            <BasicInput
               id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              label="Trip Title"
+              value={formData.title}
+              onChange={(value) => handleInputChange("title", value)}
               placeholder="e.g., Summer in Italy"
               required
               autoFocus
             />
-          </div>
-
-          <div>
-            <label htmlFor="edit-description" className="block text-sm font-medium mb-2">
-              Description
-            </label>
-            <Textarea
+            <BasicTextarea
               id="edit-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              label="Description"
+              value={formData.description}
+              onChange={(value) => handleInputChange("description", value)}
               placeholder="e.g., 2-week adventure through Tuscany"
               rows={3}
             />
-          </div>
-
-          <div>
-            <label htmlFor="edit-destination" className="block text-sm font-medium mb-2">
-              Destination
-            </label>
-            <Input
+            <BasicInput
               id="edit-destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
+              label="Destination"
+              value={formData.destination.city}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  destination: { ...prev.destination, city: value },
+                }))
+              }
               placeholder="e.g., Rome, Italy"
             />
-          </div>
+          </FieldGroup>
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCancel}>
@@ -117,9 +131,8 @@ export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) 
             </Button>
             <Button type="submit">Save Changes</Button>
           </div>
-        </form>
+        </FieldSet>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

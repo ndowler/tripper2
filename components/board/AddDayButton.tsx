@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useTripStore } from "@/lib/store/tripStore";
 import { nanoid } from "nanoid";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus, Sparkles } from "lucide-react";
 import { format, addDays } from "date-fns";

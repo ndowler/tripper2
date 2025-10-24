@@ -10,7 +10,10 @@ import { SectionCard } from "../components/SectionCard";
 
 interface LogisticsSectionProps {
   preferences: UserVibes;
-  updatePreference: (section: keyof UserVibes, updates: any) => void;
+  updatePreference: (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => void;
   isMounted: boolean;
 }
 export function LogisticsSection({
@@ -39,7 +42,7 @@ export function LogisticsSection({
         preferences={preferences}
         onChange={(value) =>
           updatePreference("logistics", {
-            crowd_tolerance: value,
+            crowd_tolerance: Number(value),
           })
         }
       />
@@ -73,7 +76,7 @@ export function LogisticsSection({
         preferences={preferences}
         onChange={(value) =>
           updatePreference("logistics", {
-            surprise_level: value,
+            surprise_level: Number(value),
           })
         }
       />

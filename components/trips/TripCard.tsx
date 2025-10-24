@@ -36,7 +36,7 @@ export function TripCard({
   }, []);
 
   // Calculate trip stats
-  const dayCount = trip.days.length;
+  // const dayCount = trip.days.length;
   const totalCards =
     trip.days.reduce((sum, day) => sum + day.cards.length, 0) +
     (trip.unassignedCards?.length || 0);
@@ -63,7 +63,7 @@ export function TripCard({
   // Format last updated
   const lastUpdated = isMounted ? format(trip.updatedAt, "MMM d, yyyy") : "";
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = () => {
     // Don't navigate if clicking the menu
     if (isMenuOpen) return;
     router.push(`/trip/${trip.id}`);

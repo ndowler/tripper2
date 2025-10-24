@@ -23,6 +23,23 @@ export type CardStatus =
   | "tentative"
   | "todo";
 
+export type Daypart = "morning" | "afternoon" | "evening" | "night" | "any";
+
+export type FlightClass =
+  | "economy"
+  | "premium"
+  | "business"
+  | "first"
+  | "coach";
+
+export interface Destination {
+  city: string;
+  state?: string;
+  country?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface Location {
   name: string;
   address?: string;
@@ -66,11 +83,7 @@ export interface Trip {
   id: string;
   title: string;
   description?: string;
-  destination?: {
-    city: string;
-    state?: string;
-    country?: string;
-  };
+  destination?: Destination;
   timezone: string;
   days: Day[];
   unassignedCards: InfoCard[]; // Cards not yet assigned to a day
@@ -78,11 +91,20 @@ export interface Trip {
   updatedAt: Date;
 }
 
+export type PageStep = "input" | "loading" | "results" | "error";
+
 export type TimeFormat = 12 | 24;
 export type GroupingMode = "day" | "city";
 export type ThemeMode = "light" | "dark" | "system";
 
 export type ViewDensity = "compact" | "comfortable";
+
+export interface EditTripData {
+  title: string;
+  description: string;
+  destination: Destination;
+  timezone?: string;
+}
 
 export interface ViewPrefs {
   grouping: GroupingMode;
@@ -103,6 +125,17 @@ export interface DragData {
   index: number;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  homeAirport: {
+    code: string;
+    name: string;
+    city: string;
+    country: string;
+  };
+}
+
 /**
  * Store state types
  */
@@ -112,6 +145,7 @@ export interface TripStore {
   currentTripId: string | null;
   viewPrefs: ViewPrefs;
   userVibes: UserVibes | null;
+  userProfile?: UserProfile | null;
 
   // Trip actions
   addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">) => void;

@@ -9,7 +9,10 @@ import { SectionCard } from "../components/SectionCard";
 
 interface AccessibilitySectionProps {
   preferences: UserVibes;
-  updatePreference: (section: keyof UserVibes, updates: any) => void;
+  updatePreference: (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => void;
   isMounted: boolean;
 }
 export function AccessibilitySection({
@@ -35,7 +38,7 @@ export function AccessibilitySection({
           checked={preferences.access.wheelchair}
           onCheckedChange={(value) =>
             updatePreference("access", {
-              wheelchair: value,
+              wheelchair: value === true,
             })
           }
         />
@@ -50,7 +53,7 @@ export function AccessibilitySection({
           checked={preferences.access.low_steps}
           onCheckedChange={(value) =>
             updatePreference("access", {
-              low_steps: value,
+              low_steps: value === true,
             })
           }
         />
@@ -65,7 +68,7 @@ export function AccessibilitySection({
           checked={preferences.access.motion_sickness}
           onCheckedChange={(value) =>
             updatePreference("access", {
-              motion_sickness: value,
+              motion_sickness: value === true,
             })
           }
         />

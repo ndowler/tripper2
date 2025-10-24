@@ -1,13 +1,13 @@
 "use client";
 
 import { UserVibes } from "@/lib/types/vibes";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 
 const budgetOptions = {
-  40: "💸 €30-50 - Budget-conscious",
-  75: "💳 €50-100 - Moderate spending",
-  150: "💼 €100-200 - Comfortable budget",
-  250: "👑 €200+ - Luxury experience",
+  40: "💸 $30-50 - Budget-conscious",
+  75: "💳 $50-100 - Moderate spending",
+  150: "💼 $100-200 - Comfortable budget",
+  250: "👑 $200+ - Luxury experience",
 };
 
 interface DailyBudgetProps {

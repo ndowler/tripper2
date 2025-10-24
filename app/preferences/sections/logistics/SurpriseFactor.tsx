@@ -1,7 +1,7 @@
 "use client";
 
 import { UserVibes } from "@/lib/types/vibes";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 
 const surpriseFactorOptions = {
   0: "🎯 Predictable - Stick to the plan",

@@ -8,7 +8,10 @@ import { SectionCard } from "../components/SectionCard";
 
 interface FoodSectionProps {
   preferences: UserVibes;
-  updatePreference: (section: keyof UserVibes, updates: any) => void;
+  updatePreference: (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => void;
   isMounted: boolean;
 }
 export function FoodSection({

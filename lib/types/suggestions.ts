@@ -2,9 +2,8 @@
  * Types for AI-generated travel suggestions (Vibe Planner)
  */
 
-import { CardType } from ".";
-
-export type Daypart = "morning" | "afternoon" | "evening" | "night" | "any";
+import { CardType, Daypart, Destination } from ".";
+import { UserVibes } from "./vibes";
 
 export type SuggestionCategory =
   | "food"
@@ -23,46 +22,60 @@ export type PriceTier = 0 | 1 | 2 | 3; // 0=free, 1=budget, 2=mid, 3=premium
 export interface SuggestionCard {
   id: string; // LLM generates stable IDs like "rom-001"
   title: string; // Max 60 chars
-  subtitle?: string; // Neighborhood/area
   description: string; // Max 160 chars
   category: SuggestionCategory;
-  tags: string[]; // Max 5 tags
-  est_duration_min: number; // 15-480 minutes
   best_time: Daypart;
   price_tier: PriceTier;
+  confidence: number; // 0-1 (model's self-score)
+  est_duration_min: number; // 15-480 minutes
+  tags: string[]; // Max 5 tags
+  reasons?: string[]; // Max 3 short bullets explaining match
+  subtitle?: string; // Neighborhood/area
   area?: string; // Neighborhood (e.g., "Trastevere")
+  cost?: string | number;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  duration?: number;
+  type?: CardType;
+  media?: {
+    emoji?: string; // Single emoji for icon
+  };
   booking?: {
     url?: string;
     requires?: ("ticket" | "reservation")[];
   };
-  media?: {
-    emoji?: string; // Single emoji for icon
-  };
-  confidence: number; // 0-1 (model's self-score)
-  reasons?: string[]; // Max 3 short bullets explaining match
 }
 
-export interface AISuggestion extends SuggestionCard {
-  type: CardType;
-  duration?: number;
-  location?: string;
+export interface AiSuggestionContext {
+  dayInfo: {
+    title?: string;
+    date?: string;
+  } | null;
+  existingCards: {
+    title: string;
+    type: string;
+    startTime?: string;
+    duration?: number;
+    location?: { name?: string } | string | undefined;
+  }[];
+  otherDays: {
+    title?: string;
+    date?: string;
+    cardCount: number;
+    highlights: string[];
+  }[];
 }
 
 export interface DiscoveryRequest {
-  destination: {
-    city: string;
-    state?: string;
-    country?: string;
-    start?: string; // ISO date
-    end?: string; // ISO date
-  };
-  vibes?: any; // UserVibes (optional for LLM)
-  vibe_profile?: any; // UserVibes (optional for LLM)
+  destination: Destination;
+  vibes?: UserVibes; // UserVibes (optional for LLM)
+  vibe_profile?: UserVibes; // UserVibes (optional for LLM)
   limit?: number; // Number of suggestions to generate
 }
 
 export interface DiscoveryResponse {
   suggestions: SuggestionCard[];
   model?: string;
-  usage?: any;
+  usage?: number;
 }

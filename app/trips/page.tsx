@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { Trip } from "@/lib/types";
 import { useTripStore } from "@/lib/store/tripStore";
-import { PlusCircle, Search } from "lucide-react";
+import { PlusCircle, Compass } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { TripGrid } from "@/components/trips/TripGrid";
@@ -32,7 +32,8 @@ export default function TripsPage() {
   }, []);
 
   // Only render after hydration
-  if (!isHydrated) return LoadingSpinner("Loading your trips...");
+  if (!isHydrated)
+    return <LoadingSpinner loadingText="Loading your trips..." />;
 
   const handleDuplicate = (trip: Trip) => {
     duplicateTrip(trip.id);
@@ -44,11 +45,6 @@ export default function TripsPage() {
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* <Link href="/">
-              <Button variant="ghost" title="Home">
-                Home
-              </Button>
-            </Link> */}
             <div>
               <h1 className="text-2xl font-bold select-none text-start">
                 ✈️ My Trips
@@ -59,6 +55,8 @@ export default function TripsPage() {
                 </p>
               )}
             </div>
+
+            {/* Create New Trip */}
             <CustomTooltip content="Create a new trip" side="bottom">
               <Button
                 onClick={() => setIsNewTripModalOpen(true)}
@@ -68,15 +66,18 @@ export default function TripsPage() {
                 New Trip
               </Button>
             </CustomTooltip>
+
+            {/* Discover More */}
             <CustomTooltip content="Discover more!" side="bottom">
               <Link href="/discover">
                 <Button variant="outline" className="gap-2">
-                  <Search className="h-5 w-5" />
+                  <Compass className="h-5 w-5" />
                   <span className="hidden md:inline">Discover</span>
                 </Button>
               </Link>
             </CustomTooltip>
 
+            {/* Theme Toggle */}
             <CustomTooltip content="Theme" side="bottom">
               <ModeToggle />
             </CustomTooltip>

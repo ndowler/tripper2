@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTripStore } from "@/lib/store/tripStore";
@@ -8,15 +8,19 @@ import { getDefaultVibes } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
 
 // Modular Section components
-import { PreferencesHeader } from "./sections/PreferencesHeader";
 import { ComfortSection } from "./sections/ComfortSection";
 import { FoodSection } from "./sections/FoodSection";
 import { LogisticsSection } from "./sections/LogisticsSection";
 import { VibePacksSection } from "./sections/VibePacksSection";
 import { AccessibilitySection } from "./sections/AccessibilitySection";
 import { CancelButton, SaveButton } from "@/components/ActionButtons";
+import { PreferencesHeader } from "./sections/PreferencesHeader";
 
-export default function PreferencesPage() {
+export default function PreferencesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
   const router = useRouter();
   const userVibes = useTripStore((state) => state.userVibes);
   const setUserVibes = useTripStore((state) => state.setUserVibes);
@@ -45,7 +49,10 @@ export default function PreferencesPage() {
     router.push("/demo");
   };
 
-  const updatePreference = (section: keyof UserVibes, updates: any) => {
+  const updatePreference = (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => {
     setPreferences((prev) => {
       if (Array.isArray(updates)) {
         return {
@@ -58,7 +65,9 @@ export default function PreferencesPage() {
         ...prev,
         [section]:
           typeof prevSectionValue === "object" &&
-          !Array.isArray(prevSectionValue)
+          !Array.isArray(prevSectionValue) &&
+          typeof updates === "object" &&
+          !Array.isArray(updates)
             ? { ...prevSectionValue, ...updates }
             : updates,
       };
@@ -68,32 +77,41 @@ export default function PreferencesPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <PreferencesHeader
-          title="Travel Preferences"
-          description="Adjust your preferences to get personalized AI suggestions"
-          handleSave={handleSave}
-        />
+        {/* Preferences Header */}
+        <Suspense fallback={<div>Loading...</div>}>
+          <PreferencesHeader
+            searchParams={searchParams}
+            title="Travel Preferences"
+            description="Adjust your preferences to get personalized AI suggestions"
+            handleSave={handleSave}
+          />
+        </Suspense>
         <div className="space-y-6">
+          {/* Comfort Section */}
           <ComfortSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Food Section */}
           <FoodSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Logistics Section */}
           <LogisticsSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Vibe Packs Section */}
           <VibePacksSection
             preferences={preferences}
             updatePreference={updatePreference}
             isMounted={isMounted}
           />
+          {/* Accessibility Section */}
           <AccessibilitySection
             preferences={preferences}
             updatePreference={updatePreference}

@@ -1,39 +1,24 @@
-import { useState } from "react";
-import Link from "next/link";
-import { toast } from "sonner";
-import {
-  Compass,
-  Download,
-  Home,
-  Inbox,
-  MoreVertical,
-  Redo2,
-  Share2,
-  Undo2,
-} from "lucide-react";
+"use client";
 
-import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
-import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
+import Link from "next/link";
+import { useState } from "react";
+import { Home, Inbox } from "lucide-react";
+
 import { EditableHeader } from "@/components/board/EditableHeader";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { ActionsBar } from "@/components/ui/actions-bar";
 import { Button } from "@/components/ui/button";
-import { ModeToggle, ThemeMenuItems } from "@/components/ui/theme-toggler";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CustomTooltip } from "../ui/custom-tooltip";
-import { ButtonGroup } from "../ui/button-group";
-import { Separator } from "../ui/separator";
+import { CustomTooltip } from "@/components/ui/custom-tooltip";
+import { UndoRedoGroup } from "@/components/ui/undo-redo-group";
+import { useAppShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
+import { InfoCard } from "@/lib/types";
 
 interface NavbarProps {
   trip: {
     id: string;
     title: string;
     description?: string;
-    unassignedCards?: any[];
+    unassignedCards?: InfoCard[];
   };
   thingsToDoOpen: boolean;
   setThingsToDoOpen: (open: boolean) => void;
@@ -44,53 +29,16 @@ export function Navbar({
   thingsToDoOpen,
   setThingsToDoOpen,
 }: NavbarProps) {
-  const { undo, redo, canUndo, canRedo } = useUndoRedo();
-
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: "z",
-      meta: true,
-      shift: false,
-      handler: () => {
-        if (canUndo) {
-          undo();
-          toast.success("Undone");
-        }
-      },
-      description: "Undo last action",
-    },
-    {
-      key: "z",
-      meta: true,
-      shift: true,
-      handler: () => {
-        if (canRedo) {
-          redo();
-          toast.success("Redone");
-        }
-      },
-      description: "Redo last action",
-    },
-    {
-      key: "k",
-      meta: true,
-      shift: false,
-      handler: () => {
-        setCommandPaletteOpen(true);
-      },
-      description: "Open command palette",
-    },
-  ]);
+  useAppShortcuts(setCommandPaletteOpen);
 
   return (
     <nav
       id="navbar"
       className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10"
     >
-      <div id="navbar-content" className="container mx-auto px-4 py-3">
+      <div id="navbar-content" className="mx-auto px-4 py-3">
         <div
           id="navbar-inner"
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -117,7 +65,7 @@ export function Navbar({
               </div>
             </div>
           </div>
-          {/* only show if url /trip/:id */}
+
           <div
             id="things-to-do-toggle"
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
@@ -143,93 +91,10 @@ export function Navbar({
             </CustomTooltip>
 
             {/* Undo/Redo */}
-            <div id="undo-redo" className="flex gap-1">
-              <ButtonGroup className="border rounded-lg">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Undo (Cmd+Z)"
-                  onClick={() => {
-                    undo();
-                    toast.success("Undone");
-                  }}
-                  disabled={!canUndo}
-                >
-                  <Undo2 className="w-4 h-4" />
-                </Button>
-                <Separator orientation="vertical" />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Redo (Cmd+Shift+Z)"
-                  onClick={() => {
-                    redo();
-                    toast.success("Redone");
-                  }}
-                  disabled={!canRedo}
-                >
-                  <Redo2 className="w-4 h-4" />
-                </Button>
-              </ButtonGroup>
-            </div>
+            <UndoRedoGroup />
 
-            {/* Actions */}
-            <CustomTooltip content="Discover More" side="bottom">
-              <Link href="/discover">
-                <Button
-                  variant="outline"
-                  // size="icon"
-                  // title="Discover things to do"
-                  className="lg:px-3"
-                >
-                  <Compass className="w-4 h-4 lg:mr-2" />
-                  <span className="hidden lg:inline whitespace-nowrap">
-                    Discover
-                  </span>
-                </Button>
-              </Link>
-            </CustomTooltip>
-            {/* Actions Dropdown - hidden on lg+ */}
-            <div className="flex items-center">
-              <CustomTooltip content="More actions" side="bottom">
-                <div id="actions-dropdown" className="lg:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        // title="More actions"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export JSON
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
-                      <ThemeMenuItems />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CustomTooltip>
-            </div>
-
-            {/* Full Actions - visible on lg+ */}
-            <div id="full-actions" className="hidden lg:flex gap-2">
-              <Button variant="outline" size="icon" title="Export JSON">
-                <Download className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="icon" title="Share">
-                <Share2 className="w-4 h-4" />
-              </Button>
-              {/* Theme Toggle */}
-              <ModeToggle />
-            </div>
+            {/* Actions Bar */}
+            <ActionsBar discoverHref="/discover?from=trip" />
           </div>
         </div>
       </div>

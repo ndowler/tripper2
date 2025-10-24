@@ -2,13 +2,16 @@
  * localStorage utilities with type safety
  */
 
+import { Trip, ViewPrefs } from "../types";
+import { UserVibes } from "../types/vibes";
+
 const STORAGE_KEY = "tripper-data";
 
 export interface StoredData {
-  trips: Record<string, any>;
+  trips: Record<string, Trip>;
   currentTripId: string | null;
-  viewPrefs: any;
-  userVibes: any[];
+  viewPrefs: ViewPrefs;
+  userVibes: UserVibes[];
 }
 
 export function loadFromStorage(): StoredData | null {
@@ -21,12 +24,13 @@ export function loadFromStorage(): StoredData | null {
     const parsed = JSON.parse(data);
 
     // Hydrate dates
-    Object.values(parsed.trips || {}).forEach((trip: any) => {
-      trip.createdAt = new Date(trip.createdAt);
-      trip.updatedAt = new Date(trip.updatedAt);
+    Object.values(parsed.trips || {}).forEach((trip) => {
+      const t = trip as Trip;
+      t.createdAt = new Date(t.createdAt);
+      t.updatedAt = new Date(t.updatedAt);
 
-      trip.days.forEach((day: any) => {
-        day.cards.forEach((card: any) => {
+      t.days.forEach((day) => {
+        day.cards.forEach((card) => {
           card.createdAt = new Date(card.createdAt);
           card.updatedAt = new Date(card.updatedAt);
         });

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
-import { AISuggestionsSchema } from "@/lib/schemas/suggestions"; // Only import the base Schema, array schema not needed here
+import { AISuggestionsSchema } from "@/lib/schemas/suggestions";
+import { SuggestionCard } from "@/lib/types/suggestions";
+import { regenerateCardPrompt } from "@/lib/prompts/ai-regenerate-card-prompts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
 
       if (existingCards && existingCards.length > 0) {
         contextString += `\n\nOther activities in this day:`;
-        existingCards.forEach((card: any) => {
+        existingCards.forEach((card: SuggestionCard) => {
           contextString += `\n- ${card.title} (${card.type})${
             card.startTime ? ` at ${card.startTime}` : ""
           }`;
@@ -40,31 +42,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const systemPrompt = `You are a travel planning assistant. Generate ONE alternative suggestion for a ${cardType} in JSON format.
-
-Return ONLY a JSON object with this exact structure:
-{
-  "type": "${cardType}",
-  "title": "Specific name or activity",
-  "description": "Brief 1-2 sentence description",
-  "duration": number (in minutes),
-  "tags": ["tag1", "tag2"],
-  "location": "Specific location",
-  "startTime": "${timeSlot}" (keep the same time slot)
-}
-
-Make the suggestion:
-- Different from existing activities
-- Specific to the destination
-- Realistic and well-timed
-- Include actual place names`;
-
-    const userPrompt = `Destination: ${destination || "the destination"}
-Time slot: ${timeSlot || "flexible"}${contextString}
-
-Generate ONE alternative ${cardType} suggestion for ${
-      destination || "this destination"
-    }.`;
+    const { systemPrompt, userPrompt } = regenerateCardPrompt({
+      destination,
+      cardType,
+      timeSlot,
+      contextString,
+    });
 
     const completion = await createZodCompletion(
       defaultModel,
@@ -72,6 +55,7 @@ Generate ONE alternative ${cardType} suggestion for ${
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      destination,
       AISuggestionsSchema,
       "aiSuggestions",
       { temperature: 0.8 }
@@ -103,17 +87,20 @@ Generate ONE alternative ${cardType} suggestion for ${
         startTime: normalizedCard.startTime || timeSlot,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI API error:", error);
 
-    if (error?.status === 401) {
+    // Type guard for error object
+    const err = error as { status?: number; message?: string };
+
+    if (err?.status === 401) {
       return NextResponse.json(
         { error: "Invalid OpenAI API key" },
         { status: 401 }
       );
     }
 
-    if (error?.status === 429) {
+    if (err?.status === 429) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },
         { status: 429 }
@@ -121,7 +108,7 @@ Generate ONE alternative ${cardType} suggestion for ${
     }
 
     return NextResponse.json(
-      { error: error?.message || "Failed to regenerate card" },
+      { error: err?.message || "Failed to regenerate card" },
       { status: 500 }
     );
   }

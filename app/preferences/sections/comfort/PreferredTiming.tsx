@@ -1,6 +1,6 @@
 "use client";
+import { BasicSelect } from "@/components/basic/BasicSelect";
 import { UserVibes } from "@/lib/types/vibes";
-import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 
 const timingOptions = {
   early: "🌅 Early Bird - Morning activities",

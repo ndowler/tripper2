@@ -38,7 +38,7 @@ export function Board({ trip }: BoardProps) {
     setMounted(true);
   }, []);
 
-  const reorderDays = useTripStore((state) => state.reorderDays);
+  // const reorderDays = useTripStore((state) => state.reorderDays);
   const reorderCards = useTripStore((state) => state.reorderCards);
   const moveCard = useTripStore((state) => state.moveCard);
 

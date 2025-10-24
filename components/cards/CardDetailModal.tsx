@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTripStore } from "@/lib/store/tripStore";
-import type { InfoCard, CardType } from "@/lib/types";
+import type { InfoCard, CardStatus } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -17,10 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { CARD_TYPES } from "@/lib/constants";
 import { toast } from "sonner";
 import {
-  Activity,
-  Utensils,
-  Car,
-  FileText,
   Clock,
   MapPin,
   DollarSign,
@@ -29,11 +25,6 @@ import {
   X,
   Navigation,
   Globe,
-  Plane,
-  Hotel,
-  ShoppingBag,
-  Ticket,
-  Circle,
 } from "lucide-react";
 
 interface CardDetailModalProps {
@@ -151,22 +142,22 @@ export function CardDetailModal({
 
   const cardType = CARD_TYPES[card.type];
 
-  const getTypeIcon = (type: CardType) => {
-    const icons = {
-      activity: Activity,
-      meal: Utensils,
-      restaurant: Utensils,
-      transit: Car,
-      flight: Plane,
-      hotel: Hotel,
-      shopping: ShoppingBag,
-      entertainment: Ticket,
-      note: FileText,
-    };
-    return icons[type];
-  };
+  // const getTypeIcon = (type: CardType) => {
+  //   const icons = {
+  //     activity: Activity,
+  //     meal: Utensils,
+  //     restaurant: Utensils,
+  //     transit: Car,
+  //     flight: Plane,
+  //     hotel: Hotel,
+  //     shopping: ShoppingBag,
+  //     entertainment: Ticket,
+  //     note: FileText,
+  //   };
+  //   return icons[type];
+  // };
 
-  const TypeIcon = getTypeIcon(card.type);
+  // const TypeIcon = getTypeIcon(card.type);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -228,7 +219,7 @@ export function CardDetailModal({
                 <button
                   key={value}
                   type="button"
-                  onClick={() => setStatus(value as any)}
+                  onClick={() => setStatus(value as CardStatus)}
                   className={`
                     flex items-center gap-2 px-3 py-2 rounded-md border-2 text-sm font-medium transition-all
                     ${

@@ -4,15 +4,15 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { temporal } from "zundo";
 import { nanoid } from "nanoid";
-import type { TripStore, Trip, Day, Card, ViewPrefs } from "@/lib/types";
+import type { TripStore, Trip, InfoCard, ViewPrefs } from "@/lib/types";
 import type { UserVibes } from "@/lib/types/vibes";
 import { saveToStorage, loadFromStorage } from "@/lib/utils/storage";
 import { getDefaultVibes } from "@/lib/utils/vibes";
-import { AUTOSAVE_DEBOUNCE_MS, DEFAULT_TIMEZONE } from "@/lib/constants";
+import { AUTOSAVE_DEBOUNCE_MS } from "@/lib/constants";
 
 // Debounce helper
 let saveTimeout: NodeJS.Timeout | null = null;
-function debouncedSave(state: any) {
+function debouncedSave(state: TripStore) {
   if (saveTimeout) clearTimeout(saveTimeout);
 
   saveTimeout = setTimeout(() => {
@@ -20,7 +20,7 @@ function debouncedSave(state: any) {
       trips: state.trips,
       currentTripId: state.currentTripId,
       viewPrefs: state.viewPrefs,
-      userVibes: state.userVibes,
+      userVibes: Array.isArray(state.userVibes) ? state.userVibes : [],
     });
   }, AUTOSAVE_DEBOUNCE_MS);
 }
@@ -200,7 +200,7 @@ export const useTripStore = create<TripStore>()(
           const trip = state.trips[tripId];
           if (trip) {
             const now = new Date();
-            const newCard: Card = {
+            const newCard: InfoCard = {
               ...card,
               createdAt: now,
               updatedAt: now,
@@ -225,7 +225,7 @@ export const useTripStore = create<TripStore>()(
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
-            let card: any;
+            let card: InfoCard | undefined;
 
             if (dayId === "unassigned") {
               card = trip.unassignedCards?.find((c) => c.id === cardId);
@@ -282,7 +282,7 @@ export const useTripStore = create<TripStore>()(
                 : trip.days.find((d) => d.id === toDayId);
 
             // Get the card from source
-            let card: any;
+            let card: InfoCard | undefined;
             let cardIndex: number;
 
             if (fromDayId === "unassigned") {
@@ -334,7 +334,7 @@ export const useTripStore = create<TripStore>()(
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
-            let card: any;
+            let card: InfoCard | undefined;
             let cardIndex: number;
 
             if (dayId === "unassigned") {
@@ -346,7 +346,7 @@ export const useTripStore = create<TripStore>()(
 
               if (card) {
                 const now = new Date();
-                const duplicate: Card = {
+                const duplicate: InfoCard = {
                   ...card,
                   id: nanoid(),
                   title: `${card.title} (copy)`,
@@ -362,7 +362,7 @@ export const useTripStore = create<TripStore>()(
                 card = day.cards.find((c) => c.id === cardId);
                 if (card) {
                   const now = new Date();
-                  const duplicate: Card = {
+                  const duplicate: InfoCard = {
                     ...card,
                     id: nanoid(),
                     title: `${card.title} (copy)`,
@@ -436,7 +436,7 @@ export const useTripStore = create<TripStore>()(
       },
 
       getCardById: (tripId, dayId, cardId) => {
-        const state = get();
+        // const state = get();
         const day = get().getDayById(tripId, dayId);
         return day ? day.cards.find((c) => c.id === cardId) || null : null;
       },

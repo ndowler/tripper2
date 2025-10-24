@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { SuggestionCard as SuggestionCardType } from '@/lib/types/suggestions';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { SuggestionCard as SuggestionCardType } from "@/lib/types/suggestions";
 import {
   getCategoryColor,
   formatDuration,
   formatPriceTier,
   getDaypartInfo,
   getGoogleSearchUrl,
-} from '@/lib/utils/suggestions';
-import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+} from "@/lib/utils/suggestions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface SuggestionCardProps {
   suggestion: SuggestionCardType;
@@ -29,7 +29,7 @@ export function SuggestionCard({
 }: SuggestionCardProps) {
   const daypartInfo = getDaypartInfo(suggestion.best_time);
   const categoryColor = getCategoryColor(suggestion.category);
-  
+
   // Calculate visible tags
   const maxVisibleTags = 2;
   const visibleTags = suggestion.tags.slice(0, maxVisibleTags);
@@ -41,9 +41,9 @@ export function SuggestionCard({
   return (
     <Card
       className={cn(
-        'relative overflow-hidden cursor-pointer transition-all hover:shadow-md border-l-4',
+        "relative overflow-hidden cursor-pointer transition-all hover:shadow-md border-l-4",
         categoryColor,
-        isSelected && 'ring-2 ring-primary'
+        isSelected && "ring-2 ring-primary"
       )}
     >
       {/* Selection Checkbox */}
@@ -62,7 +62,9 @@ export function SuggestionCard({
         {/* Header */}
         <div className="flex items-start gap-3 mb-2">
           {suggestion.media?.emoji && (
-            <div className="text-3xl flex-shrink-0">{suggestion.media.emoji}</div>
+            <div className="text-3xl flex-shrink-0">
+              {suggestion.media.emoji}
+            </div>
           )}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base leading-tight line-clamp-2">
@@ -122,8 +124,8 @@ export function SuggestionCard({
               <div
                 key={idx}
                 className={cn(
-                  'w-1.5 h-1.5 rounded-full',
-                  idx < confidenceDots ? 'bg-primary' : 'bg-secondary'
+                  "w-1.5 h-1.5 rounded-full",
+                  idx < confidenceDots ? "bg-primary" : "bg-secondary"
                 )}
               />
             ))}
@@ -155,4 +157,3 @@ export function SuggestionCard({
     </Card>
   );
 }
-

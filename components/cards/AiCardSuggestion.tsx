@@ -4,12 +4,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Loader2, Check, X } from "lucide-react";
+import { Sparkles, Loader2, X } from "lucide-react";
 import { useTripStore } from "@/lib/store/tripStore";
 import { nanoid } from "nanoid";
 import { toast } from "sonner";
 import { SuggestionDetailModal } from "./SuggestionDetailModal";
-import { AISuggestion } from "@/lib/types/suggestions";
+import { AiSuggestionContext, SuggestionCard } from "@/lib/types/suggestions";
 
 interface AiCardSuggestionProps {
   tripId: string;
@@ -22,13 +22,13 @@ export function AiCardSuggestion({
   dayId,
   onClose,
 }: AiCardSuggestionProps) {
-  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  // const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] =
-    useState<AISuggestion | null>(null);
+    useState<SuggestionCard | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const trip = useTripStore((state) => state.trips[tripId]);
@@ -52,12 +52,12 @@ export function AiCardSuggestion({
 
     setIsLoading(true);
     setSuggestions([]);
-    setSelectedIndex(null);
+    // setSelectedIndex(null);
     setHasGenerated(true);
 
     try {
       // Build context from the itinerary
-      const context = {
+      const context: AiSuggestionContext = {
         dayInfo: currentDay
           ? {
               title: currentDay.title,
@@ -103,9 +103,13 @@ export function AiCardSuggestion({
       const data = await response.json();
       setSuggestions(data.suggestions || []);
       toast.success("AI suggestions ready!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("AI suggestion error:", error);
-      toast.error(error.message || "Failed to get AI suggestions");
+      const errorMessage =
+        error && typeof error === "object" && "message" in error
+          ? (error as { message?: string }).message
+          : "Failed to generate day plan";
+      toast.error(errorMessage || "Failed to get AI suggestions");
       onClose();
     } finally {
       setIsLoading(false);
@@ -124,7 +128,7 @@ export function AiCardSuggestion({
     generateSuggestions(prompt);
   };
 
-  const handleClickSuggestion = (suggestion: AISuggestion, index: number) => {
+  const handleClickSuggestion = (suggestion: SuggestionCard) => {
     setSelectedSuggestion(suggestion);
     setShowDetailModal(true);
   };
@@ -134,7 +138,7 @@ export function AiCardSuggestion({
 
     addCard(tripId, dayId, {
       id: nanoid(),
-      type: selectedSuggestion.type,
+      type: selectedSuggestion.type ?? "activity",
       title: selectedSuggestion.title,
       duration: selectedSuggestion.duration,
       location: selectedSuggestion.location
@@ -156,10 +160,10 @@ export function AiCardSuggestion({
     }, 500);
   };
 
-  const handleBackToSuggestions = () => {
-    setShowDetailModal(false);
-    setSelectedSuggestion(null);
-  };
+  // const handleBackToSuggestions = () => {
+  //   setShowDetailModal(false);
+  //   setSelectedSuggestion(null);
+  // };
 
   // Quick prompt suggestions
   const quickPrompts = [
@@ -248,7 +252,7 @@ export function AiCardSuggestion({
           {suggestions.map((suggestion, index) => (
             <button
               key={index}
-              onClick={() => handleClickSuggestion(suggestion, index)}
+              onClick={() => handleClickSuggestion(suggestion)}
               className="w-full text-left p-3 rounded-lg border transition-all hover:bg-muted/50 hover:border-primary/50 hover:shadow-sm"
             >
               <div className="flex items-start gap-3">
@@ -317,8 +321,6 @@ export function AiCardSuggestion({
         suggestion={selectedSuggestion}
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
-        onAdd={handleAddFromModal}
-        onBack={handleBackToSuggestions}
         onSave={handleAddFromModal}
       />
     </div>

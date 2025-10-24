@@ -2,6 +2,13 @@
 
 export type DaypartBias = "early" | "balanced" | "late";
 export type SurpriseLevel = 0 | 1 | 2;
+export type VibePack = {
+  icon: string;
+  description: string;
+  themes: Record<string, number>;
+  daypart: DaypartBias;
+  pace: number;
+};
 
 export interface ProfilePreferences {
   home_airport?: string;
@@ -27,7 +34,7 @@ export interface LogisticsPreferences {
   transit_modes_allowed: string[]; // metro, tram, train, bus, rideshare, taxi
   crowd_tolerance: number; // 1-5: 1=avoid lines, 5=big sights fine
   budget_ppd: number; // per person per day (excluding hotel)
-  surprise_level: SurpriseLevel; // 0=no surprises, 1=few twists, 2=surprise daily
+  surprise_level: number; // 0=no surprises, 1=few twists, 2=surprise daily
 }
 
 export interface AccessibilityPreferences {
@@ -56,7 +63,7 @@ export interface UserVibes {
   taste: TastePreferences;
   logistics: LogisticsPreferences;
   access: AccessibilityPreferences;
-  vibe_packs: string[]; // ["Foodie Quest", "Design & Coffee"]
+  vibe_packs: VibePackName[]; // ["Foodie Quest", "Design & Coffee"]
   trip_overrides?: Record<string, Partial<UserVibes>>; // Per-trip adjustments by tripId
   hard_constraints?: HardConstraints;
   created_at?: string;
@@ -64,7 +71,7 @@ export interface UserVibes {
 }
 
 // Available vibe packs
-export const VIBE_PACKS = {
+export const VIBE_PACKS: Record<string, VibePack> = {
   "Culture Crawl": {
     icon: "🏛️",
     description: "Museums, historic walks, early starts, timed tickets",

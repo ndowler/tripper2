@@ -9,7 +9,10 @@ import { WalkingDistanceSelect } from "@/app/preferences/sections/comfort/Walkin
 
 interface ComfortSectionProps {
   preferences: UserVibes;
-  updatePreference: (section: keyof UserVibes, updates: any) => void;
+  updatePreference: (
+    section: keyof UserVibes,
+    updates: Partial<UserVibes[keyof UserVibes]>
+  ) => void;
   isMounted: boolean;
 }
 
