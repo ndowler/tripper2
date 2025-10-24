@@ -41,7 +41,9 @@ export function VibePacksSection({
           const vibePacksArray = Array.isArray(preferences.vibe_packs)
             ? preferences.vibe_packs
             : [];
-          const isSelected = vibePacksArray.includes(name);
+          const isSelected = vibePacksArray.includes(
+            name as keyof typeof VIBE_PACKS
+          );
           const canSelect = vibePacksArray.length < 2 || isSelected;
 
           return (
@@ -55,10 +57,13 @@ export function VibePacksSection({
                 if (isSelected) {
                   updatePreference(
                     "vibe_packs",
-                    vibePacksArray.filter((p: string) => p !== name)
+                    vibePacksArray.filter((p) => p !== name)
                   );
                 } else if (canSelect) {
-                  updatePreference("vibe_packs", [...vibePacksArray, name]);
+                  updatePreference("vibe_packs", [
+                    ...vibePacksArray,
+                    name as keyof typeof VIBE_PACKS,
+                  ]);
                 }
               }}
               disabled={!canSelect && !isSelected}

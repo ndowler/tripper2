@@ -63,7 +63,7 @@ export interface UserVibes {
   taste: TastePreferences;
   logistics: LogisticsPreferences;
   access: AccessibilityPreferences;
-  vibe_packs: VibePack[]; // ["Foodie Quest", "Design & Coffee"]
+  vibe_packs: VibePackName[]; // ["Foodie Quest", "Design & Coffee"]
   trip_overrides?: Record<string, Partial<UserVibes>>; // Per-trip adjustments by tripId
   hard_constraints?: HardConstraints;
   created_at?: string;
@@ -71,7 +71,7 @@ export interface UserVibes {
 }
 
 // Available vibe packs
-export const VIBE_PACKS = {
+export const VIBE_PACKS: Record<string, VibePack> = {
   "Culture Crawl": {
     icon: "🏛️",
     description: "Museums, historic walks, early starts, timed tickets",
