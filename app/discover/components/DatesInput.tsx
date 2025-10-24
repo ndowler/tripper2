@@ -1,22 +1,9 @@
 import { BasicInput } from "@/components/basic/BasicInput";
+import { Destination } from "@/lib/types";
 
 interface DatesInputProps {
-  destination: {
-    city: string;
-    state: string;
-    country: string;
-    startDate: string;
-    endDate: string;
-  };
-  setDestination: React.Dispatch<
-    React.SetStateAction<{
-      city: string;
-      state: string;
-      country: string;
-      startDate: string;
-      endDate: string;
-    }>
-  >;
+  destination: Destination;
+  setDestination: React.Dispatch<React.SetStateAction<Destination>>;
 }
 
 export function DatesInput({ destination, setDestination }: DatesInputProps) {

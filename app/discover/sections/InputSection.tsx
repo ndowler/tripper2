@@ -1,30 +1,17 @@
+import { UserVibes } from "@/lib/types/vibes";
+import { Destination } from "@/lib/types";
 import { Sparkles } from "lucide-react";
-import { VibesPreviewSection } from "./VibesPreviewSection";
-import { getVibesSummary } from "@/lib/utils/vibes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { StateInput } from "@/app/discover/components/StateInput";
-import { DatesInput } from "@/app/discover/components/DatesInput";
 import { BasicInput } from "@/components/basic/BasicInput";
-import { UserVibes } from "@/lib/types/vibes";
+import { DatesInput } from "@/app/discover/components/DatesInput";
+import { StateInput } from "@/app/discover/components/StateInput";
+import { VibesPreviewSection } from "./VibesPreviewSection";
+import { getVibesSummary } from "@/lib/utils/vibes";
 
 interface InputSectionProps {
-  destination: {
-    city: string;
-    state: string;
-    country: string;
-    startDate: string;
-    endDate: string;
-  };
-  setDestination: React.Dispatch<
-    React.SetStateAction<{
-      city: string;
-      state: string;
-      country: string;
-      startDate: string;
-      endDate: string;
-    }>
-  >;
+  destination: Destination;
+  setDestination: React.Dispatch<React.SetStateAction<Destination>>;
   hasVibes: boolean;
   userVibes: UserVibes | null;
   handleGenerate: () => void;

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { Trip } from "@/lib/types";
+import { type Trip, EditTripData } from "@/lib/types";
 import { BasicInput } from "../basic/BasicInput";
 import { BasicTextarea } from "../basic/BasicTextarea";
 
@@ -28,33 +28,41 @@ export function EditTripModal({
 }: EditTripModalProps) {
   const updateTrip = useTripStore((state) => state.updateTrip);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [destination, setDestination] = useState("");
+  const [formData, setFormData] = useState<EditTripData>({
+    title: "",
+    description: "",
+    destination: { city: "" },
+  });
 
   useEffect(() => {
     if (trip) {
-      setTitle(trip.title);
-      setDescription(trip.description || "");
-      setDestination(trip.destination?.city || "");
+      setFormData({
+        title: trip.title,
+        description: trip.description || "",
+        destination: trip.destination || { city: "" },
+      });
     }
   }, [trip]);
+
+  const handleInputChange = (field: keyof EditTripData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!trip) return;
 
-    if (!title.trim()) {
+    if (!formData.title.trim()) {
       toast.error("Please enter a trip title");
       return;
     }
 
     updateTrip(trip.id, {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      destination: destination.trim()
-        ? { city: destination.trim() }
+      title: formData.title.trim(),
+      description: formData.description.trim() || undefined,
+      destination: formData.destination.city.trim()
+        ? { city: formData.destination.city.trim() }
         : undefined,
     });
 
@@ -64,9 +72,11 @@ export function EditTripModal({
 
   const handleCancel = () => {
     if (trip) {
-      setTitle(trip.title);
-      setDescription(trip.description || "");
-      setDestination(trip.destination?.city || "");
+      setFormData({
+        title: trip.title,
+        description: trip.description || "",
+        destination: trip.destination || { city: "" },
+      });
     }
     onOpenChange(false);
   };
@@ -85,8 +95,8 @@ export function EditTripModal({
           <BasicInput
             id="edit-title"
             label="Trip Title"
-            value={title}
-            onChange={(value) => setTitle(value)}
+            value={formData.title}
+            onChange={(value) => handleInputChange("title", value)}
             placeholder="e.g., Summer in Italy"
             required
             autoFocus
@@ -94,8 +104,8 @@ export function EditTripModal({
           <BasicTextarea
             id="edit-description"
             label="Description"
-            value={description}
-            onChange={(value) => setDescription(value)}
+            value={formData.description}
+            onChange={(value) => handleInputChange("description", value)}
             placeholder="e.g., 2-week adventure through Tuscany"
             rows={3}
           />
@@ -103,8 +113,13 @@ export function EditTripModal({
           <BasicInput
             id="edit-destination"
             label="Destination"
-            value={destination}
-            onChange={(value) => setDestination(value)}
+            value={formData.destination.city}
+            onChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                destination: { ...prev.destination, city: value },
+              }))
+            }
             placeholder="e.g., Rome, Italy"
           />
 

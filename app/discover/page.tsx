@@ -18,8 +18,7 @@ import { LoadingSection } from "./sections/LoadingSection";
 import { ErrorSection } from "./sections/ErrorSection";
 import { ResultsSection } from "./sections/ResultsSection";
 import { BulkActionsBar } from "./components/BulkActionsBar";
-
-type PageStep = "input" | "loading" | "results" | "error";
+import { Destination, PageStep } from "@/lib/types";
 
 export default function DiscoverPage() {
   const router = useRouter();
@@ -28,7 +27,7 @@ export default function DiscoverPage() {
   const userVibes = useTripStore((state) => state.userVibes);
   const addCard = useTripStore((state) => state.addCard);
   const [step, setStep] = useState<PageStep>("input");
-  const [destination, setDestination] = useState({
+  const [destination, setDestination] = useState<Destination>({
     city: "",
     state: "",
     country: "",
@@ -73,13 +72,7 @@ export default function DiscoverPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          destination: {
-            city: destination.city.trim(),
-            state: destination.state.trim() || undefined,
-            country: destination.country.trim() || undefined,
-            start: destination.startDate || undefined,
-            end: destination.endDate || undefined,
-          },
+          destination: destination,
           vibe_profile: userVibes,
         }),
       });

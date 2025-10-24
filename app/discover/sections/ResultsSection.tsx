@@ -1,15 +1,10 @@
+import { Destination, type PageStep } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
 interface ResultsSectionProps {
-  destination: {
-    city: string;
-    state?: string;
-    country?: string;
-  };
+  destination: Destination;
   suggestions: string;
-  setStep: React.Dispatch<
-    React.SetStateAction<"input" | "loading" | "results" | "error">
-  >;
+  setStep: React.Dispatch<React.SetStateAction<PageStep>>;
 }
 
 export function ResultsSection({

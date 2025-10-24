@@ -2,10 +2,8 @@
  * Types for AI-generated travel suggestions (Vibe Planner)
  */
 
-import { CardType } from ".";
+import { CardType, Daypart, Destination } from ".";
 import { UserVibes } from "./vibes";
-
-export type Daypart = "morning" | "afternoon" | "evening" | "night" | "any";
 
 export type SuggestionCategory =
   | "food"
@@ -70,13 +68,7 @@ export interface AiSuggestionContext {
 }
 
 export interface DiscoveryRequest {
-  destination: {
-    city: string;
-    state?: string;
-    country?: string;
-    start?: string; // ISO date
-    end?: string; // ISO date
-  };
+  destination: Destination;
   vibes?: UserVibes; // UserVibes (optional for LLM)
   vibe_profile?: UserVibes; // UserVibes (optional for LLM)
   limit?: number; // Number of suggestions to generate
