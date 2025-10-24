@@ -1,6 +1,7 @@
-import { Label } from "@/components/ui/label";
+"use client";
 import { Textarea } from "../ui/textarea";
 import { InputHTMLAttributes } from "react";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 
 interface BasicTextareaProps
   extends Omit<InputHTMLAttributes<HTMLTextAreaElement>, "onChange"> {
@@ -17,16 +18,18 @@ export function BasicTextarea({
   ...textareaProps
 }: BasicTextareaProps) {
   return (
-    <div>
-      <Label htmlFor={id} className="block text-sm font-medium mb-2 ml-2">
+    <Field>
+      <FieldLabel htmlFor={id} className="block text-sm font-medium mb-2 ml-2">
         {label}{" "}
         {textareaProps.required && <span className="text-destructive">*</span>}
-      </Label>
-      <Textarea
-        id={id}
-        {...textareaProps}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
+      </FieldLabel>
+      <FieldContent>
+        <Textarea
+          id={id}
+          {...textareaProps}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </FieldContent>
+    </Field>
   );
 }

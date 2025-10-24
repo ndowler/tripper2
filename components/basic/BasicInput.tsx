@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { InputHTMLAttributes } from "react";
 
 interface BasicInputProps
@@ -16,16 +16,18 @@ export function BasicInput({
   ...inputProps
 }: BasicInputProps) {
   return (
-    <div>
-      <Label htmlFor={id} className="block text-sm font-medium mb-2 ml-2">
+    <Field>
+      <FieldLabel htmlFor={id} className="block text-sm font-medium ml-2">
         {label}{" "}
         {inputProps.required && <span className="text-destructive">*</span>}
-      </Label>
-      <Input
-        id={id}
-        {...inputProps}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
+      </FieldLabel>
+      <FieldContent>
+        <Input
+          id={id}
+          {...inputProps}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </FieldContent>
+    </Field>
   );
 }
