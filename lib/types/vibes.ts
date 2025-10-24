@@ -1,7 +1,14 @@
 // User Vibes & Preferences Types
 
 export type DaypartBias = "early" | "balanced" | "late";
-// export type SurpriseLevel = 0 | 1 | 2;
+export type SurpriseLevel = 0 | 1 | 2;
+export type VibePack = {
+  icon: string;
+  description: string;
+  themes: Record<string, number>;
+  daypart: DaypartBias;
+  pace: number;
+};
 
 export interface ProfilePreferences {
   home_airport?: string;
@@ -56,7 +63,7 @@ export interface UserVibes {
   taste: TastePreferences;
   logistics: LogisticsPreferences;
   access: AccessibilityPreferences;
-  vibe_packs: string[]; // ["Foodie Quest", "Design & Coffee"]
+  vibe_packs: VibePack[]; // ["Foodie Quest", "Design & Coffee"]
   trip_overrides?: Record<string, Partial<UserVibes>>; // Per-trip adjustments by tripId
   hard_constraints?: HardConstraints;
   created_at?: string;
