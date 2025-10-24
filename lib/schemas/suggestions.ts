@@ -27,14 +27,14 @@ const bestTimes = ["morning", "afternoon", "evening", "night", "any"] as const;
 
 export const SuggestionCardSchema = z.object({
   id: z.string().min(6),
-  destination: z.string().min(1), // Ensure the desired destination is specified
   title: z.string().max(60),
-  subtitle: z.string().optional().nullable(), // changed here
-  description: z.string().max(160),
   category: z.enum(categories),
+  best_time: z.enum(bestTimes),
+  price_tier: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  subtitle: z.string().optional().nullable(),
+  description: z.string().max(160),
   tags: z.array(z.string()).max(5),
   est_duration_min: z.number().int().min(15).max(480),
-  best_time: z.enum(bestTimes),
   cost: z
     .object({
       amount: z.number().min(0),
@@ -42,7 +42,7 @@ export const SuggestionCardSchema = z.object({
     })
     .optional()
     .nullable(),
-  price_tier: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  confidence: z.number().min(0).max(1),
   area: z.string().optional().nullable(),
   booking: z
     .object({
@@ -60,8 +60,12 @@ export const SuggestionCardSchema = z.object({
     })
     .optional()
     .nullable(),
-  confidence: z.number().min(0).max(1),
   reasons: z.array(z.string()).max(3).optional().nullable(),
+  type: z.enum(suggestionTypes).optional().nullable(),
+  startTime: z.string().optional().nullable(),
+  endTime: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  duration: z.number().int().optional().nullable(),
 });
 
 export const SuggestionResponseSchema = z.object({
