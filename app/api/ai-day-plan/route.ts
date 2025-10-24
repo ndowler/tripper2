@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createZodCompletion, defaultModel } from "@/lib/openai-client";
+import { SuggestionCard } from "@/lib/types/suggestions";
 import { vibesToPrompt } from "@/lib/utils/vibes";
 import type { UserVibes } from "@/lib/types/vibes";
-import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { SuggestionCardSchema } from "@/lib/schemas/suggestions";
-import { SuggestionCard } from "@/lib/types/suggestions";
+
+import { buildDayPlanPrompts } from "@/lib/prompts/ai-day-plan-prompts";
 
 interface AIResponse {
   cards?: SuggestionCard[];
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const { location, startTime, endTime, notes, vibesContext } =
       await request.json();
-
+    console.log(`location ${location}`);
     if (!location) {
       return NextResponse.json(
         { error: "Location is required" },
@@ -40,36 +42,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const systemPrompt = `You are an expert travel planner. Generate a complete, realistic day itinerary in JSON format for ${location}.
-${
-  vibesPrompt
-    ? "CRITICAL: Tailor the entire itinerary to match the user's travel preferences. Respect their pace, budget, theme interests, crowd tolerance, walking limits, and all other preferences."
-    : ""
-}
-
-Requirements:
-- Include realistic start times and durations
-- Add 15-30 min travel time between locations
-- Consider meal times (breakfast ~8am, lunch ~1pm, dinner ~7pm)
-- Mix of activities (sightseeing, food, rest)
-- Total day should fit within time constraints
-- Include estimated costs
-${
-  vibesPrompt
-    ? "\n- Match activities to user's theme preferences and interests\n- Stay within user's budget constraints\n- Respect user's pace and walking limits\n- Consider user's crowd tolerance and timing preferences"
-    : ""
-}`;
-
-    const userPrompt = `Location: ${location}
-${startTime ? `Start time: ${startTime}` : "Start time: 9:00"}
-${endTime ? `End time: ${endTime}` : "End time: 22:00"}
-${notes ? `Additional notes: ${notes}` : ""}${vibesPrompt}
-
-Create a complete day itinerary for ${location}${
-      vibesPrompt
-        ? " that perfectly matches the user's travel style and preferences"
-        : ""
-    }.`;
+    // Build prompts from templates
+    const { systemPrompt, userPrompt } = buildDayPlanPrompts({
+      location,
+      vibesPrompt,
+      startTime,
+      endTime,
+      notes,
+    });
 
     const completion = await createZodCompletion(
       defaultModel,
@@ -86,13 +66,22 @@ Create a complete day itinerary for ${location}${
     let cards: SuggestionCard[] = [];
 
     try {
-      const parsed = completion.parsed as AIResponse;
+      const parsed = completion.parsed as AIResponse | SuggestionCard;
       // console.log("Parsed OpenAI response:", JSON.stringify(parsed, null, 2));
-      cards = Array.isArray(parsed.cards)
-        ? parsed.cards
-        : Array.isArray(parsed.activities)
-        ? parsed.activities
-        : [];
+
+      // Handle single card object or array responses
+      if (Array.isArray(parsed)) {
+        cards = parsed;
+      } else if (parsed && typeof parsed === "object") {
+        if ("cards" in parsed && Array.isArray(parsed.cards)) {
+          cards = parsed.cards;
+        } else if ("activities" in parsed && Array.isArray(parsed.activities)) {
+          cards = parsed.activities;
+        } else if ("title" in parsed && "description" in parsed) {
+          // Single card object returned directly
+          cards = [parsed as SuggestionCard];
+        }
+      }
 
       if (!cards || cards.length === 0) {
         console.error("No cards found in response:", parsed);

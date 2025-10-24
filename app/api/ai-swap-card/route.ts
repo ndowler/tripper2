@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { SwapCardResponseSchema } from "@/lib/schemas/suggestions";
 import { SuggestionCard } from "@/lib/types/suggestions";
+import { swapCardPrompt } from "@/lib/prompts/ai-swap-card-prompts";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,24 +42,11 @@ ${
 `;
     }
 
-    const systemPrompt = `You are a travel planning assistant. Generate 2-3 similar alternatives to a given activity.
-
-Rules:
-- Generate 2-3 alternatives that are SIMILAR to the original activity
-- Same general category and vibe
-- Similar price range (±30%)
-- Similar duration (±30 minutes)
-- Different specific venue/activity
-- Provide reasoning for why each is a good swap
-- Respect user preferences if provided
-- Include realistic pricing and durations`;
-
-    const userPrompt = `Find similar alternatives to this activity in ${destination}:
-
-${cardContext}
-${vibesContext}
-
-Generate 2-3 similar alternatives that match the same vibe and category.`;
+    const { userPrompt, systemPrompt } = swapCardPrompt({
+      destination,
+      cardContext,
+      vibesContext,
+    });
 
     const completion = await createZodCompletion(
       defaultModel,

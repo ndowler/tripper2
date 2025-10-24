@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import { AISuggestionsSchema } from "@/lib/schemas/suggestions";
 import { SuggestionCard } from "@/lib/types/suggestions";
+import { regenerateCardPrompt } from "@/lib/prompts/ai-regenerate-card-prompts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,31 +42,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const systemPrompt = `You are a travel planning assistant. Generate ONE alternative suggestion for a ${cardType} in JSON format.
-
-Return ONLY a JSON object with this exact structure:
-{
-  "type": "${cardType}",
-  "title": "Specific name or activity",
-  "description": "Brief 1-2 sentence description",
-  "duration": number (in minutes),
-  "tags": ["tag1", "tag2"],
-  "location": "Specific location",
-  "startTime": "${timeSlot}" (keep the same time slot)
-}
-
-Make the suggestion:
-- Different from existing activities
-- Specific to the destination
-- Realistic and well-timed
-- Include actual place names`;
-
-    const userPrompt = `Destination: ${destination || "the destination"}
-Time slot: ${timeSlot || "flexible"}${contextString}
-
-Generate ONE alternative ${cardType} suggestion for ${
-      destination || "this destination"
-    }.`;
+    const { systemPrompt, userPrompt } = regenerateCardPrompt({
+      destination,
+      cardType,
+      timeSlot,
+      contextString,
+    });
 
     const completion = await createZodCompletion(
       defaultModel,
