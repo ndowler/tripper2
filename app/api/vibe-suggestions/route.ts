@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: DiscoveryRequest = await request.json();
-    const { destination, vibe_profile } = body;
+    const { destination, vibe_profile, category } = body as DiscoveryRequest & { category?: string };
 
     if (!destination?.city) {
       return NextResponse.json(
@@ -42,8 +42,26 @@ export async function POST(request: NextRequest) {
       0
     );
 
+    // Category-specific instructions
+    const categoryInstructions = category
+      ? `\n\nCATEGORY FOCUS: The user specifically requested "${category}" suggestions.
+${
+  category === "food"
+    ? "Generate ONLY food-related suggestions: restaurants, cafes, street food, markets, food tours, cooking classes."
+    : category === "culture"
+    ? "Generate ONLY cultural and activity suggestions: museums, historical sites, art galleries, cultural experiences, guided tours, workshops."
+    : category === "nature"
+    ? "Generate ONLY nature and outdoor suggestions: parks, gardens, hiking trails, beaches, scenic viewpoints, outdoor activities."
+    : category === "entertainment"
+    ? "Generate ONLY entertainment suggestions: shows, concerts, theaters, nightlife, clubs, bars, live music venues."
+    : category === "shopping"
+    ? "Generate ONLY shopping suggestions: markets, boutiques, malls, local shops, craft stores, specialty stores."
+    : ""
+}`
+      : "";
+
     const systemPrompt = `You are a precise trip-planning card generator.
-Return ONLY valid JSON array of 20 objects that match the provided schema.
+Return ONLY valid JSON array of 5 objects that match the provided schema.
 Do not invent exact prices or hours. Use general price_tier 0..3.
 Prefer well-known, safe, and open-to-the-public options inside the destination.
 Keep titles < 60 chars; descriptions ≤ 160 chars; max 5 tags.
@@ -51,7 +69,7 @@ Respect constraints (dietary, accessibility). Explain matches in "reasons".
 Self-score "confidence" 0..1 based on how well each item fits the vibe_profile.
 
 CRITICAL RULES:
-- Mix categories to avoid monotony; cap any single category at 4 unless its theme weight ≥ 0.9
+- ${category ? `Focus EXCLUSIVELY on ${category} suggestions as specified` : "Mix categories to avoid monotony; vary the suggestions across different types"}
 - Align items to "daypart_bias"; early = more morning options, late = evening/night options
 - If crowd_tolerance ≤ 2, favor timed/early-entry or low-crowd alternatives
 - If dietary constraints exist, ensure food items comply (e.g., no pork, vegetarian, etc.)
@@ -62,6 +80,7 @@ CRITICAL RULES:
       .slice(0, 3)}-001", "${destination.city
       .toLowerCase()
       .slice(0, 3)}-002", etc.
+${categoryInstructions}
 
 ${
   vibesPrompt
@@ -72,17 +91,14 @@ ${
     const userPrompt = `DESTINATION:
 - city: ${destination.city}
 - country: ${destination.country || "N/A"}
-- dates: ${destination.start || "N/A"} to ${
-      destination.end || "N/A"
-    } (approximate; use for seasonal context only)
 
 ${vibesPrompt ? `VIBE_PROFILE:\n${vibesPrompt}` : ""}
 
 INSTRUCTIONS:
-Generate exactly 20 SuggestionCard objects as a JSON array for ${
+Generate exactly 5 SuggestionCard objects as a JSON array for ${
       destination.city
     }${destination.country ? `, ${destination.country}` : ""}.
-Return ONLY the JSON array of 20 objects.`;
+Return ONLY the JSON array of 5 objects.`;
 
     const completion = await createZodCompletion(
       defaultModel,
@@ -100,15 +116,15 @@ Return ONLY the JSON array of 20 objects.`;
       ? (completion.parsed as { suggestions: any[] }).suggestions
       : [];
 
-    // Accept 10-20 valid suggestions
-    if (suggestions.length < 10) {
+    // Accept 3-5 valid suggestions
+    if (suggestions.length < 3) {
       throw new Error(
         `Only ${suggestions.length} valid suggestions generated. Please try again.`
       );
     }
 
     return NextResponse.json({
-      suggestions: suggestions.slice(0, 20),
+      suggestions: suggestions.slice(0, 5),
       model: completion.model,
       usage: completion.usage,
     });

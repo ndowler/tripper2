@@ -9,9 +9,10 @@ interface SortableCardProps {
   card: Card
   tripId: string
   dayId: string
+  userId: string
 }
 
-export function SortableCard({ card, tripId, dayId }: SortableCardProps) {
+export function SortableCard({ card, tripId, dayId, userId }: SortableCardProps) {
   const {
     attributes,
     listeners,
@@ -42,7 +43,7 @@ export function SortableCard({ card, tripId, dayId }: SortableCardProps) {
       {...listeners}
       className="cursor-grab active:cursor-grabbing touch-none"
     >
-      <TripCard card={card} tripId={tripId} dayId={dayId} />
+      <TripCard card={card} tripId={tripId} dayId={dayId} userId={userId} />
     </div>
   )
 }

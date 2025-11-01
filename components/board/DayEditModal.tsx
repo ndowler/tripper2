@@ -18,13 +18,16 @@ import { Calendar } from 'lucide-react'
 interface DayEditModalProps {
   day: Day
   tripId: string
+  userId: string
   open: boolean
   onClose: () => void
 }
 
-export function DayEditModal({ day, tripId, open, onClose }: DayEditModalProps) {
+export function DayEditModal({ day, tripId, userId, open, onClose }: DayEditModalProps) {
   const [title, setTitle] = useState(day.title || '')
   const [date, setDate] = useState(day.date)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const updateDay = useTripStore(state => state.updateDay)
   const deleteDay = useTripStore(state => state.deleteDay)
@@ -36,49 +39,66 @@ export function DayEditModal({ day, tripId, open, onClose }: DayEditModalProps) 
     setDate(day.date)
   }, [day])
   
-  const handleSave = () => {
-    const dateChanged = date !== day.date
+  const handleSave = async () => {
+    setIsSaving(true)
     
-    // Update day details
-    updateDay(tripId, day.id, {
-      title: title.trim() || undefined,
-      date,
-    })
-    
-    // If date changed, reorder days chronologically
-    if (dateChanged && trip) {
-      const currentIndex = trip.days.findIndex(d => d.id === day.id)
+    try {
+      const dateChanged = date !== day.date
       
-      // Find correct position based on new date
-      let newIndex = trip.days.findIndex((d, i) => {
-        if (i === currentIndex) return false // Skip the current day
-        return new Date(d.id === day.id ? date : d.date) > new Date(date)
-      })
+      // Update day details
+      await updateDay(tripId, day.id, {
+        title: title.trim() || undefined,
+        date,
+      }, userId)
       
-      // If no day is later, put at end
-      if (newIndex === -1) {
-        newIndex = trip.days.length - 1
-      }
-      
-      // Reorder if position changed
-      if (currentIndex !== newIndex) {
-        reorderDays(tripId, currentIndex, newIndex)
-        toast.success('Day updated and reordered')
+      // If date changed, reorder days chronologically
+      if (dateChanged && trip) {
+        const currentIndex = trip.days.findIndex(d => d.id === day.id)
+        
+        // Find correct position based on new date
+        let newIndex = trip.days.findIndex((d, i) => {
+          if (i === currentIndex) return false // Skip the current day
+          return new Date(d.id === day.id ? date : d.date) > new Date(date)
+        })
+        
+        // If no day is later, put at end
+        if (newIndex === -1) {
+          newIndex = trip.days.length - 1
+        }
+        
+        // Reorder if position changed
+        if (currentIndex !== newIndex) {
+          await reorderDays(tripId, currentIndex, newIndex, userId)
+          toast.success('Day updated and reordered')
+        } else {
+          toast.success('Day updated')
+        }
       } else {
         toast.success('Day updated')
       }
-    } else {
-      toast.success('Day updated')
+      
+      onClose()
+    } catch (error) {
+      console.error('Failed to save day:', error)
+      toast.error('Failed to save day')
+    } finally {
+      setIsSaving(false)
     }
-    
-    onClose()
   }
   
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Delete this day and all its cards?')) {
-      deleteDay(tripId, day.id)
-      toast.success('Day deleted')
-      onClose()
+      setIsDeleting(true)
+      try {
+        await deleteDay(tripId, day.id, userId)
+        toast.success('Day deleted')
+        onClose()
+      } catch (error) {
+        console.error('Failed to delete day:', error)
+        toast.error('Failed to delete day')
+      } finally {
+        setIsDeleting(false)
+      }
     }
   }
   
@@ -126,12 +146,15 @@ export function DayEditModal({ day, tripId, open, onClose }: DayEditModalProps) 
           <Button
             variant="destructive"
             onClick={handleDelete}
+            disabled={isSaving || isDeleting}
           >
-            Delete Day
+            {isDeleting ? 'Deleting...' : 'Delete Day'}
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button variant="outline" onClick={onClose} disabled={isSaving || isDeleting}>Cancel</Button>
+            <Button onClick={handleSave} disabled={isSaving || isDeleting}>
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

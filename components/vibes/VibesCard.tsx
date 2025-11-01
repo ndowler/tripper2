@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, ChevronDown, ChevronUp, Settings, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function VibesCard() {
+interface VibesCardProps {
+  userId: string;
+}
+
+export function VibesCard({ userId }: VibesCardProps) {
   const userVibes = useTripStore((state) => state.userVibes);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -88,7 +92,7 @@ export function VibesCard() {
             </div>
             <div>
               <span className="text-muted-foreground">Budget:</span>
-              <span className="ml-2 font-medium">€{userVibes.logistics.budget_ppd}/day</span>
+              <span className="ml-2 font-medium">${userVibes.logistics.budget_ppd}/day</span>
             </div>
             <div>
               <span className="text-muted-foreground">Crowds:</span>

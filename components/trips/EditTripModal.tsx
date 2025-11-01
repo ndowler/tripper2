@@ -13,14 +13,16 @@ interface EditTripModalProps {
   trip: Trip | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  userId: string
 }
 
-export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) {
+export function EditTripModal({ trip, open, onOpenChange, userId }: EditTripModalProps) {
   const updateTrip = useTripStore((state) => state.updateTrip)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [destination, setDestination] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (trip) {
@@ -30,7 +32,7 @@ export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) 
     }
   }, [trip])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!trip) return
@@ -40,14 +42,23 @@ export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) 
       return
     }
 
-    updateTrip(trip.id, {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      destination: destination.trim() || undefined,
-    })
+    setIsSubmitting(true)
 
-    toast.success('Trip updated!')
-    onOpenChange(false)
+    try {
+      await updateTrip(trip.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        destination: destination.trim() || undefined,
+      }, userId)
+
+      toast.success('Trip updated!')
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Failed to update trip:', error)
+      toast.error('Failed to update trip. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancel = () => {
@@ -112,10 +123,12 @@ export function EditTripModal({ trip, open, onOpenChange }: EditTripModalProps) 
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </form>
       </DialogContent>

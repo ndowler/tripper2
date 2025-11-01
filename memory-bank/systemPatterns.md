@@ -3,7 +3,7 @@
 **Project:** Tripper  
 **Framework:** Next.js 15 (App Router)  
 **Language:** TypeScript 5  
-**Last Updated:** October 6, 2025
+**Last Updated:** November 1, 2025
 
 ---
 
@@ -34,16 +34,26 @@
 └────────────────┬────────────────────────────┘
                  │
 ┌────────────────┴────────────────────────────┐
-│         Data Persistence Layer              │
-│  localStorage (key: 'tripper-store')        │
+│         Services Layer (NEW)                │
+│  (lib/services/) - Data access abstraction  │
+│   - trips-service.ts   - Trip CRUD          │
+│   - cards-service.ts   - Card CRUD          │
+│   - days-service.ts    - Day CRUD           │
+│   - preferences-service.ts - User prefs     │
+└────────────────┬────────────────────────────┘
+                 │
+┌────────────────┴────────────────────────────┐
+│         Data Persistence Layer (HYBRID)     │
+│  localStorage + Supabase                    │
+│   - localStorage: Instant, offline-first    │
+│   - Supabase: Cloud sync, multi-device      │
 │   - Auto-save with 500ms debounce           │
-│   - Offline-first, zero latency             │
 └────────────────┬────────────────────────────┘
                  │
 ┌────────────────┴────────────────────────────┐
 │           External Services                 │
+│   - Supabase (auth, database, realtime)     │
 │   - OpenAI GPT-4o-mini (AI features)        │
-│   - Future: Supabase (cloud sync)           │
 │   - Future: Affiliate APIs (bookings)       │
 └─────────────────────────────────────────────┘
 ```
@@ -60,12 +70,32 @@ tripper/
 │   │   ├── ai-day-plan/          # Generate full day plan
 │   │   ├── ai-regenerate-card/   # Regenerate single card
 │   │   ├── ai-suggestions/       # Get AI card suggestions
+│   │   ├── ai-swap-card/         # Swap card with AI
 │   │   └── vibe-suggestions/     # Personalized travel suggestions
+│   ├── about/                    # About page (NEW)
+│   │   └── page.tsx
+│   ├── auth/                     # Auth callbacks (NEW)
+│   │   └── callback/
+│   │       └── route.ts
 │   ├── demo/                     # Demo trip page
 │   │   └── page.tsx
 │   ├── discover/                 # AI discovery page
 │   │   └── page.tsx
+│   ├── forgot-password/          # Password reset (NEW)
+│   │   └── page.tsx
+│   ├── login/                    # Authentication (NEW)
+│   │   └── page.tsx
 │   ├── preferences/              # User settings
+│   │   └── page.tsx
+│   ├── privacy/                  # Privacy policy (NEW)
+│   │   └── page.tsx
+│   ├── profile/                  # User profile (NEW)
+│   │   └── page.tsx
+│   ├── reset-password/           # Password reset (NEW)
+│   │   └── page.tsx
+│   ├── signup/                   # Registration (NEW)
+│   │   └── page.tsx
+│   ├── terms/                    # Terms of service (NEW)
 │   │   └── page.tsx
 │   ├── trip/                     # Individual trip routes
 │   │   └── [id]/                 # Dynamic trip ID
@@ -76,7 +106,8 @@ tripper/
 │   │   └── page.tsx
 │   ├── globals.css               # Global styles
 │   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Landing page
+│   ├── page.tsx                  # Landing page
+│   └── sitemap.ts                # Sitemap generator (NEW)
 │
 ├── components/                   # React components
 │   ├── board/                    # Trip board components
@@ -116,13 +147,19 @@ tripper/
 │   │   ├── input.tsx
 │   │   ├── textarea.tsx
 │   │   └── toaster.tsx
-│   └── vibes/                    # Vibes & discovery
-│       ├── EmojiSelector.tsx
-│       ├── SliderInput.tsx
-│       ├── SuggestionGrid.tsx
-│       ├── ThemePicker.tsx
-│       ├── VibePackSelector.tsx
-│       └── VibesCard.tsx
+│   ├── vibes/                    # Vibes & discovery
+│   │   ├── EmojiSelector.tsx
+│   │   ├── SliderInput.tsx
+│   │   ├── SuggestionGrid.tsx
+│   │   ├── ThemePicker.tsx
+│   │   ├── VibePackSelector.tsx
+│   │   └── VibesCard.tsx
+│   ├── profile/                  # Profile management (NEW)
+│   │   ├── ProfileInformation.tsx
+│   │   ├── PreferencesSummary.tsx
+│   │   └── SecuritySettings.tsx
+│   └── migration/                # Data migration (NEW)
+│       └── MigrationDialog.tsx
 │
 ├── lib/                          # Core logic & utilities
 │   ├── hooks/                    # Custom React hooks
@@ -132,17 +169,28 @@ tripper/
 │   │   ├── index.ts              # Card & Trip schemas
 │   │   ├── suggestions.ts        # SuggestionCard schema
 │   │   └── vibes.ts              # UserVibes schema
+│   ├── services/                 # Data access layer (NEW)
+│   │   ├── trips-service.ts      # Trip CRUD operations
+│   │   ├── cards-service.ts      # Card CRUD operations
+│   │   ├── days-service.ts       # Day CRUD operations
+│   │   └── preferences-service.ts # User preferences
 │   ├── store/                    # State management
 │   │   └── tripStore.ts          # Zustand store with persistence
+│   ├── supabase/                 # Supabase integration (NEW)
+│   │   ├── client.ts             # Client-side instance
+│   │   ├── server.ts             # Server-side instance
+│   │   ├── middleware.ts         # Auth middleware helpers
+│   │   └── database.sql          # Schema & RLS policies
 │   ├── types/                    # TypeScript types
 │   │   ├── index.ts              # Core types (Trip, Card, Day)
 │   │   ├── suggestions.ts        # SuggestionCard types
 │   │   └── vibes.ts              # UserVibes types
 │   ├── utils/                    # Utility functions
 │   │   ├── dnd.ts                # Drag & drop helpers
-│   │   ├── storage.ts            # localStorage utilities
+│   │   ├── migration.ts          # Data migration (NEW)
 │   │   ├── suggestions.ts        # Suggestion conversion
 │   │   ├── time.ts               # Time formatting
+│   │   ├── trips.ts              # Trip utilities (NEW)
 │   │   └── vibes.ts              # Vibes utilities
 │   ├── constants.ts              # App constants
 │   ├── seed-data.ts              # Demo trip data
@@ -156,8 +204,12 @@ tripper/
 │   ├── progress.md               # Completed phases
 │   └── techStack.md              # Technologies & rationale
 │
-├── .cursor/rules/                # AI assistant rules (future)
+├── .cursor/rules/                # AI assistant rules
+│   ├── core.mdc                  # Core operating modes
+│   ├── memory-bank.mdc           # Memory bank system
+│   └── tripper-project.mdc       # Project intelligence
 ├── components.json               # shadcn/ui config
+├── middleware.ts                 # Auth middleware (NEW)
 ├── next.config.js                # Next.js configuration
 ├── package.json                  # Dependencies
 ├── postcss.config.js             # PostCSS config
@@ -360,7 +412,255 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-### 5. Validation Patterns
+### 5. Services Layer Pattern (NEW)
+
+#### Service Module Structure
+Services abstract data access from UI components:
+```typescript
+// lib/services/trips-service.ts
+import { createClient } from '@/lib/supabase/client'
+import type { Trip } from '@/lib/types'
+
+export async function getTrips(userId: string): Promise<Trip[]> {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('trips')
+    .select('*, days(*, cards(*))')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+  
+  if (error) throw error
+  return data as Trip[]
+}
+
+export async function createTrip(trip: Omit<Trip, 'id'>): Promise<Trip> {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('trips')
+    .insert([trip])
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data as Trip
+}
+
+export async function updateTrip(id: string, updates: Partial<Trip>): Promise<Trip> {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('trips')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data as Trip
+}
+
+export async function deleteTrip(id: string): Promise<void> {
+  const supabase = createClient()
+  
+  const { error } = await supabase
+    .from('trips')
+    .delete()
+    .eq('id', id)
+  
+  if (error) throw error
+}
+```
+
+#### Component Usage
+```typescript
+// Components use services, not direct Supabase calls
+import { getTrips, createTrip } from '@/lib/services/trips-service'
+
+function TripsPage() {
+  const [trips, setTrips] = useState<Trip[]>([])
+  
+  useEffect(() => {
+    async function loadTrips() {
+      const user = await getCurrentUser()
+      if (user) {
+        const data = await getTrips(user.id)
+        setTrips(data)
+      }
+    }
+    loadTrips()
+  }, [])
+  
+  return <TripGrid trips={trips} />
+}
+```
+
+### 6. Supabase Patterns (NEW)
+
+#### Client-Side Supabase
+```typescript
+// lib/supabase/client.ts
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+#### Server-Side Supabase
+```typescript
+// lib/supabase/server.ts
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  const cookieStore = await cookies()
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+}
+```
+
+#### Auth Middleware
+```typescript
+// middleware.ts
+import { updateSession } from '@/lib/supabase/middleware'
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request)
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
+```
+
+#### Row-Level Security (RLS)
+```sql
+-- lib/supabase/database.sql
+
+-- Enable RLS
+ALTER TABLE trips ENABLE ROW LEVEL SECURITY;
+
+-- Users can only see their own trips
+CREATE POLICY "Users can view own trips"
+  ON trips FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Users can only create trips for themselves
+CREATE POLICY "Users can create own trips"
+  ON trips FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can only update their own trips
+CREATE POLICY "Users can update own trips"
+  ON trips FOR UPDATE
+  USING (auth.uid() = user_id);
+
+-- Users can only delete their own trips
+CREATE POLICY "Users can delete own trips"
+  ON trips FOR DELETE
+  USING (auth.uid() = user_id);
+```
+
+#### Authentication Flow
+```typescript
+// Login
+const { data, error } = await supabase.auth.signInWithPassword({
+  email,
+  password,
+})
+
+// Signup
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    data: { full_name }
+  }
+})
+
+// Password Reset
+const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: `${window.location.origin}/reset-password`,
+})
+
+// Logout
+await supabase.auth.signOut()
+```
+
+### 7. Data Migration Pattern (NEW)
+
+#### Migration Utilities
+```typescript
+// lib/utils/migration.ts
+import { createClient } from '@/lib/supabase/client'
+import type { Trip } from '@/lib/types'
+
+export async function migrateLocalStorageToSupabase(userId: string) {
+  // 1. Load from localStorage
+  const storedData = localStorage.getItem('tripper-store')
+  if (!storedData) return
+  
+  const { trips } = JSON.parse(storedData)
+  
+  // 2. Migrate each trip
+  const supabase = createClient()
+  for (const trip of Object.values(trips)) {
+    await migrateTrip(supabase, trip as Trip, userId)
+  }
+  
+  // 3. Clear localStorage after successful migration
+  localStorage.removeItem('tripper-store')
+}
+
+async function migrateTrip(supabase: any, trip: Trip, userId: string) {
+  // Insert trip
+  const { data: tripData } = await supabase
+    .from('trips')
+    .insert([{ ...trip, user_id: userId }])
+    .select()
+    .single()
+  
+  // Insert days and cards
+  for (const day of trip.days) {
+    const { data: dayData } = await supabase
+      .from('days')
+      .insert([{ ...day, trip_id: tripData.id }])
+      .select()
+      .single()
+    
+    for (const card of day.cards) {
+      await supabase
+        .from('cards')
+        .insert([{ ...card, day_id: dayData.id }])
+    }
+  }
+}
+```
+
+### 9. Validation Patterns
 
 #### Schema-First Approach
 Define Zod schemas, then infer TypeScript types:

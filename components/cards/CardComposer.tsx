@@ -14,13 +14,15 @@ import { AiCardSuggestion } from './AiCardSuggestion'
 interface CardComposerProps {
   tripId: string
   dayId: string
+  userId: string
 }
 
-export function CardComposer({ tripId, dayId }: CardComposerProps) {
+export function CardComposer({ tripId, dayId, userId }: CardComposerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showAi, setShowAi] = useState(false)
   const [title, setTitle] = useState('')
   const [selectedType, setSelectedType] = useState<CardType>('activity')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   
   const addCard = useTripStore(state => state.addCard)
@@ -31,26 +33,35 @@ export function CardComposer({ tripId, dayId }: CardComposerProps) {
     }
   }, [isOpen])
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!title.trim()) return
     
-    const template = CARD_TEMPLATES[selectedType]
+    setIsSubmitting(true)
     
-    addCard(tripId, dayId, {
-      id: nanoid(),
-      type: selectedType,
-      title: title.trim(),
-      duration: template.duration,
-      tags: [],
-      links: [],
-      status: 'pending',
-    })
-    
-    toast.success('Card added')
-    setTitle('')
-    setIsOpen(false)
+    try {
+      const template = CARD_TEMPLATES[selectedType]
+      
+      await addCard(tripId, dayId, {
+        id: nanoid(),
+        type: selectedType,
+        title: title.trim(),
+        duration: template.duration,
+        tags: [],
+        links: [],
+        status: 'todo',
+      }, userId)
+      
+      toast.success('Card added')
+      setTitle('')
+      setIsOpen(false)
+    } catch (error) {
+      console.error('Failed to add card:', error)
+      toast.error('Failed to add card')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
   
   const handleCancel = () => {
@@ -87,6 +98,7 @@ export function CardComposer({ tripId, dayId }: CardComposerProps) {
       <AiCardSuggestion
         tripId={tripId}
         dayId={dayId}
+        userId={userId}
         onClose={() => setShowAi(false)}
       />
     )

@@ -7,6 +7,8 @@ Tripper is a lightning-fast, offline-first trip planning application. Think "Tre
 
 ## Tech Stack Essentials
 - Next.js 15 (App Router) - Server components where possible
+- Supabase - PostgreSQL database, authentication, cloud sync
+- @supabase/ssr - Server-side rendering support for Supabase
 - Zustand + Immer - State management with immutable updates
 - Zundo - Temporal state (undo/redo) middleware for Zustand
 - dnd-kit - Modern drag & drop (replaces react-beautiful-dnd)
@@ -14,7 +16,7 @@ Tripper is a lightning-fast, offline-first trip planning application. Think "Tre
 - Tailwind + shadcn/ui - Utility-first styling with accessible primitives
 - Zod - Runtime validation and TypeScript inference
 - date-fns - Date manipulation and formatting
-- localStorage (MVP) → Supabase (future)
+- Hybrid persistence: localStorage (instant) + Supabase (cloud sync)
 
 ## Critical Implementation Paths
 
@@ -26,18 +28,23 @@ set((state) => {
 })
 ```
 
-After state changes, call `debouncedSave(get())` to persist to localStorage.
+After state changes:
+1. Save to localStorage (instant, via middleware)
+2. Sync to Supabase (background, via services)
 
 ### Adding Features Checklist
 1. Update types in `lib/types/index.ts`
 2. Add Zod schema in `lib/schemas/index.ts`
-3. Add store action in `lib/store/tripStore.ts` (with Immer)
-4. Create UI component in `components/`
-5. Wire up component to store
-6. Add toast notification feedback
-7. Handle edge cases (null checks, special IDs)
-8. Update seed data if needed
-9. Test with undo/redo
+3. Add service methods in `lib/services/` (if data access needed)
+4. Add store action in `lib/store/tripStore.ts` (with Immer)
+5. Create UI component in `components/`
+6. Wire up component to store and services
+7. Add toast notification feedback
+8. Handle edge cases (null checks, special IDs, auth state)
+9. Update database schema in `lib/supabase/database.sql` if needed
+10. Update seed data if needed
+11. Test with undo/redo
+12. Test with authenticated and unauthenticated states
 
 ### Drag & Drop (IMPLEMENTED)
 Use dnd-kit with these sensors:
@@ -60,6 +67,59 @@ Use dnd-kit with these sensors:
 - Server components: Default (no directive needed)
 
 ### Special Patterns Discovered
+
+**Supabase Client/Server Pattern:**
+```typescript
+// Client-side (components)
+import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
+const { data, error } = await supabase.from('trips').select()
+
+// Server-side (API routes, Server Components)
+import { createClient } from '@/lib/supabase/server'
+
+const supabase = await createClient()
+const { data, error } = await supabase.from('trips').select()
+```
+
+**Services Layer Pattern:**
+```typescript
+// Abstract data access in services
+// lib/services/trips-service.ts
+export async function getTrips(userId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('trips')
+    .select('*, days(*, cards(*))')
+    .eq('user_id', userId)
+  
+  if (error) throw error
+  return data
+}
+
+// Components use services
+import { getTrips } from '@/lib/services/trips-service'
+const trips = await getTrips(user.id)
+```
+
+**Auth Middleware Pattern:**
+```typescript
+// middleware.ts protects routes
+import { updateSession } from '@/lib/supabase/middleware'
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request)
+}
+```
+
+**Row-Level Security (RLS) Pattern:**
+```sql
+-- Users can only see their own trips
+CREATE POLICY "Users can view own trips"
+  ON trips FOR SELECT
+  USING (auth.uid() = user_id);
+```
 
 **Unassigned Cards (Special ID Pattern):**
 ```typescript
@@ -180,20 +240,32 @@ const { undo, redo, pastStates, futureStates } = useStore(
 ## File Organization
 ```
 lib/
-  ├── types/       # TypeScript interfaces
-  ├── schemas/     # Zod validation schemas
-  ├── store/       # Zustand state management
-  ├── utils/       # Pure utility functions
-  └── constants.ts # App-wide constants
+  ├── types/        # TypeScript interfaces
+  ├── schemas/      # Zod validation schemas
+  ├── store/        # Zustand state management
+  ├── services/     # Data access layer (NEW)
+  ├── supabase/     # Supabase client/server/middleware (NEW)
+  ├── utils/        # Pure utility functions
+  └── constants.ts  # App-wide constants
 
 components/
-  ├── board/       # Board, DayColumn, AddDay
-  ├── cards/       # TripCard, CardComposer
-  └── ui/          # shadcn/ui primitives
+  ├── board/        # Board, DayColumn, AddDay
+  ├── cards/        # TripCard, CardComposer
+  ├── profile/      # Profile management (NEW)
+  ├── migration/    # Data migration (NEW)
+  └── ui/           # shadcn/ui primitives
 
 app/
-  ├── (trip)/      # Trip-related routes
-  └── demo/        # Demo trip page
+  ├── api/          # API routes
+  ├── auth/         # Auth callbacks (NEW)
+  ├── login/        # Authentication (NEW)
+  ├── signup/       # Registration (NEW)
+  ├── profile/      # User profile (NEW)
+  ├── trips/        # Trips overview
+  ├── trip/[id]/    # Individual trip
+  └── demo/         # Demo trip page
+
+middleware.ts       # Route protection (NEW)
 ```
 
 ## Evolution Notes
@@ -212,9 +284,19 @@ app/
 7. **Defensive Programming:** Always null-check optional properties before accessing
 8. **Client-Only Components:** Mark with 'use client' and handle SSR appropriately
 
-## Roadmap: Phases 4-8 (Fully Planned)
+## Roadmap: Phases Completed & Planned
 
-### Phase 4: Utilities & Polish (1 evening)
+### Phase 4.4: Profile + Supabase (✅ COMPLETE - Nov 1, 2025)
+- Supabase integration (auth, database, RLS)
+- User authentication (email/password, OAuth)
+- Profile management (info, preferences, security)
+- Cloud synchronization
+- Data migration from localStorage
+- Services layer abstraction
+- Auth middleware for route protection
+- **Result:** Production-ready with cloud sync
+
+### Phase 4.5: Affiliate Links (Planned - 6-8 hours)
 - Export/import (JSON)
 - Accessibility audit (WCAG 2.1 AA)
 - Mobile optimizations
@@ -260,10 +342,11 @@ app/
   - PostHog for analytics, Sentry for errors
 
 ## Version Milestones
-- **MVP (Post-Phase 4):** Offline planner, no auth
-- **v1.0 (Post-Phase 6):** Cloud sync, auth, multi-select
-- **v1.5 (Post-Phase 7):** AI features, maps, collaboration
-- **v2.0 (Post-Phase 8):** Mobile apps, real-time, premium features
+- **MVP (Post-Phase 4.3):** Offline planner, no auth ✅
+- **v0.9 (Post-Phase 4.4):** Cloud sync, auth ✅ CURRENT
+- **v1.0 (Post-Phase 4.5):** Affiliate links, revenue generation
+- **v1.5 (Post-Phase 5-6):** Multi-select, visual polish, AI improvements
+- **v2.0 (Future):** Mobile apps, real-time collaboration, premium features
 
 ## Monetization (Planned for v2.0)
 - **Free:** 5 trips, basic AI (10/month), localStorage only
@@ -272,5 +355,8 @@ app/
 
 ## Timeline Estimate
 - **Phases 1-3:** 3 evenings (✅ COMPLETE)
-- **Phases 4-8:** 11-14 evenings (⏳ PLANNED)
-- **Total to v2.0:** 14-17 evenings (48-66 hours)
+- **Phase 4.1-4.4:** 8-10 hours (✅ COMPLETE)
+- **Phase 4.5:** 6-8 hours (⏳ PLANNED)
+- **Phases 5-6:** 8-10 hours (⏳ PLANNED)
+- **Total to v1.0:** ~40-50 hours
+- **Total to v2.0:** ~80-100 hours

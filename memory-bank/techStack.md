@@ -1,7 +1,7 @@
 # Tech Stack
 
 **Project:** Tripper  
-**Last Updated:** October 6, 2025
+**Last Updated:** November 1, 2025
 
 ---
 
@@ -175,12 +175,99 @@
   ```
 
 ### Persistence
-**localStorage** (via Zustand middleware)
-- **Why:** Offline-first, zero latency, no server needed
-- **Key:** `tripper-store`
-- **Debounce:** 500ms (prevents excessive writes)
-- **Partialize:** Only persist `trips`, `currentTripId`, `viewPrefs`, `userVibes`
-- **Future:** Migrate to IndexedDB for larger datasets
+**Hybrid: localStorage + Supabase**
+- **localStorage:**
+  - Offline-first, zero latency
+  - Key: `tripper-store`
+  - Debounce: 500ms
+  - Instant updates
+- **Supabase:**
+  - Cloud sync across devices
+  - PostgreSQL database
+  - Row-Level Security (RLS)
+  - Multi-device synchronization
+- **Strategy:** Write to localStorage first, sync to Supabase in background
+
+---
+
+## 🗄️ Database & Backend
+
+### Database
+**Supabase** (PostgreSQL)
+- **Why:** Open source, real-time, great DX, built-in auth, RLS
+- **Version:** Hosted (latest)
+- **Features Used:**
+  - PostgreSQL database
+  - Row-Level Security (RLS)
+  - Foreign key constraints
+  - Cascade deletes
+  - Real-time subscriptions (future)
+  - Storage (future - avatars)
+
+### Authentication
+**Supabase Auth**
+- **Why:** Built-in, secure, supports multiple providers
+- **Packages:**
+  - `@supabase/ssr` ^0.5.2 - Server-side rendering support
+  - `@supabase/supabase-js` ^2.46.1 - JavaScript client
+- **Features:**
+  - Email/password authentication
+  - OAuth providers (Google, GitHub, etc.)
+  - Magic links
+  - Password reset flow
+  - Email verification
+  - Session management
+  - Server-side auth with cookies
+- **Configuration:**
+  ```typescript
+  // Client-side
+  import { createBrowserClient } from '@supabase/ssr'
+  
+  export function createClient() {
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  
+  // Server-side
+  import { createServerClient } from '@supabase/ssr'
+  import { cookies } from 'next/headers'
+  
+  export async function createClient() {
+    const cookieStore = await cookies()
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          // ... set/remove handlers
+        },
+      }
+    )
+  }
+  ```
+
+### Middleware
+**Next.js Middleware** (Route Protection)
+- **File:** `middleware.ts`
+- **Purpose:** Protect authenticated routes, refresh sessions
+- **Features:**
+  - Automatic session refresh
+  - Route protection for `/trips`, `/profile`, etc.
+  - Redirect to `/login` for unauthenticated users
+  - Preserve OAuth state during redirects
+- **Configuration:**
+  ```typescript
+  export const config = {
+    matcher: [
+      '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    ],
+  }
+  ```
 
 ---
 
@@ -500,17 +587,6 @@
 
 ## 🔮 Future Stack (Planned)
 
-### Cloud Sync (v1.0)
-**Supabase**
-- **Why:** Open source, PostgreSQL, real-time, authentication, RLS
-- **Features:**
-  - PostgreSQL database
-  - Real-time subscriptions
-  - Row-level security
-  - User authentication
-  - Storage for files
-  - Edge Functions
-
 ### Real-Time Collaboration (v1.5)
 **Yjs**
 - **Why:** CRDT-based, conflict-free, peer-to-peer
@@ -564,13 +640,17 @@
 
 ### Required
 ```env
-OPENAI_API_KEY=sk-...  # OpenAI API key for AI features
+# OpenAI (AI Features)
+OPENAI_API_KEY=sk-...
+
+# Supabase (Database & Auth)
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbG...  # Server-side only
 ```
 
 ### Optional (Future)
 ```env
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 GOOGLE_MAPS_API_KEY=...
 BOOKING_COM_AFFILIATE_ID=...
 SKYSCANNER_AFFILIATE_ID=...
@@ -605,8 +685,8 @@ SKYSCANNER_AFFILIATE_ID=...
 
 ## 🎯 Technology Principles
 
-### 1. **Offline-First**
-All features work without internet. Cloud sync is additive, not required.
+### 1. **Hybrid Persistence**
+Offline-first with cloud sync. localStorage for instant updates, Supabase for multi-device sync.
 
 ### 2. **Type Safety**
 100% TypeScript with strict mode. Runtime validation with Zod.

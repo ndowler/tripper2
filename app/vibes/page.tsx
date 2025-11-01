@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useTripStore } from "@/lib/store/tripStore";
 import { getDefaultVibes, calculateThemeWeights } from "@/lib/utils/vibes";
 import { UserVibes } from "@/lib/types/vibes";
@@ -19,10 +20,36 @@ export default function VibesQuizPage() {
   const router = useRouter();
   const setUserVibes = useTripStore((state) => state.setUserVibes);
 
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<Partial<UserVibes>>(() =>
     getDefaultVibes()
   );
+
+  // Check authentication
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          router.push('/login');
+          return;
+        }
+
+        setUserId(user.id);
+      } catch (error) {
+        console.error('Failed to check auth:', error);
+        router.push('/login');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
 
   const updateAnswer = (updates: Partial<UserVibes>) => {
     setAnswers((prev) => ({
@@ -49,20 +76,43 @@ export default function VibesQuizPage() {
     }
   };
 
-  const handleComplete = () => {
-    const vibes: UserVibes = {
-      ...getDefaultVibes(),
-      ...answers,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+  const handleComplete = async () => {
+    if (!userId) {
+      toast.error("Please log in to save your preferences");
+      router.push('/login');
+      return;
+    }
 
-    setUserVibes(vibes);
-    toast.success("Travel preferences saved! 🎉");
-    router.push("/demo");
+    try {
+      const vibes: UserVibes = {
+        ...getDefaultVibes(),
+        ...answers,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      await setUserVibes(vibes, userId);
+      toast.success("Travel preferences saved! 🎉");
+      router.push("/demo");
+    } catch (error) {
+      console.error('Failed to save vibes:', error);
+      toast.error("Failed to save preferences. Please try again.");
+    }
   };
 
   const progress = (step / TOTAL_QUESTIONS) * 100;
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -272,22 +322,22 @@ export default function VibesQuizPage() {
                   {
                     value: 40,
                     emoji: "💸",
-                    label: "€30-50 - budget-conscious",
+                    label: "$30-50 - budget-conscious",
                   },
                   {
                     value: 75,
                     emoji: "💳",
-                    label: "€50-100 - moderate spending",
+                    label: "$50-100 - moderate spending",
                   },
                   {
                     value: 150,
                     emoji: "💼",
-                    label: "€100-200 - comfortable budget",
+                    label: "$100-200 - comfortable budget",
                   },
                   {
                     value: 250,
                     emoji: "👑",
-                    label: "€200+ - luxury experience",
+                    label: "$200+ - luxury experience",
                   },
                 ]}
                 value={answers.logistics?.budget_ppd ?? null}

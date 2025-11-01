@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -10,6 +11,7 @@ import {
   Redo2,
   Share2,
   Undo2,
+  User,
 } from "lucide-react";
 
 import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
@@ -108,6 +110,16 @@ export function Navbar({
                 </Button>
               </Link>
             </div>
+
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/tripper.png"
+                alt="Tripper"
+                width={32}
+                height={32}
+                className="rounded-md"
+              />
+            </Link>
 
             <div id="title" className="flex justify-center flex-1">
               <div className="flex items-center gap-4 min-w-0">
@@ -234,6 +246,15 @@ export function Navbar({
                 <Share2 className="w-4 h-4" />
               </Button>
             </div>
+            
+            {/* Profile Button */}
+            <Link href="/profile">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Profile</span>
+              </Button>
+            </Link>
+            
             <ModeToggle />
           </div>
         </div>

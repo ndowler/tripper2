@@ -15,9 +15,10 @@ import { toast } from 'sonner'
 interface NewTripModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  userId: string
 }
 
-export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
+export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) {
   const router = useRouter()
   const addTrip = useTripStore((state) => state.addTrip)
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
@@ -26,8 +27,9 @@ export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
   const [description, setDescription] = useState('')
   const [destination, setDestination] = useState('')
   const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!title.trim()) {
@@ -35,39 +37,48 @@ export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
       return
     }
 
-    const tripId = nanoid()
-    const dayId = nanoid()
+    setIsSubmitting(true)
 
-    addTrip({
-      id: tripId,
-      title: title.trim(),
-      description: description.trim() || undefined,
-      destination: destination.trim() || undefined,
-      timezone: DEFAULT_TIMEZONE,
-      days: [
-        {
-          id: dayId,
-          date: startDate,
-          title: 'Day 1',
-          cards: [],
-        },
-      ],
-      unassignedCards: [],
-    })
+    try {
+      const tripId = nanoid()
+      const dayId = nanoid()
 
-    setCurrentTrip(tripId)
-    toast.success('Trip created!')
-    
-    // Reset form
-    setTitle('')
-    setDescription('')
-    setDestination('')
-    setStartDate(format(new Date(), 'yyyy-MM-dd'))
-    
-    onOpenChange(false)
-    
-    // Navigate to the new trip
-    router.push(`/trip/${tripId}`)
+      await addTrip({
+        id: tripId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        destination: destination.trim() || undefined,
+        timezone: DEFAULT_TIMEZONE,
+        days: [
+          {
+            id: dayId,
+            date: startDate,
+            title: 'Day 1',
+            cards: [],
+          },
+        ],
+        unassignedCards: [],
+      }, userId)
+
+      setCurrentTrip(tripId)
+      toast.success('Trip created!')
+      
+      // Reset form
+      setTitle('')
+      setDescription('')
+      setDestination('')
+      setStartDate(format(new Date(), 'yyyy-MM-dd'))
+      
+      onOpenChange(false)
+      
+      // Navigate to the new trip
+      router.push(`/trip/${tripId}`)
+    } catch (error) {
+      console.error('Failed to create trip:', error)
+      toast.error('Failed to create trip. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancel = () => {
@@ -141,10 +152,12 @@ export function NewTripModal({ open, onOpenChange }: NewTripModalProps) {
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">Create Trip</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Trip'}
+            </Button>
           </div>
         </form>
       </DialogContent>

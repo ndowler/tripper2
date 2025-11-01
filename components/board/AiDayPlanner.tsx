@@ -15,6 +15,7 @@ interface AiDayPlannerProps {
   onClose: () => void;
   tripId: string;
   dayId?: string | undefined;
+  userId: string;
   destination?: string;
 }
 
@@ -37,6 +38,7 @@ export function AiDayPlanner({
   onClose,
   tripId,
   dayId,
+  userId,
   destination,
 }: AiDayPlannerProps) {
   const [location, setLocation] = useState(destination || "");
@@ -101,12 +103,11 @@ export function AiDayPlanner({
     }
   };
 
-  const handleAddAll = () => {
-    let addedCount = 0;
-
-    generatedCards.forEach((card, index) => {
-      setTimeout(() => {
-        addCard(tripId, dayId, {
+  const handleAddAll = async () => {
+    try {
+      // Add all cards sequentially
+      for (const card of generatedCards) {
+        await addCard(tripId, dayId, {
           id: nanoid(),
           type: card.type,
           title: card.title,
@@ -117,17 +118,17 @@ export function AiDayPlanner({
           location: card.location ? { name: card.location } : undefined,
           cost: card.cost,
           links: [],
-          status: "pending",
-        } as Omit<Card, "createdAt" | "updatedAt">);
-        addedCount++;
+          status: "todo",
+        } as Omit<Card, "createdAt" | "updatedAt">, userId);
+      }
 
-        if (addedCount === generatedCards.length) {
-          toast.success(`Added ${addedCount} activities!`);
-          onClose();
-          resetForm();
-        }
-      }, index * 100);
-    });
+      toast.success(`Added ${generatedCards.length} activities!`);
+      onClose();
+      resetForm();
+    } catch (error) {
+      console.error('Failed to add cards:', error);
+      toast.error('Failed to add some activities');
+    }
   };
 
   const resetForm = () => {
@@ -260,7 +261,7 @@ export function AiDayPlanner({
                       : userVibes.comfort.pace_score <= 60
                       ? "Moderate pace"
                       : "Active pace"}
-                    , €{userVibes.logistics.budget_ppd}/day budget,{" "}
+                    , ${userVibes.logistics.budget_ppd}/day budget,{" "}
                     {userVibes.comfort.walking_km_per_day}km walking
                   </p>
                 </div>
@@ -311,7 +312,7 @@ export function AiDayPlanner({
                     {card.cost && (
                       <div className="flex items-center gap-1">
                         <DollarSign className="w-3 h-3" />
-                        {card.cost.currency === "EUR" ? "€" : "$"}
+                        {card.cost.currency === "EUR" ? "$" : "$"}
                         {card.cost.amount}
                       </div>
                     )}

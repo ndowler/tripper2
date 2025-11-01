@@ -31,6 +31,7 @@ interface TripCardProps {
   card: Card;
   tripId: string;
   dayId: string;
+  userId: string;
   isDragging?: boolean;
 }
 
@@ -38,6 +39,7 @@ export function TripCard({
   card,
   tripId,
   dayId,
+  userId,
   isDragging = false,
 }: TripCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,18 +52,28 @@ export function TripCard({
   const category = getCardCategory(card.type);
   const categoryBorderColor = CATEGORY_COLORS[category];
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm("Delete this card?")) {
-      deleteCard(tripId, dayId, card.id);
-      toast.success("Card deleted");
+      try {
+        await deleteCard(tripId, dayId, card.id, userId);
+        toast.success("Card deleted");
+      } catch (error) {
+        console.error('Failed to delete card:', error);
+        toast.error('Failed to delete card');
+      }
     }
   };
 
-  const handleDuplicate = (e: React.MouseEvent) => {
+  const handleDuplicate = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    duplicateCard(tripId, dayId, card.id);
-    toast.success("Card duplicated");
+    try {
+      await duplicateCard(tripId, dayId, card.id, userId);
+      toast.success("Card duplicated");
+    } catch (error) {
+      console.error('Failed to duplicate card:', error);
+      toast.error('Failed to duplicate card');
+    }
   };
 
   const handleCardClick = () => {
@@ -101,7 +113,6 @@ export function TripCard({
           group relative border-l-4 ${categoryBorderColor}
           hover:shadow-md transition-all cursor-pointer
           ${isDragging ? "shadow-lg" : "shadow-none"}
-          ${card.status === "completed" ? "opacity-60" : ""}
         `}
         onClick={handleCardClick}
       >
@@ -128,7 +139,7 @@ export function TripCard({
 
             <div className="flex items-center gap-2">
               {/* Status Dot */}
-              {card.status && card.status !== "pending" && (
+              {card.status && (
                 <StatusDot status={card.status} size="sm" showLabel={false} />
               )}
 
@@ -290,6 +301,7 @@ export function TripCard({
         card={card}
         tripId={tripId}
         dayId={dayId}
+        userId={userId}
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

@@ -21,12 +21,14 @@ import { Navbar } from "@/components/navbar/TripNavbar";
 import { DayColumn } from "@/components/board/DayColumn";
 import { AddDayButton } from "@/components/board/AddDayButton";
 import { ThingsToDoDrawer } from "@/components/board/ThingsToDoDrawer";
+import { toast } from "sonner";
 
 interface BoardProps {
   trip: Trip;
+  userId: string;
 }
 
-export function Board({ trip }: BoardProps) {
+export function Board({ trip, userId }: BoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<"day" | "card" | null>(null);
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
@@ -41,6 +43,7 @@ export function Board({ trip }: BoardProps) {
   const reorderDays = useTripStore((state) => state.reorderDays);
   const reorderCards = useTripStore((state) => state.reorderCards);
   const moveCard = useTripStore((state) => state.moveCard);
+  const loadTrips = useTripStore((state) => state.loadTrips);
 
   // Configure sensors for drag & drop
   const sensors = useSensors(
@@ -68,41 +71,11 @@ export function Board({ trip }: BoardProps) {
     const { active, over } = event;
     if (!over) return;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
-
-    // Handle card moves (including from/to unassigned)
-    if (activeData?.type === "card") {
-      const activeDayId = activeData.dayId;
-
-      // Moving to a card in another column
-      if (overData?.type === "card") {
-        const overDayId = overData.dayId;
-
-        if (activeDayId !== overDayId) {
-          // Find the source and destination
-          const overDay =
-            overDayId === "unassigned"
-              ? null
-              : trip.days.find((d) => d.id === overDayId);
-          const overCardIndex = overDay
-            ? overDay.cards.findIndex((c) => c.id === over.id)
-            : trip.unassignedCards?.findIndex((c) => c.id === over.id) || 0;
-
-          moveCard(
-            trip.id,
-            activeDayId,
-            overDayId,
-            active.id as string,
-            overCardIndex
-          );
-          setActiveDayId(overDayId);
-        }
-      }
-    }
+    // Visual feedback only - no state changes needed
+    // The drag overlay will continue showing the card from its original position
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) {
@@ -115,22 +88,82 @@ export function Board({ trip }: BoardProps) {
     const activeData = active.data.current;
     const overData = over.data.current;
 
-    if (activeData?.type === "card" && overData?.type === "card") {
-      // Reordering cards within same day
-      const activeDayId = activeData.dayId;
-      const overDayId = overData.dayId;
+    // Only handle card drags
+    if (activeData?.type !== "card") {
+      setActiveId(null);
+      setActiveType(null);
+      setActiveDayId(null);
+      return;
+    }
 
-      if (activeDayId === overDayId) {
-        const day = trip.days.find((d) => d.id === activeDayId);
-        if (day) {
-          const oldIndex = day.cards.findIndex((c) => c.id === active.id);
-          const newIndex = day.cards.findIndex((c) => c.id === over.id);
+    const activeDayId = activeData.dayId;
 
-          if (oldIndex !== newIndex) {
-            reorderCards(trip.id, activeDayId, oldIndex, newIndex);
+    try {
+      // Dropping on another card
+      if (overData?.type === "card") {
+        const overDayId = overData.dayId;
+
+        if (activeDayId === overDayId) {
+          // Reordering cards within same day
+          const day = activeDayId === "unassigned" 
+            ? null 
+            : trip.days.find((d) => d.id === activeDayId);
+          
+          const cards = activeDayId === "unassigned"
+            ? trip.unassignedCards || []
+            : day?.cards || [];
+
+          const oldIndex = cards.findIndex((c) => c.id === active.id);
+          const newIndex = cards.findIndex((c) => c.id === over.id);
+
+          if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
+            await reorderCards(trip.id, activeDayId, oldIndex, newIndex, userId);
           }
+        } else {
+          // Moving card to a different day
+          const overDay =
+            overDayId === "unassigned"
+              ? null
+              : trip.days.find((d) => d.id === overDayId);
+          
+          const overCards = overDayId === "unassigned"
+            ? trip.unassignedCards || []
+            : overDay?.cards || [];
+          
+          const overCardIndex = overCards.findIndex((c) => c.id === over.id);
+
+          // Insert at the position of the card we're hovering over
+          await moveCard(
+            trip.id,
+            activeDayId,
+            overDayId,
+            active.id as string,
+            overCardIndex !== -1 ? overCardIndex : overCards.length,
+            userId
+          );
+        }
+      } 
+      // Dropping on an empty day
+      else if (overData?.type === "day") {
+        const overDayId = overData.dayId;
+
+        if (activeDayId !== overDayId) {
+          // Move to end of the day (which is empty)
+          await moveCard(
+            trip.id,
+            activeDayId,
+            overDayId,
+            active.id as string,
+            0, // First position since day is empty
+            userId
+          );
         }
       }
+    } catch (error) {
+      console.error('Failed to move/reorder card:', error);
+      toast.error('Failed to update card. Reloading...');
+      // Reload trips to revert optimistic update
+      await loadTrips(userId);
     }
 
     setActiveId(null);
@@ -173,6 +206,7 @@ export function Board({ trip }: BoardProps) {
           {mounted && (
             <ThingsToDoDrawer
               trip={trip}
+              userId={userId}
               isOpen={thingsToDoOpen}
               onClose={() => setThingsToDoOpen(false)}
             />
@@ -182,22 +216,23 @@ export function Board({ trip }: BoardProps) {
           <main className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin overflow-x-hidden p-4">
             <div className="px-4 py-6">
               {/* Vibes Card */}
-              {mounted && <VibesCard />}
+              {mounted && <VibesCard userId={userId} />}
 
-              <div className="flex gap-6 w-full justify-center grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="flex gap-2 w-full justify-center grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
                 {/* Day Columns - Horizontal Layout (No drag-drop, reorder via date change) */}
                 {trip.days.map((day, index) => (
                   <DayColumn
                     key={day.id}
                     day={day}
                     tripId={trip.id}
+                    userId={userId}
                     index={index}
                   />
                 ))}
 
                 {/* Add day button */}
                 <div className="flex-shrink-0" style={{ minWidth: "360px" }}>
-                  <AddDayButton tripId={trip.id} activeDayId={activeDayId} />
+                  <AddDayButton tripId={trip.id} userId={userId} />
                 </div>
               </div>
             </div>
@@ -213,6 +248,7 @@ export function Board({ trip }: BoardProps) {
               card={activeCard}
               tripId={trip.id}
               dayId={activeDayId}
+              userId={userId}
               isDragging
             />
           </div>

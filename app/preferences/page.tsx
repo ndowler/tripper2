@@ -267,10 +267,10 @@ export default function PreferencesPage() {
                   }
                   className="w-full px-3 py-2 border border-input bg-background rounded-md"
                 >
-                  <option value={40}>💸 €30-50 - Budget-conscious</option>
-                  <option value={75}>💳 €50-100 - Moderate spending</option>
-                  <option value={150}>💼 €100-200 - Comfortable budget</option>
-                  <option value={250}>👑 €200+ - Luxury experience</option>
+                  <option value={40}>💸 $30-50 - Budget-conscious</option>
+                  <option value={75}>💳 $50-100 - Moderate spending</option>
+                  <option value={150}>💼 $100-200 - Comfortable budget</option>
+                  <option value={250}>👑 $200+ - Luxury experience</option>
                 </select>
               </div>
 

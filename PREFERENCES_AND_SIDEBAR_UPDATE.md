@@ -23,7 +23,7 @@ Users can now edit all their travel preferences without retaking the quiz:
 - Theme selector (multi-select grid with all 12 themes)
 
 **Logistics & Budget:**
-- Budget dropdown (4 tiers: €30-250+)
+- Budget dropdown (4 tiers: $30-250+)
 - Crowd tolerance dropdown
 - Transit comfort dropdown
 - Surprise factor dropdown

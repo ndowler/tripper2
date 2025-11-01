@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { ModeToggle } from "@/components/ui/theme-toggler";
 
 interface BackNavbarProps {
@@ -41,9 +42,16 @@ export function BackNavbar({
             </div>
             <div
               id="title"
-              className="rounded flex text-center justify-center select-none mx-auto"
+              className="rounded flex text-center justify-center select-none mx-auto items-center gap-2"
             >
-              Tripper
+              <Image
+                src="/tripper.png"
+                alt="Tripper"
+                width={32}
+                height={32}
+                className="rounded-md"
+              />
+              <span className="font-semibold">Tripper</span>
             </div>
           </div>
         </div>
@@ -69,12 +77,16 @@ export function BackNavbar({
               </Button>
             </Link>
           </div>
-          <div
-            id="title"
-            className="rounded flex text-center justify-center select-none mx-auto"
-          >
-            Tripper
-          </div>
+          <Link href="/" className="rounded flex text-center justify-center select-none mx-auto items-center gap-2">
+            <Image
+              src="/tripper.png"
+              alt="Tripper"
+              width={32}
+              height={32}
+              className="rounded-md"
+            />
+            <span className="font-semibold">Tripper</span>
+          </Link>
           <ModeToggle />
         </div>
       </div>

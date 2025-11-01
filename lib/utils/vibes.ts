@@ -113,7 +113,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
 - Pace: ${paceDesc} (${comfort.pace_score}/100)
 - Walking: ${comfort.walking_km_per_day}km per day
 - Timing: ${daypartDesc}
-- Budget: €${logistics.budget_ppd} per person per day (excl. hotel)
+- Budget: $${logistics.budget_ppd} per person per day (excl. hotel)
 - Food style: ${foodDesc}
 - Crowd tolerance: ${crowdDesc}
 - Transit: ${logistics.transit_modes_allowed.join(', ')}
@@ -204,7 +204,7 @@ export function getVibesSummary(vibes: UserVibes): string {
     : 'Custom';
   
   const budget = vibes.logistics.budget_ppd;
-  const budgetStr = budget <= 50 ? '€€' : budget <= 100 ? '€€€' : budget <= 200 ? '€€€€' : '€€€€€';
+  const budgetStr = budget <= 50 ? '$$' : budget <= 100 ? '$$$' : budget <= 200 ? '$$$$' : '$$$$$';
   
   const daypart = vibes.comfort.daypart_bias === 'early' ? '🌅 Early Bird'
     : vibes.comfort.daypart_bias === 'late' ? '🌙 Night Owl'

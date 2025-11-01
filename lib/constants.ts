@@ -108,8 +108,6 @@ export const TIME_NUDGE_MINUTES = 15;
 
 export const DEFAULT_TIMEZONE = "America/New_York";
 
-export const AUTOSAVE_DEBOUNCE_MS = 500;
-
 // Card category groupings for visual styling
 export const CARD_CATEGORIES: {
   transport: Array<keyof typeof CARD_TYPES>;
@@ -149,7 +147,7 @@ export function getCardCategory(
 // Currency symbols
 export const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: "$",
-  EUR: "€",
+  EUR: "$",
   GBP: "£",
   JPY: "¥",
   CAD: "$",
@@ -171,31 +169,19 @@ export const SPACING = {
 
 // Status indicators
 export const STATUS_CONFIG = {
-  confirmed: {
-    label: "Confirmed",
-    color: "bg-green-500",
-    textColor: "text-green-700",
-  },
-  booked: {
-    label: "Booked",
-    color: "bg-blue-500",
-    textColor: "text-blue-700",
+  todo: {
+    label: "To Do",
+    color: "bg-gray-400",
+    textColor: "text-gray-700",
   },
   tentative: {
     label: "Tentative",
     color: "bg-amber-500",
     textColor: "text-amber-700",
   },
-  todo: {
-    label: "To Do",
-    color: "bg-gray-400",
-  },
-  pending: {
-    label: "Pending",
-    color: "bg-gray-300",
-  },
-  completed: {
-    label: "Completed",
-    color: "bg-gray-500",
+  confirmed: {
+    label: "Confirmed",
+    color: "bg-green-500",
+    textColor: "text-green-700",
   },
 } as const;
