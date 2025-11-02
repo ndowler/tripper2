@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTripStore } from "@/lib/store/tripStore";
 import { Board } from "@/components/board/Board";
-import { fetchTrip } from "@/lib/services/trips-service";
-import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripPage({
   params,
@@ -81,18 +80,8 @@ export default function TripPage({
       }
     }
 
-    init();
-  }, [id, router, setCurrentTrip, trips]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading trip...</p>
-        </div>
-      </div>
-    );
+  if (!isHydrated || !trip) {
+    return <LoadingSpinner loadingText="Loading your trip..." />;
   }
 
   if (error || !trip) {

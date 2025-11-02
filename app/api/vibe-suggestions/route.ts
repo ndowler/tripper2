@@ -15,53 +15,40 @@ export async function POST(request: NextRequest) {
     }
 
     const body: DiscoveryRequest = await request.json();
-    const { destination, vibe_profile, category } = body as DiscoveryRequest & { category?: string };
+    console.log("Vibe Suggestions request body:", body);
+    const { destination, vibes, vibe_profile, limit } = body;
 
-    if (!destination?.city) {
+    if (!destination) {
       return NextResponse.json(
-        { error: "Destination city is required" },
+        { error: "Destination is required" },
         { status: 400 }
       );
     }
 
+    // If vibe_profile is not provided, use vibes
+    const vibeProfile = vibe_profile || vibes;
+
     // Build vibes context
     let vibesPrompt = "";
-    if (vibe_profile) {
+    if (vibeProfile) {
       try {
-        const vibes: UserVibes = vibe_profile;
+        const vibes: UserVibes = vibeProfile;
         vibesPrompt = "\n\n" + vibesToPrompt(vibes);
       } catch (error) {
         console.warn("Failed to parse vibes context:", error);
       }
     }
-
+    console.log("Vibes Prompt:", vibesPrompt);
     // Calculate max theme weight for category cap logic
     const themeWeights = vibe_profile?.taste?.theme_weights || {};
     const maxThemeWeight = Math.max(
       ...Object.values(themeWeights).map((w: any) => w || 0),
       0
     );
-
-    // Category-specific instructions
-    const categoryInstructions = category
-      ? `\n\nCATEGORY FOCUS: The user specifically requested "${category}" suggestions.
-${
-  category === "food"
-    ? "Generate ONLY food-related suggestions: restaurants, cafes, street food, markets, food tours, cooking classes."
-    : category === "culture"
-    ? "Generate ONLY cultural and activity suggestions: museums, historical sites, art galleries, cultural experiences, guided tours, workshops."
-    : category === "nature"
-    ? "Generate ONLY nature and outdoor suggestions: parks, gardens, hiking trails, beaches, scenic viewpoints, outdoor activities."
-    : category === "entertainment"
-    ? "Generate ONLY entertainment suggestions: shows, concerts, theaters, nightlife, clubs, bars, live music venues."
-    : category === "shopping"
-    ? "Generate ONLY shopping suggestions: markets, boutiques, malls, local shops, craft stores, specialty stores."
-    : ""
-}`
-      : "";
-
+    console.log("Max theme weight:", maxThemeWeight);
+    console.log("Vibes Prompt:", vibesPrompt);
     const systemPrompt = `You are a precise trip-planning card generator.
-Return ONLY valid JSON array of 5 objects that match the provided schema.
+Return ONLY valid JSON array of ${limit} objects that match the provided schema.
 Do not invent exact prices or hours. Use general price_tier 0..3.
 Prefer well-known, safe, and open-to-the-public options inside the destination.
 Keep titles < 60 chars; descriptions ≤ 160 chars; max 5 tags.
@@ -75,12 +62,6 @@ CRITICAL RULES:
 - If dietary constraints exist, ensure food items comply (e.g., no pork, vegetarian, etc.)
 - Use "area" with neighborhood names (e.g., Trastevere, Shibuya, SoHo) when helpful
 - Set "media.emoji" to a fitting emoji (🍝, 🖼️, ☕, 🌅…)
-- Generate stable looking "id" values like "${destination.city
-      .toLowerCase()
-      .slice(0, 3)}-001", "${destination.city
-      .toLowerCase()
-      .slice(0, 3)}-002", etc.
-${categoryInstructions}
 
 ${
   vibesPrompt
@@ -89,16 +70,13 @@ ${
 }`;
 
     const userPrompt = `DESTINATION:
-- city: ${destination.city}
-- country: ${destination.country || "N/A"}
+  ${destination}
 
 ${vibesPrompt ? `VIBE_PROFILE:\n${vibesPrompt}` : ""}
 
 INSTRUCTIONS:
-Generate exactly 5 SuggestionCard objects as a JSON array for ${
-      destination.city
-    }${destination.country ? `, ${destination.country}` : ""}.
-Return ONLY the JSON array of 5 objects.`;
+Generate exactly ${limit} SuggestionCard objects as a JSON array for ${destination}.
+Return ONLY the JSON array of ${limit} objects.`;
 
     const completion = await createZodCompletion(
       defaultModel,
@@ -116,8 +94,8 @@ Return ONLY the JSON array of 5 objects.`;
       ? (completion.parsed as { suggestions: any[] }).suggestions
       : [];
 
-    // Accept 3-5 valid suggestions
-    if (suggestions.length < 3) {
+    // Accept 5-20 valid suggestions
+    if (suggestions.length < 5 || suggestions.length > 20) {
       throw new Error(
         `Only ${suggestions.length} valid suggestions generated. Please try again.`
       );

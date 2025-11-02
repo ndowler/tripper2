@@ -3,19 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useTripStore } from "@/lib/store/tripStore";
-import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { BackNavbar } from "@/components/navbar/BackNavbar";
+import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
 import { SuggestionCard } from "@/lib/types/suggestions";
 import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
 import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
-import { toast } from "sonner";
-import { BackNavbar } from "@/components/navbar/BackNavbar";
-import { track } from "@/lib/analytics";
-import { trackAiGenerationPerformance } from "@/lib/analytics/performance";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
+import { current } from "immer";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
@@ -206,13 +206,13 @@ export default function DiscoverPage() {
     toast.success("Saved to Things to Do!");
   };
 
+  if (!isHydrated) {
+    return <LoadingSpinner loadingText="Loading Discover page..." />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <BackNavbar
-        tripId={currentTripId}
-        isHydrated={isHydrated}
-        setIsHydrated={setIsHydrated}
-      />
+      <BackNavbar trip={currentTrip} />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -220,9 +220,11 @@ export default function DiscoverPage() {
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">AI Discovery</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Discover Things to Do</h1>
-          <p className="text-muted-foreground text-lg">
-            Get 5 personalized suggestions powered by AI
+          <h1 className="text-4xl font-bold mb-2 select-none">
+            Discover Things to Do
+          </h1>
+          <p className="text-muted-foreground text-lg select-none">
+            Get 20 personalized suggestions powered by AI
           </p>
         </div>
 

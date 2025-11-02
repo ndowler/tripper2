@@ -4,11 +4,10 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
-  ArrowLeft,
-  Calendar,
   Compass,
   Download,
-  Moon,
+  Home,
+  Inbox,
   MoreVertical,
   Redo2,
   Share2,
@@ -22,17 +21,16 @@ import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import { EditableHeader } from "@/components/board/EditableHeader";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { Button } from "@/components/ui/button";
+import { ModeToggle, ThemeMenuItems } from "@/components/ui/theme-toggler";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { CustomTooltip } from "../ui/custom-tooltip";
+import { ButtonGroup } from "../ui/button-group";
+import { Separator } from "../ui/separator";
 
 interface NavbarProps {
   trip: {
@@ -109,7 +107,7 @@ export function Navbar({
             <div id="back-button" className="flex justify-start">
               <Link href="/trips">
                 <Button variant="ghost" size="icon" title="Back to all trips">
-                  <ArrowLeft className="w-4 h-4" />
+                  <Home className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -139,119 +137,114 @@ export function Navbar({
             id="actions"
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
           >
-            {/* Day View Button */}
-            <Tooltip>
-              <Link href="/day-view">
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    title="Day View"
-                    className="flex items-center gap-1"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    <span className="hidden sm:inline">Day View</span>
-                  </Button>
-                </TooltipTrigger>
-              </Link>
-              <TooltipContent side="bottom">
-                View by day
-              </TooltipContent>
-            </Tooltip>
+            {/* To-Do Toggle */}
+            <CustomTooltip content="To-Do List" side="bottom">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
+                title="To-Do"
+              >
+                <div className="flex items-center gap-1">
+                  <Inbox className="w-4 h-4" />
+                  <span className="hidden sm:inline">To-Do</span>
+                  <span className="text-xs font-medium rounded-full pl-2">
+                    {trip.unassignedCards && trip.unassignedCards.length > 0
+                      ? trip.unassignedCards.length
+                      : 0}
+                  </span>
+                </div>
+              </Button>
+            </CustomTooltip>
 
             {/* Undo/Redo */}
             <div id="undo-redo" className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo (Cmd+Z)"
-                onClick={() => {
-                  undo();
-                  toast.success("Undone");
-                }}
-                disabled={!canUndo}
-              >
-                <Undo2 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo (Cmd+Shift+Z)"
-                onClick={() => {
-                  redo();
-                  toast.success("Redone");
-                }}
-                disabled={!canRedo}
-              >
-                <Redo2 className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="w-px h-6 bg-border mx-2" />
-
-            {/* Discover */}
-            <Tooltip>
-              <Link href="/discover">
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    title="Discover things to do"
-                    className="flex items-center gap-1"
-                  >
-                    <Compass className="w-4 h-4" />
-                    <span className="hidden lg:inline">Discover</span>
-                  </Button>
-                </TooltipTrigger>
-              </Link>
-              <TooltipContent side="bottom">
-                Discover things to do!
-              </TooltipContent>
-            </Tooltip>
-            
-            {/* Profile Button */}
-            <Link href="/profile">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile</span>
-              </Button>
-            </Link>
-
-            {/* More Actions Dropdown - all the way to the right */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <ButtonGroup className="border rounded-lg">
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="More actions"
+                  title="Undo (Cmd+Z)"
+                  onClick={() => {
+                    undo();
+                    toast.success("Undone");
+                  }}
+                  disabled={!canUndo}
                 >
-                  <MoreVertical className="w-4 h-4" />
+                  <Undo2 className="w-4 h-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export JSON
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                  {theme === "dark" ? (
-                    <>
-                      <Sun className="w-4 h-4 mr-2" />
-                      Light Mode
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="w-4 h-4 mr-2" />
-                      Dark Mode
-                    </>
-                  )}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <Separator orientation="vertical" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Redo (Cmd+Shift+Z)"
+                  onClick={() => {
+                    redo();
+                    toast.success("Redone");
+                  }}
+                  disabled={!canRedo}
+                >
+                  <Redo2 className="w-4 h-4" />
+                </Button>
+              </ButtonGroup>
+            </div>
+
+            {/* Actions */}
+            <CustomTooltip content="Discover More" side="bottom">
+              <Link href="/discover">
+                <Button
+                  variant="outline"
+                  // size="icon"
+                  // title="Discover things to do"
+                  className="lg:px-3"
+                >
+                  <Compass className="w-4 h-4 lg:mr-2" />
+                  <span className="hidden lg:inline whitespace-nowrap">
+                    Discover
+                  </span>
+                </Button>
+              </Link>
+            </CustomTooltip>
+            {/* Actions Dropdown - hidden on lg+ */}
+            <div className="flex items-center">
+              <CustomTooltip content="More actions" side="bottom">
+                <div id="actions-dropdown" className="lg:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        // title="More actions"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                      <ThemeMenuItems />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CustomTooltip>
+            </div>
+
+            {/* Full Actions - visible on lg+ */}
+            <div id="full-actions" className="hidden lg:flex gap-2">
+              <Button variant="outline" size="icon" title="Export JSON">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="icon" title="Share">
+                <Share2 className="w-4 h-4" />
+              </Button>
+              {/* Theme Toggle */}
+              <ModeToggle />
+            </div>
           </div>
         </div>
       </div>

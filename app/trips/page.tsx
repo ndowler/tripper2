@@ -1,28 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import type { Trip } from "@/lib/types";
 import { useTripStore } from "@/lib/store/tripStore";
+import { PlusCircle, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { TripGrid } from "@/components/trips/TripGrid";
-import { TripStats } from "@/components/trips/TripStats";
-import { ViewControls } from "@/components/trips/ViewControls";
+import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
 import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
 import { NewTripModal } from "@/components/trips/NewTripModal";
 import { EditTripModal } from "@/components/trips/EditTripModal";
-import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
-import { TripCardSkeleton, TripStatsSkeletons } from "@/components/trips/TripCardSkeleton";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import type { Trip } from "@/lib/types";
-import { getTripStats, getTripStatus } from "@/lib/utils/trips";
-import Link from "next/link";
-import Image from "next/image";
-
-type ViewMode = 'grid' | 'list'
-type SortOption = 'updated' | 'created' | 'name' | 'date'
-type FilterOption = 'all' | 'upcoming' | 'in-progress' | 'completed' | 'draft'
+import { ModeToggle } from "@/components/ui/theme-toggler";
+import { CustomTooltip } from "@/components/ui/custom-tooltip";
+import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripsPage() {
   const router = useRouter();
@@ -83,95 +75,62 @@ export default function TripsPage() {
       );
     }
 
-    // Apply filter
-    if (filter !== 'all') {
-      result = result.filter(trip => getTripStatus(trip) === filter);
-    }
+  // Only render after hydration
+  if (!isHydrated) return LoadingSpinner("Loading your trips...");
 
-    // Apply sort
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'updated':
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-        case 'created':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'name':
-          return a.title.localeCompare(b.title);
-        case 'date':
-          const dateA = a.days[0]?.date || '';
-          const dateB = b.days[0]?.date || '';
-          return dateB.localeCompare(dateA);
-        default:
-          return 0;
-      }
-    });
-
-    return result;
-  }, [allTrips, searchQuery, filter, sortBy]);
-
-  const stats = useMemo(() => getTripStats(allTrips), [allTrips]);
-
-  const handleDuplicate = async (trip: Trip) => {
-    if (!userId) return;
-    
-    try {
-      await duplicateTrip(trip.id, userId);
-      toast.success(`"${trip.title}" duplicated`);
-    } catch (error) {
-      toast.error('Failed to duplicate trip');
-    }
+  const handleDuplicate = (trip: Trip) => {
+    duplicateTrip(trip.id);
+    toast.success(`"${trip.title}" duplicated`);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Enhanced Header */}
-      <header className="border-b sticky top-0 bg-background/80 backdrop-blur-lg z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            {/* Logo */}
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <Image
-                src="/tripper.png"
-                alt="Tripper"
-                width={400}
-                height={134}
-                className="h-16 w-auto"
-                priority
-              />
-            </Link>
-
-            {/* Profile Button */}
-            <Link href="/profile">
-              <Button variant="outline" size="default" className="gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile</span>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b sticky top-0 bg-background z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* <Link href="/">
+              <Button variant="ghost" title="Home">
+                Home
               </Button>
-            </Link>
-          </div>
+            </Link> */}
+            <div>
+              <h1 className="text-2xl font-bold select-none text-start">
+                ✈️ My Trips
+              </h1>
+              {isHydrated && (
+                <p className="text-sm text-muted-foreground mt-1 select-none text-start">
+                  {trips.length} {trips.length === 1 ? "Trip" : "Trips"}
+                </p>
+              )}
+            </div>
+            <CustomTooltip content="Create a new trip" side="bottom">
+              <Button
+                onClick={() => setIsNewTripModalOpen(true)}
+                className="gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                New Trip
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip content="Discover more!" side="bottom">
+              <Link href="/discover">
+                <Button variant="outline" className="gap-2">
+                  <Search className="h-5 w-5" />
+                  <span className="hidden md:inline">Discover</span>
+                </Button>
+              </Link>
+            </CustomTooltip>
 
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-              Your Trips
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
-              Your adventures, beautifully organized
-            </p>
+            <CustomTooltip content="Theme" side="bottom">
+              <ModeToggle />
+            </CustomTooltip>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {isLoading ? (
-          // Loading skeletons
-          <>
-            <TripStatsSkeletons />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <TripCardSkeleton key={i} />
-              ))}
-            </div>
-          </>
-        ) : allTrips.length === 0 ? (
+        {trips.length === 0 ? (
           <EmptyTripsState onCreateTrip={() => setIsNewTripModalOpen(true)} />
         ) : (
           <>
