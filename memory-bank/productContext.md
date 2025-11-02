@@ -242,6 +242,68 @@ Delete card by accident
   → Card restored
 ```
 
+### 9. User Authentication
+**Status:** ✅ Complete (Phase 4.4)
+
+**Features:**
+- Email/password authentication
+- OAuth providers (Google, GitHub, etc.)
+- Magic link login
+- Password reset flow
+- Email verification
+- Session management
+- Protected routes with middleware
+- Automatic session refresh
+
+**User Flow:**
+```
+Visit /trips
+  → Redirected to /login if not authenticated
+  → Enter email and password
+  → Login successful
+  → Redirected back to /trips
+```
+
+### 10. Cloud Synchronization
+**Status:** ✅ Complete (Phase 4.4)
+
+**Features:**
+- Multi-device sync via Supabase
+- Hybrid persistence (localStorage + cloud)
+- Instant local updates
+- Background cloud sync
+- Automatic conflict resolution
+- Data migration from localStorage
+- Works offline, syncs when online
+
+**User Flow:**
+```
+Edit trip on laptop
+  → Changes sync to cloud
+  → Open app on phone
+  → See latest changes instantly
+```
+
+### 11. Profile Management
+**Status:** ✅ Complete (Phase 4.4)
+
+**Features:**
+- Profile information (name, email, avatar)
+- Travel preferences summary
+- Security settings (password, email change)
+- Account actions (logout)
+- Delete account with confirmation
+- Integrated with vibes system
+
+**User Flow:**
+```
+Navigate to /profile
+  → See profile information
+  → View travel preferences
+  → Change password if needed
+  → Log out
+```
+
 ---
 
 ## 🎨 User Flows

@@ -40,6 +40,7 @@ interface CardDetailModalProps {
   card: InfoCard;
   tripId: string;
   dayId: string;
+  userId: string;
   open: boolean;
   onClose: () => void;
 }
@@ -48,6 +49,7 @@ export function CardDetailModal({
   card,
   tripId,
   dayId,
+  userId,
   open,
   onClose,
 }: CardDetailModalProps) {
@@ -56,8 +58,7 @@ export function CardDetailModal({
   const [title, setTitle] = useState(card.title);
   const [startTime, setStartTime] = useState(card.startTime || "");
   const [endTime, setEndTime] = useState(card.endTime || "");
-  const [location, setLocation] = useState(card.location?.name || "");
-  const [address, setAddress] = useState(card.location?.address || "");
+  const [address, setAddress] = useState(card.location?.address || card.location?.name || "");
   const [notes, setNotes] = useState(card.notes || "");
   const [cost, setCost] = useState(card.cost?.amount.toString() || "");
   const [currency, setCurrency] = useState(card.cost?.currency || "USD");
@@ -67,14 +68,14 @@ export function CardDetailModal({
   const [linkInput, setLinkInput] = useState("");
   const [status, setStatus] = useState(card.status);
   const [thumbnail, setThumbnail] = useState(card.thumbnail || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset form when card changes
   useEffect(() => {
     setTitle(card.title);
     setStartTime(card.startTime || "");
     setEndTime(card.endTime || "");
-    setLocation(card.location?.name || "");
-    setAddress(card.location?.address || "");
+    setAddress(card.location?.address || card.location?.name || "");
     setNotes(card.notes || "");
     setCost(card.cost?.amount.toString() || "");
     setCurrency(card.cost?.currency || "USD");
@@ -84,31 +85,40 @@ export function CardDetailModal({
     setThumbnail(card.thumbnail || "");
   }, [card]);
 
-  const handleSave = () => {
-    updateCard(tripId, dayId, card.id, {
-      title,
-      startTime: startTime || undefined,
-      endTime: endTime || undefined,
-      location: location
-        ? {
-            name: location,
-            address: address || undefined,
-          }
-        : undefined,
-      notes: notes || undefined,
-      cost: cost
-        ? {
-            amount: parseFloat(cost),
-            currency,
+  const handleSave = async () => {
+    setIsSaving(true);
+    
+    try {
+      await updateCard(tripId, dayId, card.id, {
+        title,
+        startTime: startTime || undefined,
+        endTime: endTime || undefined,
+        location: address
+          ? {
+              name: address,
+              address: address,
+            }
+          : undefined,
+        notes: notes || undefined,
+        cost: cost
+          ? {
+              amount: parseFloat(cost),
+              currency,
           }
         : undefined,
       tags,
       links,
       status,
       thumbnail: thumbnail || undefined,
-    });
-    toast.success("Card updated");
-    onClose();
+    }, userId);
+      toast.success("Card updated");
+      onClose();
+    } catch (error) {
+      console.error('Failed to update card:', error);
+      toast.error('Failed to update card');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddTag = () => {
@@ -134,7 +144,7 @@ export function CardDetailModal({
   };
 
   const handleLearnMore = () => {
-    const query = location ? `${title} ${location}` : title;
+    const query = address ? `${title} ${address}` : title;
     window.open(
       `https://www.google.com/search?q=${encodeURIComponent(query)}`,
       "_blank"
@@ -142,7 +152,7 @@ export function CardDetailModal({
   };
 
   const handleNavigate = () => {
-    const query = address || location || title;
+    const query = address || title;
     window.open(
       `https://www.google.com/maps/search/${encodeURIComponent(query)}`,
       "_blank"
@@ -170,7 +180,7 @@ export function CardDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-2xl">{cardType.icon}</span>
@@ -206,23 +216,16 @@ export function CardDetailModal({
             <label className="text-sm font-medium">Booking Status</label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { value: "pending", label: "Pending", color: "bg-gray-300" },
                 { value: "todo", label: "To Do", color: "bg-gray-400" },
                 {
                   value: "tentative",
                   label: "Tentative",
                   color: "bg-amber-500",
                 },
-                { value: "booked", label: "Booked", color: "bg-blue-500" },
                 {
                   value: "confirmed",
                   label: "Confirmed",
                   color: "bg-green-500",
-                },
-                {
-                  value: "completed",
-                  label: "Completed",
-                  color: "bg-gray-500",
                 },
               ].map(({ value, label, color }) => (
                 <button
@@ -252,33 +255,89 @@ export function CardDetailModal({
                 <Clock className="w-3 h-3" />
                 Start Time
               </label>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <select
+                  value={startTime ? startTime.split(':')[0] : ''}
+                  onChange={(e) => {
+                    const hour = e.target.value;
+                    const minute = startTime ? startTime.split(':')[1] : '00';
+                    setStartTime(hour ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Hour</option>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={startTime ? startTime.split(':')[1] : ''}
+                  onChange={(e) => {
+                    const hour = startTime ? startTime.split(':')[0] : '09';
+                    const minute = e.target.value;
+                    setStartTime(minute !== '' ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Min</option>
+                  <option value="00">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 End Time
               </label>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <select
+                  value={endTime ? endTime.split(':')[0] : ''}
+                  onChange={(e) => {
+                    const hour = e.target.value;
+                    const minute = endTime ? endTime.split(':')[1] : '00';
+                    setEndTime(hour ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Hour</option>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={endTime ? endTime.split(':')[1] : ''}
+                  onChange={(e) => {
+                    const hour = endTime ? endTime.split(':')[0] : '09';
+                    const minute = e.target.value;
+                    setEndTime(minute !== '' ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Min</option>
+                  <option value="00">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Location */}
+          {/* Address */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
-                Location
+                Address
               </label>
-              {(location || address) && (
+              {address && (
                 <Button
                   type="button"
                   variant="outline"
@@ -292,15 +351,9 @@ export function CardDetailModal({
               )}
             </div>
             <Input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Place name..."
-            />
-            <Input
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Address (optional)..."
-              className="text-sm"
+              placeholder="Enter location or address..."
             />
           </div>
 
@@ -421,10 +474,12 @@ export function CardDetailModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

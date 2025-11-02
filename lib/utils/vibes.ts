@@ -135,7 +135,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
 - Pace: ${paceDesc} (${comfort.pace_score}/100)
 - Walking: ${comfort.walking_km_per_day}km per day
 - Timing: ${daypartDesc}
-- Budget: €${logistics.budget_ppd} per person per day (excl. hotel)
+- Budget: $${logistics.budget_ppd} per person per day (excl. hotel)
 - Food style: ${foodDesc}
 - Crowd tolerance: ${crowdDesc}
 - Transit: ${logistics.transit_modes_allowed.join(", ")}

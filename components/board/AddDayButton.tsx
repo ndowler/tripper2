@@ -5,36 +5,54 @@ import { useTripStore } from "@/lib/store/tripStore";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus } from "lucide-react";
 import { format, addDays } from "date-fns";
-import { AiDayPlanner } from "./AiDayPlanner";
 
 interface AddDayButtonProps {
   tripId: string;
+  userId: string;
   activeDayId?: string | null;
 }
 
-export function AddDayButton({ tripId, activeDayId }: AddDayButtonProps) {
+export function AddDayButton({ tripId, userId }: AddDayButtonProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [showAiPlanner, setShowAiPlanner] = useState(false);
   const addDay = useTripStore((state) => state.addDay);
   const trip = useTripStore((state) => state.trips[tripId]);
 
-  const handleAddDay = () => {
+  const handleAddDay = async () => {
     setIsAdding(true);
 
-    // Calculate next day's date
-    const lastDay = trip.days[trip.days.length - 1];
-    const nextDate = lastDay ? addDays(new Date(lastDay.date), 1) : new Date();
+    try {
+      // Calculate next day's date - find the latest date across all days
+      let nextDate: Date;
+      
+      if (trip.days.length === 0) {
+        // No days yet, use today
+        nextDate = new Date();
+      } else {
+        // Find the maximum date across all days (not just last by order)
+        const latestDate = trip.days.reduce((max, day) => {
+          const dayDate = new Date(day.date);
+          return dayDate > max ? dayDate : max;
+        }, new Date(trip.days[0].date));
+        
+        // Add one day to the latest date
+        nextDate = addDays(latestDate, 1);
+      }
 
-    addDay(tripId, {
-      id: nanoid(),
-      date: format(nextDate, "yyyy-MM-dd"),
-      title: `Day ${trip.days.length + 1}`,
-    });
+      await addDay(tripId, {
+        id: nanoid(),
+        date: format(nextDate, "yyyy-MM-dd"),
+        title: `Day ${trip.days.length + 1}`,
+      }, userId);
 
-    toast.success("Day added");
-    setTimeout(() => setIsAdding(false), 200);
+      toast.success("Day added");
+    } catch (error) {
+      console.error('Failed to add day:', error);
+      toast.error('Failed to add day');
+    } finally {
+      setTimeout(() => setIsAdding(false), 200);
+    }
   };
 
   return (
@@ -51,26 +69,7 @@ export function AddDayButton({ tripId, activeDayId }: AddDayButtonProps) {
             <span className="text-base font-medium">Add Day</span>
           </div>
         </button>
-
-        {/* AI Option - smaller secondary button */}
-        <button
-          onClick={() => setShowAiPlanner(true)}
-          className="w-full py-3 border border-dashed border-purple-300 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all flex items-center justify-center gap-2 text-purple-700"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-medium">AI Plan Day</span>
-        </button>
       </div>
-
-      {/* AI Day Planner Modal */}
-      {showAiPlanner && (
-        <AiDayPlanner
-          dayId={activeDayId || undefined}
-          tripId={tripId}
-          onClose={() => setShowAiPlanner(false)}
-          // onDayAdded={() => setShowAiPlanner(false)}
-        />
-      )}
     </>
   );
 }

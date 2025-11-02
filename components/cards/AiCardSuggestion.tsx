@@ -14,12 +14,14 @@ import { AISuggestion } from "@/lib/types/suggestions";
 interface AiCardSuggestionProps {
   tripId: string;
   dayId: string;
+  userId: string;
   onClose: () => void;
 }
 
 export function AiCardSuggestion({
   tripId,
   dayId,
+  userId,
   onClose,
 }: AiCardSuggestionProps) {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
@@ -129,25 +131,30 @@ export function AiCardSuggestion({
     setShowDetailModal(true);
   };
 
-  const handleAddFromModal = () => {
+  const handleAddFromModal = async () => {
     if (!selectedSuggestion) return;
 
-    addCard(tripId, dayId, {
-      id: nanoid(),
-      type: selectedSuggestion.type,
-      title: selectedSuggestion.title,
-      duration: selectedSuggestion.duration,
-      location: selectedSuggestion.location
-        ? { name: selectedSuggestion.location }
-        : undefined,
-      notes: selectedSuggestion.description,
-      tags: selectedSuggestion.tags,
-      links: [],
-      status: "pending",
-    });
+    try {
+      await addCard(tripId, dayId, {
+        id: nanoid(),
+        type: selectedSuggestion.type,
+        title: selectedSuggestion.title,
+        duration: selectedSuggestion.duration,
+        location: selectedSuggestion.location
+          ? { name: selectedSuggestion.location }
+          : undefined,
+        notes: selectedSuggestion.description,
+        tags: selectedSuggestion.tags,
+        links: [],
+        status: "todo",
+      }, userId);
 
-    toast.success(`Added: ${selectedSuggestion.title}`);
-    setShowDetailModal(false);
+      toast.success(`Added: ${selectedSuggestion.title}`);
+      setShowDetailModal(false);
+    } catch (error) {
+      console.error('Failed to add card:', error);
+      toast.error('Failed to add activity');
+    }
     setSelectedSuggestion(null);
 
     // Close after a brief delay
@@ -317,7 +324,7 @@ export function AiCardSuggestion({
         suggestion={selectedSuggestion}
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
-        onAdd={handleAddFromModal}
+        onSave={handleAddFromModal}
         onBack={handleBackToSuggestions}
         onSave={handleAddFromModal}
       />

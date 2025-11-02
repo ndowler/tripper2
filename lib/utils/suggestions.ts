@@ -116,19 +116,19 @@ export function formatDuration(minutes: number): string {
  */
 export function formatPriceTier(tier: number): string {
   if (tier === 0) return 'Free';
-  return '€'.repeat(tier);
+  return '$'.repeat(tier);
 }
 
 /**
- * Get daypart display info
+ * Get daypart display info as meal type
  */
 export function getDaypartInfo(daypart: string): { emoji: string; label: string } {
   const daypartMap: Record<string, { emoji: string; label: string }> = {
-    morning: { emoji: '🌅', label: 'Morning' },
-    afternoon: { emoji: '☀️', label: 'Afternoon' },
-    evening: { emoji: '🌆', label: 'Evening' },
-    night: { emoji: '🌙', label: 'Night' },
-    any: { emoji: '🕐', label: 'Anytime' },
+    morning: { emoji: '🍳', label: 'Breakfast' },
+    afternoon: { emoji: '🍽️', label: 'Lunch' },
+    evening: { emoji: '🍷', label: 'Dinner' },
+    night: { emoji: '🍷', label: 'Dinner' },
+    any: { emoji: '🍽️', label: 'Anytime' },
   };
   return daypartMap[daypart] || daypartMap.any;
 }

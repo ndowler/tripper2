@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 import {
   Compass,
   Download,
@@ -9,7 +11,9 @@ import {
   MoreVertical,
   Redo2,
   Share2,
+  Sun,
   Undo2,
+  User,
 } from "lucide-react";
 
 import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
@@ -45,6 +49,7 @@ export function Navbar({
   setThingsToDoOpen,
 }: NavbarProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
+  const { theme, setTheme } = useTheme();
 
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -107,6 +112,16 @@ export function Navbar({
               </Link>
             </div>
 
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/tripper.png"
+                alt="Tripper"
+                width={32}
+                height={32}
+                className="rounded-md"
+              />
+            </Link>
+
             <div id="title" className="flex justify-center flex-1">
               <div className="flex items-center gap-4 min-w-0">
                 <EditableHeader
@@ -117,9 +132,9 @@ export function Navbar({
               </div>
             </div>
           </div>
-          {/* only show if url /trip/:id */}
+          {/* Actions */}
           <div
-            id="things-to-do-toggle"
+            id="actions"
             className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto"
           >
             {/* To-Do Toggle */}

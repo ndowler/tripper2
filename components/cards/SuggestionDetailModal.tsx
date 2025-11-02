@@ -24,9 +24,9 @@ interface SuggestionDetailModalProps {
   suggestion: SuggestionCard | null;
   isOpen: boolean;
   onClose: () => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   onSave: (suggestion: SuggestionCard) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function SuggestionDetailModal({
@@ -75,30 +75,12 @@ export function SuggestionDetailModal({
             </p>
           </div>
 
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Duration</p>
-              <p className="font-medium">
-                {formatDuration(suggestion.est_duration_min)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Price</p>
-              <p className="font-medium">
-                {formatPriceTier(suggestion.price_tier)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Best Time</p>
-              <p className="font-medium">
-                {daypartInfo.emoji} {daypartInfo.label}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Category</p>
-              <p className="font-medium capitalize">{suggestion.category}</p>
-            </div>
+          {/* Best Time */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Best Time</p>
+            <p className="font-medium">
+              {daypartInfo.emoji} {daypartInfo.label}
+            </p>
           </div>
 
           {/* Area */}
@@ -168,23 +150,25 @@ export function SuggestionDetailModal({
           )}
 
           {/* Confidence Score */}
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">
-              Match Confidence: {Math.round(suggestion.confidence * 100)}%
-            </p>
-            <div className="flex gap-1">
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-2 flex-1 rounded ${
-                    idx < Math.round(suggestion.confidence * 5)
-                      ? "bg-primary"
-                      : "bg-secondary"
-                  }`}
-                />
-              ))}
+          {suggestion.confidence !== undefined && !isNaN(suggestion.confidence) && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Match Confidence: {Math.round(suggestion.confidence * 100)}%
+              </p>
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2 flex-1 rounded ${
+                      idx < Math.round(suggestion.confidence * 5)
+                        ? "bg-primary"
+                        : "bg-secondary"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Actions */}
@@ -192,7 +176,7 @@ export function SuggestionDetailModal({
           <div className="flex gap-3">
             <Button onClick={handleSave} className="flex-1">
               <Plus className="w-4 h-4 mr-2" />
-              Save to Things to Do
+              Add to Day
             </Button>
             <Button variant="outline" onClick={onClose}>
               Close

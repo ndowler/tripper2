@@ -16,12 +16,9 @@ export type CardType =
   | "entertainment"; // Shows, concerts, etc.
 
 export type CardStatus =
-  | "pending"
-  | "confirmed"
-  | "completed"
-  | "booked"
+  | "todo"
   | "tentative"
-  | "todo";
+  | "confirmed";
 
 export interface Location {
   name: string;
@@ -72,6 +69,8 @@ export interface Trip {
     country?: string;
   };
   timezone: string;
+  travelers?: number; // Number of travelers (default: 1)
+  currency?: string; // Currency code (default: 'USD')
   days: Day[];
   unassignedCards: InfoCard[]; // Cards not yet assigned to a day
   createdAt: Date;
@@ -113,21 +112,22 @@ export interface TripStore {
   viewPrefs: ViewPrefs;
   userVibes: UserVibes | null;
 
-  // Trip actions
-  addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">) => void;
-  updateTrip: (id: string, updates: Partial<Trip>) => void;
-  deleteTrip: (id: string) => void;
-  duplicateTrip: (id: string) => void;
+  // Trip actions (all async with userId)
+  addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">, userId: string) => Promise<void>;
+  updateTrip: (id: string, updates: Partial<Trip>, userId: string) => Promise<void>;
+  deleteTrip: (id: string, userId: string) => Promise<void>;
+  duplicateTrip: (id: string, userId: string) => Promise<string>;
   setCurrentTrip: (id: string) => void;
   getAllTrips: () => Trip[];
+  loadTrips: (userId: string) => Promise<void>;
 
-  // Day actions
-  addDay: (tripId: string, day: Omit<Day, "cards">) => void;
-  updateDay: (tripId: string, dayId: string, updates: Partial<Day>) => void;
-  deleteDay: (tripId: string, dayId: string) => void;
-  reorderDays: (tripId: string, oldIndex: number, newIndex: number) => void;
+  // Day actions (all async with userId)
+  addDay: (tripId: string, day: Omit<Day, "cards">, userId: string) => Promise<void>;
+  updateDay: (tripId: string, dayId: string, updates: Partial<Day>, userId: string) => Promise<void>;
+  deleteDay: (tripId: string, dayId: string, userId: string) => Promise<void>;
+  reorderDays: (tripId: string, oldIndex: number, newIndex: number, userId: string) => Promise<void>;
 
-  // Card actions
+  // Card actions (all async with userId)
   addCard: (
     tripId: string,
     dayId: string | undefined,
@@ -142,37 +142,42 @@ export interface TripStore {
   deleteCard: (
     tripId: string,
     dayId: string | undefined,
-    cardId: string
-  ) => void;
+    cardId: string,
+    userId: string
+  ) => Promise<void>;
   moveCard: (
     tripId: string,
     fromDayId: string | undefined,
     toDayId: string | undefined,
     cardId: string,
-    newIndex: number
-  ) => void;
+    newIndex: number,
+    userId: string
+  ) => Promise<void>;
   reorderCards: (
     tripId: string,
     dayId: string | undefined,
     oldIndex: number,
-    newIndex: number
-  ) => void;
+    newIndex: number,
+    userId: string
+  ) => Promise<void>;
   duplicateCard: (
     tripId: string,
     dayId: string | undefined,
-    cardId: string
-  ) => void;
+    cardId: string,
+    userId: string
+  ) => Promise<void>;
 
-  // View preferences
-  updateViewPrefs: (prefs: Partial<ViewPrefs>) => void;
+  // View preferences (async with userId)
+  updateViewPrefs: (prefs: Partial<ViewPrefs>, userId: string) => Promise<void>;
+  loadPreferences: (userId: string) => Promise<void>;
 
-  // User vibes actions
-  setUserVibes: (vibes: UserVibes) => void;
-  updateUserVibes: (updates: Partial<UserVibes>) => void;
-  clearUserVibes: () => void;
+  // User vibes actions (async with userId)
+  setUserVibes: (vibes: UserVibes, userId: string) => Promise<void>;
+  updateUserVibes: (updates: Partial<UserVibes>, userId: string) => Promise<void>;
+  clearUserVibes: (userId: string) => Promise<void>;
   getUserVibes: () => UserVibes | null;
 
-  // Utility
+  // Utility (synchronous getters)
   getCurrentTrip: () => Trip | null;
   getDayById: (tripId: string, dayId: string) => Day | null;
   getCardById: (

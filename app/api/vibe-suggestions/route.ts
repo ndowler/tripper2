@@ -56,7 +56,7 @@ Respect constraints (dietary, accessibility). Explain matches in "reasons".
 Self-score "confidence" 0..1 based on how well each item fits the vibe_profile.
 
 CRITICAL RULES:
-- Mix categories to avoid monotony; cap any single category at 4 unless its theme weight ≥ 0.9
+- ${category ? `Focus EXCLUSIVELY on ${category} suggestions as specified` : "Mix categories to avoid monotony; vary the suggestions across different types"}
 - Align items to "daypart_bias"; early = more morning options, late = evening/night options
 - If crowd_tolerance ≤ 2, favor timed/early-entry or low-crowd alternatives
 - If dietary constraints exist, ensure food items comply (e.g., no pork, vegetarian, etc.)
@@ -102,7 +102,7 @@ Return ONLY the JSON array of ${limit} objects.`;
     }
 
     return NextResponse.json({
-      suggestions: suggestions.slice(0, 20),
+      suggestions: suggestions.slice(0, 5),
       model: completion.model,
       usage: completion.usage,
     });

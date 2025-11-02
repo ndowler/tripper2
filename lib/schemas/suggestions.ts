@@ -52,7 +52,7 @@ export const SuggestionCardSchema = z.object({
     })
     .optional()
     .nullable(),
-  confidence: z.number().min(0).max(1),
+  confidence: z.number().min(0).max(1).default(0.8),
   reasons: z.array(z.string()).max(3).optional().nullable(),
 });
 

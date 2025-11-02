@@ -17,19 +17,63 @@ import { CustomTooltip } from "@/components/ui/custom-tooltip";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 
 export default function TripsPage() {
+  const router = useRouter();
   const getAllTrips = useTripStore((state) => state.getAllTrips);
+  const loadTrips = useTripStore((state) => state.loadTrips);
   const duplicateTrip = useTripStore((state) => state.duplicateTrip);
 
-  const trips = getAllTrips();
-
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isNewTripModalOpen, setIsNewTripModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
+  
+  // View state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortOption>('updated');
+  const [filter, setFilter] = useState<FilterOption>('all');
 
+  // Check auth and load trips
   useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+    async function init() {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          router.push('/login');
+          return;
+        }
+
+        setUserId(user.id);
+        await loadTrips(user.id);
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        toast.error('Failed to load trips');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    init();
+  }, [router, loadTrips]);
+
+  const allTrips = getAllTrips();
+
+  // Filter and sort trips
+  const filteredAndSortedTrips = useMemo(() => {
+    let result = [...allTrips];
+
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(trip => 
+        trip.title.toLowerCase().includes(query) ||
+        trip.destination?.toLowerCase().includes(query) ||
+        trip.description?.toLowerCase().includes(query)
+      );
+    }
 
   // Only render after hydration
   if (!isHydrated) return LoadingSpinner("Loading your trips...");
@@ -38,6 +82,7 @@ export default function TripsPage() {
     duplicateTrip(trip.id);
     toast.success(`"${trip.title}" duplicated`);
   };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -88,32 +133,86 @@ export default function TripsPage() {
         {trips.length === 0 ? (
           <EmptyTripsState onCreateTrip={() => setIsNewTripModalOpen(true)} />
         ) : (
-          <TripGrid
-            trips={trips}
-            onEdit={(trip) => setEditingTrip(trip)}
-            onDuplicate={handleDuplicate}
-            onDelete={(trip) => setDeletingTrip(trip)}
-          />
+          <>
+            {/* Stats Dashboard */}
+            <TripStats
+              total={stats.total}
+              upcoming={stats.upcoming}
+              inProgress={stats.inProgress}
+              totalDays={stats.totalDays}
+              totalActivities={stats.totalActivities}
+            />
+
+            {/* View Controls */}
+            <ViewControls
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              filter={filter}
+              onFilterChange={setFilter}
+              filteredCount={filteredAndSortedTrips.length}
+              totalCount={allTrips.length}
+            />
+
+            {/* Trips Grid */}
+            {filteredAndSortedTrips.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-6xl mb-4 opacity-30">🔍</div>
+                <h3 className="text-xl font-semibold mb-2">No trips found</h3>
+                <p className="text-muted-foreground mb-6">
+                  Try adjusting your search or filters
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilter('all');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <TripGrid
+                trips={filteredAndSortedTrips}
+                onEdit={(trip) => setEditingTrip(trip)}
+                onDuplicate={handleDuplicate}
+                onDelete={(trip) => setDeletingTrip(trip)}
+                onCreateNew={() => setIsNewTripModalOpen(true)}
+                viewMode={viewMode}
+              />
+            )}
+          </>
         )}
       </main>
 
       {/* Modals */}
-      <NewTripModal
-        open={isNewTripModalOpen}
-        onOpenChange={setIsNewTripModalOpen}
-      />
+      {userId && (
+        <>
+          <NewTripModal
+            open={isNewTripModalOpen}
+            onOpenChange={setIsNewTripModalOpen}
+            userId={userId}
+          />
 
-      <EditTripModal
-        trip={editingTrip}
-        open={!!editingTrip}
-        onOpenChange={(open) => !open && setEditingTrip(null)}
-      />
+          <EditTripModal
+            trip={editingTrip}
+            open={!!editingTrip}
+            onOpenChange={(open) => !open && setEditingTrip(null)}
+            userId={userId}
+          />
 
-      <DeleteTripDialog
-        trip={deletingTrip}
-        open={!!deletingTrip}
-        onOpenChange={(open) => !open && setDeletingTrip(null)}
-      />
+          <DeleteTripDialog
+            trip={deletingTrip}
+            open={!!deletingTrip}
+            onOpenChange={(open) => !open && setDeletingTrip(null)}
+            userId={userId}
+          />
+        </>
+      )}
     </div>
   );
 }

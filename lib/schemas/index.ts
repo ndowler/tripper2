@@ -29,7 +29,7 @@ export const CardSchema = z.object({
   tags: z.array(z.string()).default([]),
   cost: CostSchema.optional(),
   links: z.array(z.string()).default([]),
-  status: z.enum(['pending', 'confirmed', 'completed', 'booked', 'tentative', 'todo']).default('pending'),
+  status: z.enum(['todo', 'tentative', 'confirmed']).default('todo'),
   thumbnail: z.string().optional(),  // Optional image URL for landmarks/hotels
   createdAt: z.date(),
   updatedAt: z.date(),

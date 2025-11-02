@@ -13,8 +13,8 @@ export function StatusDot({ status, size = 'sm', showLabel = true }: StatusDotPr
   const config = STATUS_CONFIG[status]
   const dotSize = size === 'sm' ? 'w-2 h-2' : 'w-3 h-3'
   
-  // Don't show pending status
-  if (status === 'pending') {
+  // Don't show todo status (default state)
+  if (status === 'todo') {
     return null
   }
   

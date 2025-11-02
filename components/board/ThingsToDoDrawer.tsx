@@ -22,12 +22,14 @@ import { Button } from "@/components/ui/button";
 
 interface ThingsToDoDrawerProps {
   trip: Trip;
+  userId: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function ThingsToDoDrawer({
   trip,
+  userId,
   isOpen,
   onClose,
 }: ThingsToDoDrawerProps) {
@@ -182,12 +184,13 @@ export function ThingsToDoDrawer({
                     card={card}
                     tripId={trip.id}
                     dayId="unassigned"
+                    userId={userId}
                   />
                 ))
               )}
 
               {/* Add card composer */}
-              <CardComposer tripId={trip.id} dayId="unassigned" />
+              <CardComposer tripId={trip.id} dayId="unassigned" userId={userId} />
             </div>
           </SortableContext>
         )}

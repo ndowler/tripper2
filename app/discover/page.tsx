@@ -29,8 +29,7 @@ export default function DiscoverPage() {
   const [step, setStep] = useState<PageStep>("input");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [category, setCategory] = useState<string>("mixed");
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +52,8 @@ export default function DiscoverPage() {
     setError(null);
     setProgress(0);
 
+    const startTime = performance.now();
+
     // Fake progress animation
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -65,6 +66,13 @@ export default function DiscoverPage() {
     }, 400);
 
     try {
+      track('Discover Started', {
+        destination: city.trim(),
+        country: country.trim() || undefined,
+        category,
+        hasVibes,
+      });
+
       const response = await fetch("/api/vibe-suggestions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,10 +80,9 @@ export default function DiscoverPage() {
           destination: {
             city: city.trim(),
             country: country.trim() || undefined,
-            start: startDate || undefined,
-            end: endDate || undefined,
           },
           vibe_profile: userVibes,
+          category: category !== "mixed" ? category : undefined,
         }),
       });
 
@@ -88,6 +95,7 @@ export default function DiscoverPage() {
       }
 
       const data = await response.json();
+      const duration = performance.now() - startTime;
       setSuggestions(data.suggestions);
 
       // Pre-select all suggestions
@@ -97,13 +105,37 @@ export default function DiscoverPage() {
       setSelectedIds(allIds);
 
       setStep("results");
+      
+      // Track successful discovery
+      track('Discover Completed', {
+        destination: city.trim(),
+        country: country.trim() || undefined,
+        category,
+        hasVibes,
+        suggestionsCount: data.suggestions.length,
+        duration: Math.round(duration),
+      });
+      
+      trackAiGenerationPerformance('discover', duration, true, data.suggestions.length);
+      
       toast.success(
         `Generated ${data.suggestions.length} personalized suggestions!`
       );
     } catch (err: any) {
+      const duration = performance.now() - startTime;
       clearInterval(progressInterval);
       setError(err.message || "Something went wrong. Please try again.");
       setStep("error");
+      
+      // Track discovery failure
+      track('Discover Failed', {
+        destination: city.trim(),
+        error: err.message,
+        duration: Math.round(duration),
+      });
+      
+      trackAiGenerationPerformance('discover', duration, false);
+      
       toast.error(err.message || "Failed to generate suggestions");
     }
   };
@@ -143,6 +175,14 @@ export default function DiscoverPage() {
       toast.error("Please select at least one suggestion");
       return;
     }
+    
+    // Track suggestion saves
+    track('Suggestions Saved', {
+      destination: city.trim(),
+      count: selectedSuggestions.length,
+      totalSuggestions: suggestions.length,
+      categories: [...new Set(selectedSuggestions.map(s => s.category))],
+    });
 
     saveSuggestionsToTrip(selectedSuggestions, currentTripId, addCard);
 
@@ -219,26 +259,36 @@ export default function DiscoverPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Start Date (optional)
-                    </label>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      End Date (optional)
-                    </label>
-                    <Input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    What type of suggestions? <span className="text-destructive">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: "mixed", label: "Mixed (All Types)", emoji: "🎯" },
+                      { value: "food", label: "Food & Dining", emoji: "🍽️" },
+                      { value: "culture", label: "Culture & Activities", emoji: "🎨" },
+                      { value: "nature", label: "Nature & Outdoors", emoji: "🌳" },
+                      { value: "entertainment", label: "Entertainment", emoji: "🎭" },
+                      { value: "shopping", label: "Shopping", emoji: "🛍️" },
+                    ].map(({ value, label, emoji }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setCategory(value)}
+                        className={`
+                          flex items-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all
+                          ${
+                            category === value
+                              ? "border-primary bg-primary/10"
+                              : "border-gray-200 hover:border-gray-300 bg-background"
+                          }
+                        `}
+                      >
+                        <span className="text-xl">{emoji}</span>
+                        <span>{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -282,7 +332,7 @@ export default function DiscoverPage() {
                 size="lg"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate 20 Suggestions
+                Generate 5 Suggestions
               </Button>
             </Card>
           </div>
@@ -299,7 +349,7 @@ export default function DiscoverPage() {
                     Generating your personalized suggestions...
                   </h2>
                   <p className="text-muted-foreground">
-                    Creating 20 perfect picks for {city}
+                    Creating 5 perfect picks for {city}
                     {hasVibes && " based on your travel style"}
                   </p>
                 </div>

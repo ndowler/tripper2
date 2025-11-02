@@ -334,7 +334,7 @@ export function createCardFromTemplate(
     notes: template.placeholder.notes,
     tags: template.suggestedTags || [],
     links: [],
-    status: 'pending',
+    status: 'todo',
     ...overrides,
   }
 }

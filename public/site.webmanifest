@@ -1,0 +1,21 @@
+{
+  "name": "Tripper - Trip Planner",
+  "short_name": "Tripper",
+  "description": "Plan your dream trips in minutes with our lightning-fast, offline-first trip planner",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/tripper.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "productivity", "lifestyle"],
+  "screenshots": []
+}
+

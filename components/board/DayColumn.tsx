@@ -5,25 +5,42 @@ import { type Day } from "@/lib/types";
 import { SortableCard } from "@/components/cards/SortableCard";
 import { CardComposer } from "@/components/cards/CardComposer";
 import { DayEditModal } from "./DayEditModal";
-import { AiDayPlanner } from "./AiDayPlanner";
+import { MakeDayModal } from "./MakeDayModal";
 import { format } from "date-fns";
-import { Calendar, MoreVertical, Sparkles } from "lucide-react";
+import { Calendar, MoreVertical, Wand2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 
 interface DayColumnProps {
   day: Day;
   tripId: string;
+  userId: string;
   index: number;
 }
 
-export function DayColumn({ day, tripId, index }: DayColumnProps) {
+export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
   const [mounted, setMounted] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false);
+  const [isMakeDayModalOpen, setIsMakeDayModalOpen] = useState(false);
+
+  // Make the day column droppable (for empty days)
+  const { setNodeRef, isOver } = useDroppable({
+    id: `day-${day.id}`,
+    data: {
+      type: "day",
+      dayId: day.id,
+    },
+  });
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -54,7 +71,7 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
     day.cards.find((c) => c.cost)?.cost?.currency || "EUR";
   const currencySymbol =
     primaryCurrency === "EUR"
-      ? "€"
+      ? "$"
       : primaryCurrency === "USD"
       ? "$"
       : primaryCurrency === "GBP"
@@ -120,25 +137,28 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsAiPlannerOpen(true)}
-              title="AI Day Planner"
-              aria-label="AI Day Planner"
-            >
-              <Sparkles className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsEditModalOpen(true)}
-              aria-label="Edit day"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Day options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsMakeDayModalOpen(true)}>
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Make My Day
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Day
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -148,11 +168,13 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
         items={day.cards.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]">
+        <div 
+          ref={setNodeRef}
+          className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]"
+        >
           {day.cards.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground text-sm text-center">
-              No plans yet
-              <br />
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm text-center gap-1">
+              <span>No plans yet</span>
               <span className="text-xs">Add your first card</span>
             </div>
           ) : hasScheduledCards ? (
@@ -172,6 +194,7 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
                       card={card}
                       tripId={tripId}
                       dayId={day.id}
+                      userId={userId}
                     />
                   ))}
                 </div>
@@ -192,6 +215,7 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
                       card={card}
                       tripId={tripId}
                       dayId={day.id}
+                      userId={userId}
                     />
                   ))}
                 </div>
@@ -212,6 +236,7 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
                       card={card}
                       tripId={tripId}
                       dayId={day.id}
+                      userId={userId}
                     />
                   ))}
                 </div>
@@ -226,6 +251,7 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
                       card={card}
                       tripId={tripId}
                       dayId={day.id}
+                      userId={userId}
                     />
                   ))}
                 </div>
@@ -239,12 +265,13 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
                 card={card}
                 tripId={tripId}
                 dayId={day.id}
+                userId={userId}
               />
             ))
           )}
 
           {/* Add card composer */}
-          <CardComposer tripId={tripId} dayId={day.id} />
+          <CardComposer tripId={tripId} dayId={day.id} userId={userId} />
         </div>
       </SortableContext>
 
@@ -252,20 +279,19 @@ export function DayColumn({ day, tripId, index }: DayColumnProps) {
       <DayEditModal
         day={day}
         tripId={tripId}
+        userId={userId}
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
       />
 
-      {/* AI Day Planner Modal */}
-      {mounted && (
-        <AiDayPlanner
-          isOpen={isAiPlannerOpen}
-          onClose={() => setIsAiPlannerOpen(false)}
-          tripId={tripId}
-          dayId={day.id}
-          destination={day.title}
-        />
-      )}
+      {/* Make Day Modal */}
+      <MakeDayModal
+        day={day}
+        tripId={tripId}
+        userId={userId}
+        open={isMakeDayModalOpen}
+        onClose={() => setIsMakeDayModalOpen(false)}
+      />
     </div>
   );
 }

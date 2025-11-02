@@ -2,162 +2,196 @@
 
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { temporal } from "zundo";
-import { nanoid } from "nanoid";
 import type { TripStore, Trip, Day, Card, ViewPrefs } from "@/lib/types";
 import type { UserVibes } from "@/lib/types/vibes";
-import { saveToStorage, loadFromStorage } from "@/lib/utils/storage";
-import { getDefaultVibes } from "@/lib/utils/vibes";
-import { AUTOSAVE_DEBOUNCE_MS, DEFAULT_TIMEZONE } from "@/lib/constants";
-
-// Debounce helper
-let saveTimeout: NodeJS.Timeout | null = null;
-function debouncedSave(state: any) {
-  if (saveTimeout) clearTimeout(saveTimeout);
-
-  saveTimeout = setTimeout(() => {
-    saveToStorage({
-      trips: state.trips,
-      currentTripId: state.currentTripId,
-      viewPrefs: state.viewPrefs,
-      userVibes: state.userVibes,
-    });
-  }, AUTOSAVE_DEBOUNCE_MS);
-}
-
-// Initial state
-const getInitialState = () => {
-  const saved = loadFromStorage();
-
-  if (saved) {
-    return {
-      trips: saved.trips,
-      currentTripId: saved.currentTripId,
-      viewPrefs: saved.viewPrefs,
-      userVibes: Array.isArray(saved.userVibes)
-        ? null
-        : saved.userVibes || null,
-    };
-  }
-
-  return {
-    trips: {} as Record<string, Trip>,
-    currentTripId: null as string | null,
-    viewPrefs: {
-      grouping: "day" as const,
-      timeFormat: 12 as const,
-      showTimes: true,
-      compactMode: false,
-      theme: "system" as const,
-      density: "comfortable" as const,
-    } as ViewPrefs,
-    userVibes: null as UserVibes | null,
-  };
-};
+import { track } from "@/lib/analytics";
+import { 
+  fetchTrips, 
+  fetchTrip, 
+  createTrip as createTripService,
+  updateTrip as updateTripService,
+  deleteTrip as deleteTripService,
+  duplicateTrip as duplicateTripService,
+} from "@/lib/services/trips-service";
+import {
+  createDay as createDayService,
+  updateDay as updateDayService,
+  deleteDay as deleteDayService,
+  reorderDays as reorderDaysService,
+} from "@/lib/services/days-service";
+import {
+  createCard as createCardService,
+  updateCard as updateCardService,
+  deleteCard as deleteCardService,
+  moveCard as moveCardService,
+  reorderCards as reorderCardsService,
+  duplicateCard as duplicateCardService,
+} from "@/lib/services/cards-service";
+import {
+  fetchPreferences,
+  updateVibes as updateVibesService,
+  clearVibes as clearVibesService,
+  updateViewPrefs as updateViewPrefsService,
+} from "@/lib/services/preferences-service";
 
 export const useTripStore = create<TripStore>()(
-  temporal(
-    immer((set, get) => ({
-      ...getInitialState(),
+  immer((set, get) => ({
+    // State
+    trips: {},
+    currentTripId: null,
+    viewPrefs: {
+      grouping: "day",
+      timeFormat: 12,
+      showTimes: true,
+      compactMode: false,
+      theme: "system",
+      density: "comfortable",
+    },
+    userVibes: null,
 
-      // Trip actions
-      addTrip: (trip) => {
+    // Trip actions
+    addTrip: async (trip, userId) => {
+      try {
+        const createdTrip = await createTripService(trip, userId);
         set((state) => {
-          const now = new Date();
-          const newTrip: Trip = {
-            ...trip,
-            createdAt: now,
-            updatedAt: now,
-          };
-          state.trips[trip.id] = newTrip;
-          state.currentTripId = trip.id;
+          state.trips[createdTrip.id] = createdTrip;
+          state.currentTripId = createdTrip.id;
         });
-        debouncedSave(get());
-      },
+        
+        // Track trip creation
+        track('Trip Created', {
+          tripId: createdTrip.id,
+          destination: createdTrip.destination,
+          dayCount: createdTrip.days.length,
+        });
+      } catch (error) {
+        console.error('Failed to add trip:', error);
+        // Re-throw with more user-friendly message if it's an Error object
+        if (error instanceof Error) {
+          throw new Error(error.message);
+        }
+        throw error;
+      }
+    },
 
-      updateTrip: (id, updates) => {
+    updateTrip: async (id, updates, userId) => {
+      try {
+        const updatedTrip = await updateTripService(id, updates, userId);
         set((state) => {
-          if (state.trips[id]) {
-            Object.assign(state.trips[id], updates, { updatedAt: new Date() });
-          }
+          state.trips[id] = updatedTrip;
         });
-        debouncedSave(get());
-      },
+        
+        // Track trip update
+        track('Trip Updated', {
+          tripId: id,
+          fields: Object.keys(updates),
+        });
+      } catch (error) {
+        console.error('Failed to update trip:', error);
+        throw error;
+      }
+    },
 
-      deleteTrip: (id) => {
+    deleteTrip: async (id, userId) => {
+      try {
+        const trip = get().trips[id];
+        await deleteTripService(id, userId);
         set((state) => {
           delete state.trips[id];
           if (state.currentTripId === id) {
             state.currentTripId = null;
           }
         });
-        debouncedSave(get());
-      },
+        
+        // Track trip deletion
+        track('Trip Deleted', {
+          tripId: id,
+          dayCount: trip?.days.length || 0,
+          cardCount: trip?.days.flatMap(d => d.cards).length || 0,
+        });
+      } catch (error) {
+        console.error('Failed to delete trip:', error);
+        throw error;
+      }
+    },
 
-      duplicateTrip: (id) => {
+    duplicateTrip: async (id, userId) => {
+      try {
+        const duplicatedTrip = await duplicateTripService(id, userId);
         set((state) => {
-          const originalTrip = state.trips[id];
-          if (originalTrip) {
-            const now = new Date();
-            const newTripId = nanoid();
-            const newTrip: Trip = {
-              ...originalTrip,
-              id: newTripId,
-              title: `${originalTrip.title} (copy)`,
-              createdAt: now,
-              updatedAt: now,
-              days: originalTrip.days.map((day) => ({
-                ...day,
-                id: nanoid(),
-                cards: day.cards.map((card) => ({
-                  ...card,
-                  id: nanoid(),
-                  createdAt: now,
-                  updatedAt: now,
-                })),
-              })),
-              unassignedCards:
-                originalTrip.unassignedCards?.map((card) => ({
-                  ...card,
-                  id: nanoid(),
-                  createdAt: now,
-                  updatedAt: now,
-                })) || [],
-            };
-            state.trips[newTripId] = newTrip;
+          state.trips[duplicatedTrip.id] = duplicatedTrip;
+        });
+        
+        // Track trip duplication
+        track('Trip Duplicated', {
+          originalTripId: id,
+          newTripId: duplicatedTrip.id,
+          dayCount: duplicatedTrip.days.length,
+          cardCount: duplicatedTrip.days.flatMap(d => d.cards).length,
+        });
+        
+        return duplicatedTrip.id;
+      } catch (error) {
+        console.error('Failed to duplicate trip:', error);
+        throw error;
+      }
+    },
+
+    setCurrentTrip: (id) => {
+      set((state) => {
+        state.currentTripId = id;
+      });
+    },
+
+    getAllTrips: () => {
+      const state = get();
+      return Object.values(state.trips).sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+    },
+
+    loadTrips: async (userId) => {
+      try {
+        const trips = await fetchTrips(userId);
+        set((state) => {
+          state.trips = trips.reduce((acc, trip) => {
+            acc[trip.id] = trip;
+            return acc;
+          }, {} as Record<string, Trip>);
+        });
+      } catch (error) {
+        console.error('Failed to load trips:', error);
+        throw error;
+      }
+    },
+
+    // Day actions
+    addDay: async (tripId, day, userId) => {
+      try {
+        const trip = get().trips[tripId];
+        if (!trip) throw new Error('Trip not found');
+
+        const order = trip.days.length;
+        const createdDay = await createDayService(tripId, day, order, userId);
+        
+        set((state) => {
+          const stateTrip = state.trips[tripId];
+          if (stateTrip) {
+            stateTrip.days.push({ ...createdDay, cards: [] });
+            stateTrip.updatedAt = new Date();
           }
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to add day:', error);
+        throw error;
+      }
+    },
 
-      setCurrentTrip: (id) => {
-        set((state) => {
-          state.currentTripId = id;
-        });
-        debouncedSave(get());
-      },
-
-      getAllTrips: () => {
-        const state = get();
-        return Object.values(state.trips).sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-      },
-
-      // Day actions
-      addDay: (tripId, day) => {
-        set((state) => {
-          const trip = state.trips[tripId];
-          if (trip) {
-            trip.days.push({ ...day, cards: [] });
-            trip.updatedAt = new Date();
-          }
-        });
-        debouncedSave(get());
-      },
-
-      updateDay: (tripId, dayId, updates) => {
+    updateDay: async (tripId, dayId, updates, userId) => {
+      try {
+        await updateDayService(dayId, updates, userId);
+        
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
@@ -168,10 +202,19 @@ export const useTripStore = create<TripStore>()(
             }
           }
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to update day:', error);
+        throw error;
+      }
+    },
 
-      deleteDay: (tripId, dayId) => {
+    deleteDay: async (tripId, dayId, userId) => {
+      try {
+        const trip = get().trips[tripId];
+        const day = trip?.days.find(d => d.id === dayId);
+        
+        await deleteDayService(dayId, userId);
+        
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
@@ -179,58 +222,132 @@ export const useTripStore = create<TripStore>()(
             trip.updatedAt = new Date();
           }
         });
-        debouncedSave(get());
-      },
+        
+        // Track day deletion
+        track('Day Deleted', {
+          tripId,
+          dayId,
+          cardCount: day?.cards.length || 0,
+        });
+      } catch (error) {
+        console.error('Failed to delete day:', error);
+        throw error;
+      }
+    },
 
-      reorderDays: (tripId, oldIndex, newIndex) => {
+    reorderDays: async (tripId, oldIndex, newIndex, userId) => {
+      try {
+        const trip = get().trips[tripId];
+        if (!trip) throw new Error('Trip not found');
+
+        // Optimistic update
         set((state) => {
-          const trip = state.trips[tripId];
-          if (trip) {
-            const [removed] = trip.days.splice(oldIndex, 1);
-            trip.days.splice(newIndex, 0, removed);
-            trip.updatedAt = new Date();
+          const stateTrip = state.trips[tripId];
+          if (stateTrip) {
+            const [removed] = stateTrip.days.splice(oldIndex, 1);
+            stateTrip.days.splice(newIndex, 0, removed);
           }
         });
-        debouncedSave(get());
-      },
 
-      // Card actions
-      addCard: (tripId, dayId, card) => {
+        // Persist to database
+        const dayIds = get().trips[tripId]?.days.map(d => d.id) || [];
+        await reorderDaysService(tripId, dayIds, userId);
+        
+        // Track day reorder
+        track('Day Reordered', {
+          tripId,
+          fromIndex: oldIndex,
+          toIndex: newIndex,
+        });
+      } catch (error) {
+        console.error('Failed to reorder days:', error);
+        // Revert on error
+        await get().loadTrips(userId);
+        throw error;
+      }
+    },
+
+    // Card actions
+    addCard: async (tripId, dayId, card, userId) => {
+      try {
+        const trip = get().trips[tripId];
+        if (!trip) throw new Error('Trip not found');
+
+        let order = 0;
+        let dayDate: string | undefined;
+        
+        if (dayId === "unassigned") {
+          order = trip.unassignedCards?.length || 0;
+        } else {
+          const day = trip.days.find((d) => d.id === dayId);
+          order = day?.cards.length || 0;
+          dayDate = day?.date; // Get the day's date for timestamp conversion
+        }
+
+        const createdCard = await createCardService(
+          tripId,
+          dayId === "unassigned" ? null : dayId,
+          card,
+          order,
+          userId,
+          dayDate // Pass day date for time conversion
+        );
+
         set((state) => {
-          const trip = state.trips[tripId];
-          if (trip) {
-            const now = new Date();
-            const newCard: Card = {
-              ...card,
-              createdAt: now,
-              updatedAt: now,
-            };
-
+          const stateTrip = state.trips[tripId];
+          if (stateTrip) {
             if (dayId === "unassigned") {
-              if (!trip.unassignedCards) trip.unassignedCards = [];
-              trip.unassignedCards.push(newCard);
+              if (!stateTrip.unassignedCards) stateTrip.unassignedCards = [];
+              stateTrip.unassignedCards.push(createdCard);
             } else {
-              const day = trip.days.find((d) => d.id === dayId);
+              const day = stateTrip.days.find((d) => d.id === dayId);
               if (day) {
-                day.cards.push(newCard);
+                day.cards.push(createdCard);
               }
             }
-            trip.updatedAt = new Date();
+            stateTrip.updatedAt = new Date();
           }
         });
-        debouncedSave(get());
-      },
+        
+        // Track card creation
+        track('Card Created', {
+          tripId,
+          cardId: createdCard.id,
+          cardType: createdCard.type,
+          dayId: dayId === "unassigned" ? null : dayId,
+          location: dayId === "unassigned" ? 'things_to_do' : 'day',
+          hasLocation: !!createdCard.location,
+          hasCost: !!createdCard.cost,
+          hasTime: !!createdCard.startTime,
+        });
+      } catch (error) {
+        console.error('Failed to add card:', error);
+        throw error;
+      }
+    },
 
-      updateCard: (tripId, dayId, cardId, updates) => {
+    updateCard: async (tripId, dayId, cardId, updates, userId) => {
+      try {
+        const trip = get().trips[tripId];
+        let dayDate: string | undefined;
+        
+        // Get day date for time conversion
+        if (dayId !== "unassigned") {
+          const day = trip?.days.find((d) => d.id === dayId);
+          dayDate = day?.date;
+        }
+        
+        await updateCardService(cardId, updates, userId, dayDate);
+
         set((state) => {
-          const trip = state.trips[tripId];
-          if (trip) {
-            let card: any;
+          const stateTrip = state.trips[tripId];
+          if (stateTrip) {
+            let card: Card | undefined;
 
             if (dayId === "unassigned") {
-              card = trip.unassignedCards?.find((c) => c.id === cardId);
+              card = stateTrip.unassignedCards?.find((c) => c.id === cardId);
             } else {
-              const day = trip.days.find((d) => d.id === dayId);
+              const day = stateTrip.days.find((d) => d.id === dayId);
               if (day) {
                 card = day.cards.find((c) => c.id === cardId);
               }
@@ -238,14 +355,38 @@ export const useTripStore = create<TripStore>()(
 
             if (card) {
               Object.assign(card, updates, { updatedAt: new Date() });
-              trip.updatedAt = new Date();
+              stateTrip.updatedAt = new Date();
             }
           }
         });
-        debouncedSave(get());
-      },
+        
+        // Track card update
+        track('Card Updated', {
+          tripId,
+          cardId,
+          dayId: dayId === "unassigned" ? null : dayId,
+          fields: Object.keys(updates),
+        });
+      } catch (error) {
+        console.error('Failed to update card:', error);
+        throw error;
+      }
+    },
 
-      deleteCard: (tripId, dayId, cardId) => {
+    deleteCard: async (tripId, dayId, cardId, userId) => {
+      try {
+        // Get card info before deletion
+        const trip = get().trips[tripId];
+        let card: Card | undefined;
+        if (dayId === "unassigned") {
+          card = trip?.unassignedCards?.find(c => c.id === cardId);
+        } else {
+          const day = trip?.days.find(d => d.id === dayId);
+          card = day?.cards.find(c => c.id === cardId);
+        }
+        
+        await deleteCardService(cardId, userId);
+
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
@@ -264,14 +405,26 @@ export const useTripStore = create<TripStore>()(
             trip.updatedAt = new Date();
           }
         });
-        debouncedSave(get());
-      },
+        
+        // Track card deletion
+        track('Card Deleted', {
+          tripId,
+          cardId,
+          cardType: card?.type,
+          dayId: dayId === "unassigned" ? null : dayId,
+        });
+      } catch (error) {
+        console.error('Failed to delete card:', error);
+        throw error;
+      }
+    },
 
-      moveCard: (tripId, fromDayId, toDayId, cardId, newIndex) => {
+    moveCard: async (tripId, fromDayId, toDayId, cardId, newIndex, userId) => {
+      try {
+        // Optimistic update
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
-            // Handle unassigned cards
             const fromDay =
               fromDayId === "unassigned"
                 ? null
@@ -281,8 +434,7 @@ export const useTripStore = create<TripStore>()(
                 ? null
                 : trip.days.find((d) => d.id === toDayId);
 
-            // Get the card from source
-            let card: any;
+            let card: Card | undefined;
             let cardIndex: number;
 
             if (fromDayId === "unassigned") {
@@ -300,7 +452,6 @@ export const useTripStore = create<TripStore>()(
               }
             }
 
-            // Add to destination
             if (card) {
               if (toDayId === "unassigned") {
                 if (!trip.unassignedCards) trip.unassignedCards = [];
@@ -312,145 +463,189 @@ export const useTripStore = create<TripStore>()(
             }
           }
         });
-        debouncedSave(get());
-      },
 
-      reorderCards: (tripId, dayId, oldIndex, newIndex) => {
+        // Persist to database
+        await moveCardService(
+          cardId,
+          toDayId === "unassigned" ? null : toDayId,
+          newIndex,
+          userId
+        );
+      } catch (error) {
+        console.error('Failed to move card:', error);
+        // Revert on error
+        await get().loadTrips(userId);
+        throw error;
+      }
+    },
+
+    reorderCards: async (tripId, dayId, oldIndex, newIndex, userId) => {
+      try {
+        // Optimistic update
         set((state) => {
           const trip = state.trips[tripId];
           if (trip) {
-            const day = trip.days.find((d) => d.id === dayId);
-            if (day) {
-              const [removed] = day.cards.splice(oldIndex, 1);
-              day.cards.splice(newIndex, 0, removed);
-              trip.updatedAt = new Date();
-            }
-          }
-        });
-        debouncedSave(get());
-      },
-
-      duplicateCard: (tripId, dayId, cardId) => {
-        set((state) => {
-          const trip = state.trips[tripId];
-          if (trip) {
-            let card: any;
-            let cardIndex: number;
-
             if (dayId === "unassigned") {
-              if (!trip.unassignedCards) trip.unassignedCards = [];
-              card = trip.unassignedCards.find((c) => c.id === cardId);
-              cardIndex = trip.unassignedCards.findIndex(
-                (c) => c.id === cardId
-              );
-
-              if (card) {
-                const now = new Date();
-                const duplicate: Card = {
-                  ...card,
-                  id: nanoid(),
-                  title: `${card.title} (copy)`,
-                  createdAt: now,
-                  updatedAt: now,
-                };
-                trip.unassignedCards.splice(cardIndex + 1, 0, duplicate);
-                trip.updatedAt = new Date();
+              if (trip.unassignedCards) {
+                const [removed] = trip.unassignedCards.splice(oldIndex, 1);
+                trip.unassignedCards.splice(newIndex, 0, removed);
               }
             } else {
               const day = trip.days.find((d) => d.id === dayId);
               if (day) {
-                card = day.cards.find((c) => c.id === cardId);
-                if (card) {
-                  const now = new Date();
-                  const duplicate: Card = {
-                    ...card,
-                    id: nanoid(),
-                    title: `${card.title} (copy)`,
-                    createdAt: now,
-                    updatedAt: now,
-                  };
-                  cardIndex = day.cards.findIndex((c) => c.id === cardId);
-                  day.cards.splice(cardIndex + 1, 0, duplicate);
-                  trip.updatedAt = new Date();
-                }
+                const [removed] = day.cards.splice(oldIndex, 1);
+                day.cards.splice(newIndex, 0, removed);
               }
             }
           }
         });
-        debouncedSave(get());
-      },
 
-      // View preferences
-      updateViewPrefs: (prefs) => {
+        // Persist to database
+        const trip = get().trips[tripId];
+        if (trip) {
+          let cardIds: string[] = [];
+          if (dayId === "unassigned") {
+            cardIds = trip.unassignedCards?.map(c => c.id) || [];
+          } else {
+            const day = trip.days.find((d) => d.id === dayId);
+            cardIds = day?.cards.map(c => c.id) || [];
+          }
+          await reorderCardsService(
+            dayId === "unassigned" ? null : dayId,
+            cardIds,
+            userId
+          );
+        }
+      } catch (error) {
+        console.error('Failed to reorder cards:', error);
+        // Revert on error
+        await get().loadTrips(userId);
+        throw error;
+      }
+    },
+
+    duplicateCard: async (tripId, dayId, cardId, userId) => {
+      try {
+        const duplicatedCard = await duplicateCardService(cardId, userId);
+
+        set((state) => {
+          const trip = state.trips[tripId];
+          if (trip) {
+            if (dayId === "unassigned") {
+              if (!trip.unassignedCards) trip.unassignedCards = [];
+              const cardIndex = trip.unassignedCards.findIndex(
+                (c) => c.id === cardId
+              );
+              trip.unassignedCards.splice(cardIndex + 1, 0, duplicatedCard);
+            } else {
+              const day = trip.days.find((d) => d.id === dayId);
+              if (day) {
+                const cardIndex = day.cards.findIndex((c) => c.id === cardId);
+                day.cards.splice(cardIndex + 1, 0, duplicatedCard);
+              }
+            }
+            trip.updatedAt = new Date();
+          }
+        });
+      } catch (error) {
+        console.error('Failed to duplicate card:', error);
+        throw error;
+      }
+    },
+
+    // View preferences
+    updateViewPrefs: async (prefs, userId) => {
+      try {
+        await updateViewPrefsService(userId, prefs);
         set((state) => {
           Object.assign(state.viewPrefs, prefs);
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to update view preferences:', error);
+        throw error;
+      }
+    },
 
-      // User vibes actions
-      setUserVibes: (vibes) => {
+    loadPreferences: async (userId) => {
+      try {
+        const { vibes, viewPrefs } = await fetchPreferences(userId);
+        set((state) => {
+          if (vibes) state.userVibes = vibes;
+          if (viewPrefs) state.viewPrefs = viewPrefs;
+        });
+      } catch (error) {
+        console.error('Failed to load preferences:', error);
+        throw error;
+      }
+    },
+
+    // User vibes actions
+    setUserVibes: async (vibes, userId) => {
+      try {
+        await updateVibesService(userId, vibes);
         set((state) => {
           state.userVibes = {
             ...vibes,
             updated_at: new Date().toISOString(),
           };
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to set user vibes:', error);
+        throw error;
+      }
+    },
 
-      updateUserVibes: (updates) => {
+    updateUserVibes: async (updates, userId) => {
+      try {
+        const currentVibes = get().userVibes;
+        const updatedVibes = {
+          ...(currentVibes || {}),
+          ...updates,
+          updated_at: new Date().toISOString(),
+        } as UserVibes;
+
+        await updateVibesService(userId, updatedVibes);
+        
         set((state) => {
-          if (state.userVibes) {
-            Object.assign(state.userVibes, updates, {
-              updated_at: new Date().toISOString(),
-            });
-          } else {
-            state.userVibes = {
-              ...getDefaultVibes(),
-              ...updates,
-              updated_at: new Date().toISOString(),
-            };
-          }
+          state.userVibes = updatedVibes;
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to update user vibes:', error);
+        throw error;
+      }
+    },
 
-      clearUserVibes: () => {
+    clearUserVibes: async (userId) => {
+      try {
+        await clearVibesService(userId);
         set((state) => {
           state.userVibes = null;
         });
-        debouncedSave(get());
-      },
+      } catch (error) {
+        console.error('Failed to clear user vibes:', error);
+        throw error;
+      }
+    },
 
-      // Utility getters
-      getCurrentTrip: () => {
-        const state = get();
-        return state.currentTripId ? state.trips[state.currentTripId] : null;
-      },
+    // Utility getters
+    getCurrentTrip: () => {
+      const state = get();
+      return state.currentTripId ? state.trips[state.currentTripId] : null;
+    },
 
-      getDayById: (tripId, dayId) => {
-        const state = get();
-        const trip = state.trips[tripId];
-        return trip ? trip.days.find((d) => d.id === dayId) || null : null;
-      },
+    getDayById: (tripId, dayId) => {
+      const state = get();
+      const trip = state.trips[tripId];
+      return trip ? trip.days.find((d) => d.id === dayId) || null : null;
+    },
 
-      getCardById: (tripId, dayId, cardId) => {
-        const state = get();
-        const day = get().getDayById(tripId, dayId);
-        return day ? day.cards.find((c) => c.id === cardId) || null : null;
-      },
+    getCardById: (tripId, dayId, cardId) => {
+      const day = get().getDayById(tripId, dayId);
+      return day ? day.cards.find((c) => c.id === cardId) || null : null;
+    },
 
-      getUserVibes: () => {
-        return get().userVibes;
-      },
-    })),
-    {
-      limit: 50,
-      partialize: (state) => ({
-        trips: state.trips,
-        currentTripId: state.currentTripId,
-      }),
-    }
-  )
+    getUserVibes: () => {
+      return get().userVibes;
+    },
+  }))
 );

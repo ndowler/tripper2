@@ -2,6 +2,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { ModeToggle } from "@/components/ui/theme-toggler";
 import type { Trip } from "@/lib/types";
 

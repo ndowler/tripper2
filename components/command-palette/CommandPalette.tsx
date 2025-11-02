@@ -5,6 +5,8 @@ import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { track } from '@/lib/analytics'
+import { trackCommandPalettePerformance } from '@/lib/analytics/performance'
 import { 
   Command, 
   Search, 
@@ -67,6 +69,23 @@ export function CommandPalette({ isOpen, onClose, tripId, defaultDayId = 'unassi
   const addCard = useTripStore(state => state.addCard)
   const trip = useTripStore(state => state.trips[tripId])
   const userVibes = useTripStore(state => state.userVibes)
+  
+  // Track command palette opening
+  useEffect(() => {
+    if (isOpen) {
+      const startTime = performance.now()
+      setTimeout(() => {
+        const openTime = performance.now() - startTime
+        trackCommandPalettePerformance(openTime)
+      }, 0)
+      
+      track('Command Palette Opened', {
+        trigger: 'unknown', // We don't know if it was keyboard or button from this component
+        tripId,
+        defaultDayId,
+      })
+    }
+  }, [isOpen, tripId, defaultDayId])
   
   // Filter templates based on search
   const filteredTemplates = useMemo(() => {
@@ -136,10 +155,20 @@ export function CommandPalette({ isOpen, onClose, tripId, defaultDayId = 'unassi
       notes: template.placeholder.notes,
       tags: template.suggestedTags || [],
       links: [],
-      status: 'pending' as const,
+      status: 'todo' as const,
     }
     
     addCard(tripId, defaultDayId, newCard)
+    
+    // Track template selection
+    track('Template Selected', {
+      template: template.title,
+      cardType: template.type,
+      source: 'command_palette',
+      hadSearch: !!search,
+      defaultDayId,
+    })
+    
     toast.success(`Added ${template.title}`)
     onClose()
     setSearch('')
@@ -150,12 +179,20 @@ export function CommandPalette({ isOpen, onClose, tripId, defaultDayId = 'unassi
     setSelectedIndex(0)
     setAiSuggestions([])
     setSelectedSuggestions(new Set())
+    
+    // Track AI category selection
+    track('AI Category Selected', {
+      category: categoryId,
+      source: 'command_palette',
+    })
   }
   
   const handleAiSuggestion = async (prompt: string) => {
     setIsLoadingAi(true)
     setAiSuggestions([])
     setSelectedSuggestions(new Set())
+    
+    const startTime = performance.now()
     
     try {
       const response = await fetch('/api/ai-suggestions', {
@@ -177,12 +214,30 @@ export function CommandPalette({ isOpen, onClose, tripId, defaultDayId = 'unassi
       }
       
       const data = await response.json()
+      const duration = performance.now() - startTime
       setAiSuggestions(data.suggestions || [])
       // Pre-select all suggestions
       setSelectedSuggestions(new Set([0, 1, 2]))
+      
+      // Track AI suggestion generation
+      track('AI Suggestions Generated', {
+        category: aiCategory,
+        suggestionsCount: data.suggestions?.length || 0,
+        duration: Math.round(duration),
+        source: 'command_palette',
+      })
+      
       toast.success('AI suggestions ready!')
     } catch (error: any) {
       console.error('AI suggestion error:', error)
+      
+      // Track AI error
+      track('AI Suggestions Failed', {
+        category: aiCategory,
+        error: error.message,
+        source: 'command_palette',
+      })
+      
       toast.error(error.message || 'Failed to get AI suggestions')
       // Fall back to category selection
       setAiCategory(null)
@@ -215,7 +270,7 @@ export function CommandPalette({ isOpen, onClose, tripId, defaultDayId = 'unassi
           notes: suggestion.description,
           tags: suggestion.tags,
           links: [],
-          status: 'pending',
+          status: 'todo',
         })
       }, index * 50)
     })

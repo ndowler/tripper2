@@ -97,7 +97,13 @@ export default function DayViewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <BackNavbar trip={currentTrip} />
       <div className="sticky top-0 z-10 bg-background border-b">
