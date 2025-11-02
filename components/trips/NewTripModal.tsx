@@ -75,7 +75,8 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
       router.push(`/trip/${tripId}`)
     } catch (error) {
       console.error('Failed to create trip:', error)
-      toast.error('Failed to create trip. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create trip. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }

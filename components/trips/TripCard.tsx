@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MapPin, Calendar, Clock, MoreVertical, TrendingUp } from 'lucide-react'
+import { MapPin, Calendar, Clock, MoreVertical } from 'lucide-react'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import type { Trip } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,6 @@ import {
   getTripStatus, 
   getStatusConfig, 
   getTripGradient, 
-  getTripProgress,
   getDaysUntilTrip,
   getDestinationEmoji,
 } from '@/lib/utils/trips'
@@ -41,7 +40,6 @@ export function TripCard({ trip, onEdit, onDuplicate, onDelete, index = 0 }: Tri
   const status = getTripStatus(trip)
   const statusConfig = getStatusConfig(status)
   const gradient = getTripGradient(trip.title)
-  const progress = getTripProgress(trip)
   const daysUntil = getDaysUntilTrip(trip)
   const destinationEmoji = getDestinationEmoji(trip.destination)
   
@@ -183,25 +181,6 @@ export function TripCard({ trip, onEdit, onDuplicate, onDelete, index = 0 }: Tri
             <Calendar className="h-4 w-4 flex-shrink-0" />
             <span className="line-clamp-1">{dateRangeText}</span>
           </div>
-
-          {/* Progress bar */}
-          {totalCards > 0 && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  <span>Progress</span>
-                </div>
-                <span className="font-medium text-foreground">{progress}%</span>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
 
           <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t">
             <span className="font-medium">{totalCards} {totalCards === 1 ? 'activity' : 'activities'}</span>

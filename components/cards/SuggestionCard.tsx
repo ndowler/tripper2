@@ -36,7 +36,9 @@ export function SuggestionCard({
   const hiddenCount = suggestion.tags.length - maxVisibleTags;
 
   // Render confidence dots (out of 5)
-  const confidenceDots = Math.round(suggestion.confidence * 5);
+  const confidenceDots = suggestion.confidence !== undefined && !isNaN(suggestion.confidence)
+    ? Math.round(suggestion.confidence * 5)
+    : 4; // Default to 4/5 if confidence is not available
 
   return (
     <Card

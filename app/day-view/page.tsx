@@ -3,28 +3,64 @@
 import { useState, useEffect } from 'react'
 import { useTripStore } from '@/lib/store/tripStore'
 import { createDemoTrip } from '@/lib/seed-data'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin, DollarSign, Clock, Navigation, RefreshCw, Plus } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin, DollarSign, Clock, Navigation, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { CardDetailModal } from '@/components/cards/CardDetailModal'
 import { Card } from '@/lib/types'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { QuickAddDrawer } from '@/components/board/QuickAddDrawer'
-import { SwapCardModal } from '@/components/cards/SwapCardModal'
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 export default function DayViewPage() {
+  const router = useRouter()
   const addTrip = useTripStore(state => state.addTrip)
   const setCurrentTrip = useTripStore(state => state.setCurrentTrip)
   const currentTripId = useTripStore(state => state.currentTripId)
   const currentTrip = useTripStore(state => state.getCurrentTrip())
+  const reorderCards = useTripStore(state => state.reorderCards)
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
-  const [swappingCard, setSwappingCard] = useState<Card | null>(null)
   const [quickAddTimeSlot, setQuickAddTimeSlot] = useState<'morning' | 'afternoon' | 'evening' | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   
+  // Configure sensors for drag & drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement before drag starts
+      },
+    })
+  )
+  
+  // Authenticate user
   useEffect(() => {
+    async function authenticate() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        setUserId(user.id)
+      }
+    }
+    
+    authenticate()
     setMounted(true)
   }, [])
   
@@ -95,10 +131,32 @@ export default function DayViewPage() {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank')
   }
   
-  const handleSwap = (card: Card, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setSwappingCard(card)
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
   }
+  
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    
+    if (!over || !currentTrip || !currentTripId || !userId) {
+      setActiveId(null)
+      return
+    }
+    
+    if (active.id !== over.id) {
+      const oldIndex = day.cards.findIndex((c) => c.id === active.id)
+      const newIndex = day.cards.findIndex((c) => c.id === over.id)
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        await reorderCards(currentTripId, day.id, oldIndex, newIndex, userId)
+      }
+    }
+    
+    setActiveId(null)
+  }
+  
+  // Get active card for drag overlay
+  const activeCard = activeId ? day.cards.find((c) => c.id === activeId) : null
   
   const getCardIcon = (type: string): string => {
     const icons: Record<string, string> = {
@@ -130,6 +188,124 @@ export default function DayViewPage() {
     return colors[type] || 'border-l-gray-400'
   }
   
+  // Sortable card component
+  const SortableActivityCard = ({ card }: { card: Card }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: card.id })
+    
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+    
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "relative rounded-lg border-l-4 bg-card shadow-sm",
+          "hover:shadow-md transition-shadow",
+          getCategoryColor(card.type)
+        )}
+      >
+        {/* Main card content - clickable */}
+        <div
+          onClick={() => setSelectedCard(card)}
+          className="w-full text-left p-4 cursor-pointer active:scale-[0.98] transition-transform"
+        >
+          <div className="flex items-start gap-3">
+            {/* Drag handle on left */}
+            <button
+              {...attributes}
+              {...listeners}
+              onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0 p-1.5 -ml-1 rounded hover:bg-muted/80 transition-colors cursor-grab active:cursor-grabbing"
+              title="Drag to reorder"
+            >
+              <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              </svg>
+            </button>
+            
+            {/* Time */}
+            {card.startTime && (
+              <div className="flex-shrink-0 w-16 pt-0.5">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {formatTimeAMPM(card.startTime)}
+                </span>
+              </div>
+            )}
+            
+            {/* Icon */}
+            <span className="text-2xl flex-shrink-0 mt-0.5">{getCardIcon(card.type)}</span>
+            
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-base leading-tight mb-1 pr-12">{card.title}</h4>
+              
+              {card.location?.name && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">{card.location.name}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                {card.duration && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{formatDuration(card.duration)}</span>
+                  </div>
+                )}
+                
+                {card.cost && (
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="w-3 h-3" />
+                    <span>{currencySymbol}{card.cost.amount}</span>
+                  </div>
+                )}
+                
+                {card.tags.length > 0 && (
+                  <div className="flex gap-1">
+                    {card.tags.slice(0, 2).map((tag, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Navigate button on right - only if has location */}
+            {card.location?.name && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleNavigate(card.location!.name + (card.location!.address ? ', ' + card.location!.address : ''), e)
+                }}
+                className="flex-shrink-0 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                title="Navigate"
+              >
+                <Navigation className="w-4 h-4 text-primary" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
   const TimeSection = ({ 
     title, 
     emoji, 
@@ -151,121 +327,41 @@ export default function DayViewPage() {
           <div className="flex-1 h-px bg-border"></div>
         </div>
         
-        <div className="space-y-3 px-4">
-          {cards.map((card) => (
-            <div
-              key={card.id}
-              className={cn(
-                "relative rounded-lg border-l-4 bg-card shadow-sm",
-                "hover:shadow-md transition-shadow",
-                getCategoryColor(card.type)
-              )}
+        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-3 px-4">
+            {cards.map((card) => (
+              <SortableActivityCard key={card.id} card={card} />
+            ))}
+            
+            {/* Add button */}
+            <button
+              onClick={() => setQuickAddTimeSlot(timeSlot)}
+              className="w-full py-3 rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 group"
             >
-              {/* Swap button - top right */}
-              <button
-                onClick={(e) => handleSwap(card, e)}
-                className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-muted/80 transition-colors z-10"
-                title="Swap for similar"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-              
-              {/* Main card content - clickable */}
-              <button
-                onClick={() => setSelectedCard(card)}
-                className="w-full text-left p-4 active:scale-[0.98] transition-transform"
-              >
-                <div className="flex items-start gap-3">
-                  {/* Time on left */}
-                  {card.startTime && (
-                    <div className="flex-shrink-0 w-16 pt-0.5">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {formatTimeAMPM(card.startTime)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Icon */}
-                  <span className="text-2xl flex-shrink-0 mt-0.5">{getCardIcon(card.type)}</span>
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-base leading-tight mb-1 pr-6">{card.title}</h4>
-                    
-                    {card.location?.name && (
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
-                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="truncate">{card.location.name}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                      {card.duration && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDuration(card.duration)}</span>
-                        </div>
-                      )}
-                      
-                      {card.cost && (
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          <span>{currencySymbol}{card.cost.amount}</span>
-                        </div>
-                      )}
-                      
-                      {card.tags.length > 0 && (
-                        <div className="flex gap-1">
-                          {card.tags.slice(0, 2).map((tag, idx) => (
-                            <span 
-                              key={idx}
-                              className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Navigate button on right - only if has location */}
-                  {card.location?.name && (
-                    <button
-                      onClick={(e) => handleNavigate(card.location!.name + (card.location!.address ? ', ' + card.location!.address : ''), e)}
-                      className="flex-shrink-0 p-2 rounded-lg hover:bg-primary/10 transition-colors"
-                      title="Navigate"
-                    >
-                      <Navigation className="w-4 h-4 text-primary" />
-                    </button>
-                  )}
-                </div>
-              </button>
-            </div>
-          ))}
-          
-          {/* Add button */}
-          <button
-            onClick={() => setQuickAddTimeSlot(timeSlot)}
-            className="w-full py-3 rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 group"
-          >
-            <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-              Add activity
-            </span>
-          </button>
-        </div>
+              <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                Add activity
+              </span>
+            </button>
+          </div>
+        </SortableContext>
       </div>
     )
   }
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <Link href="/trips">
+            <Link href={currentTripId ? `/trip/${currentTripId}` : '/trips'}>
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -372,22 +468,14 @@ export default function DayViewPage() {
                         getCategoryColor(card.type)
                       )}
                     >
-                      <button
-                        onClick={(e) => handleSwap(card, e)}
-                        className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-muted/80 transition-colors z-10"
-                        title="Swap for similar"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      
-                      <button
+                      <div
                         onClick={() => setSelectedCard(card)}
-                        className="w-full text-left p-4 active:scale-[0.98] transition-transform"
+                        className="w-full text-left p-4 cursor-pointer active:scale-[0.98] transition-transform"
                       >
                         <div className="flex items-start gap-3">
                           <span className="text-2xl flex-shrink-0 mt-0.5">{getCardIcon(card.type)}</span>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-base leading-tight mb-1 pr-6">{card.title}</h4>
+                            <h4 className="font-semibold text-base leading-tight mb-1">{card.title}</h4>
                             {card.location?.name && (
                               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
                                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
@@ -397,7 +485,10 @@ export default function DayViewPage() {
                           </div>
                           {card.location?.name && (
                             <button
-                              onClick={(e) => handleNavigate(card.location!.name + (card.location!.address ? ', ' + card.location!.address : ''), e)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleNavigate(card.location!.name + (card.location!.address ? ', ' + card.location!.address : ''), e)
+                              }}
                               className="flex-shrink-0 p-2 rounded-lg hover:bg-primary/10 transition-colors"
                               title="Navigate"
                             >
@@ -405,7 +496,7 @@ export default function DayViewPage() {
                             </button>
                           )}
                         </div>
-                      </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -415,11 +506,14 @@ export default function DayViewPage() {
         )}
       </div>
       
-      {/* Card Detail Modal */}
-      {selectedCard && (
+      {/* Card Detail Modal - Edit Mode */}
+      {selectedCard && currentTrip && userId && (
         <CardDetailModal
           card={selectedCard}
-          isOpen={!!selectedCard}
+          tripId={currentTrip.id}
+          dayId={day.id}
+          userId={userId}
+          open={!!selectedCard}
           onClose={() => setSelectedCard(null)}
         />
       )}
@@ -435,19 +529,44 @@ export default function DayViewPage() {
           destination={currentTrip.destination}
         />
       )}
-      
-      {/* Swap Card Modal */}
-      {swappingCard && (
-        <SwapCardModal
-          card={swappingCard}
-          isOpen={!!swappingCard}
-          onClose={() => setSwappingCard(null)}
-          tripId={currentTrip.id}
-          dayId={day.id}
-          destination={currentTrip.destination}
-        />
-      )}
     </div>
+    
+    {/* Drag Overlay */}
+    <DragOverlay>
+      {activeCard ? (
+        <div className="opacity-90 rotate-2 scale-105">
+          <div
+            className={cn(
+              "relative rounded-lg border-l-4 bg-card shadow-lg",
+              getCategoryColor(activeCard.type)
+            )}
+          >
+            <div className="p-4">
+              <div className="flex items-start gap-3">
+                {activeCard.startTime && (
+                  <div className="flex-shrink-0 w-16 pt-0.5">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {formatTimeAMPM(activeCard.startTime)}
+                    </span>
+                  </div>
+                )}
+                <span className="text-2xl flex-shrink-0 mt-0.5">{getCardIcon(activeCard.type)}</span>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-base leading-tight">{activeCard.title}</h4>
+                  {activeCard.location?.name && (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{activeCard.location.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </DragOverlay>
+  </DndContext>
   )
 }
 

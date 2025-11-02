@@ -28,8 +28,13 @@ export async function fetchTrips(userId: string): Promise<Trip[]> {
     .order('updated_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching trips:', error)
-    throw new Error('Failed to fetch trips')
+    console.error('Error fetching trips:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
+    throw new Error(`Failed to fetch trips: ${error.message}`)
   }
 
   // Transform database format to app format
@@ -59,8 +64,13 @@ export async function fetchTrip(tripId: string, userId: string): Promise<Trip | 
 
   if (error) {
     if (error.code === 'PGRST116') return null // Not found
-    console.error('Error fetching trip:', error)
-    throw new Error('Failed to fetch trip')
+    console.error('Error fetching trip:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
+    throw new Error(`Failed to fetch trip: ${error.message}`)
   }
 
   return transformTripFromDb(trip)
@@ -71,6 +81,17 @@ export async function fetchTrip(tripId: string, userId: string): Promise<Trip | 
  */
 export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, userId: string): Promise<Trip> {
   const supabase = createClient()
+  
+  // Verify authentication
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    throw new Error('User not authenticated')
+  }
+  
+  if (session.user.id !== userId) {
+    throw new Error('User ID mismatch')
+  }
+  
   const now = new Date().toISOString()
 
   // Insert trip
@@ -91,8 +112,13 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
     .single()
 
   if (tripError) {
-    console.error('Error creating trip:', tripError)
-    throw new Error('Failed to create trip')
+    console.error('Error creating trip:', {
+      message: tripError.message,
+      details: tripError.details,
+      hint: tripError.hint,
+      code: tripError.code,
+    })
+    throw new Error(`Failed to create trip: ${tripError.message}`)
   }
 
   // Insert days
@@ -112,10 +138,15 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
       .insert(daysToInsert)
 
     if (daysError) {
-      console.error('Error creating days:', daysError)
+      console.error('Error creating days:', {
+        message: daysError.message,
+        details: daysError.details,
+        hint: daysError.hint,
+        code: daysError.code,
+      })
       // Rollback trip creation
       await supabase.from('trips').delete().eq('id', trip.id)
-      throw new Error('Failed to create trip days')
+      throw new Error(`Failed to create trip days: ${daysError.message}`)
     }
 
     // Insert cards for each day
@@ -145,7 +176,12 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
           .insert(cardsToInsert)
 
         if (cardsError) {
-          console.error('Error creating cards:', cardsError)
+          console.error('Error creating cards:', {
+            message: cardsError.message,
+            details: cardsError.details,
+            hint: cardsError.hint,
+            code: cardsError.code,
+          })
         }
       }
     }
@@ -177,7 +213,12 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
       .insert(unassignedToInsert)
 
     if (unassignedError) {
-      console.error('Error creating unassigned cards:', unassignedError)
+      console.error('Error creating unassigned cards:', {
+        message: unassignedError.message,
+        details: unassignedError.details,
+        hint: unassignedError.hint,
+        code: unassignedError.code,
+      })
     }
   }
 
@@ -205,8 +246,13 @@ export async function updateTrip(
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error updating trip:', error)
-    throw new Error('Failed to update trip')
+    console.error('Error updating trip:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
+    throw new Error(`Failed to update trip: ${error.message}`)
   }
 
   return fetchTrip(tripId, userId) as Promise<Trip>
@@ -225,8 +271,13 @@ export async function deleteTrip(tripId: string, userId: string): Promise<void> 
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Error deleting trip:', error)
-    throw new Error('Failed to delete trip')
+    console.error('Error deleting trip:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    })
+    throw new Error(`Failed to delete trip: ${error.message}`)
   }
 }
 

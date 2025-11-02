@@ -255,22 +255,78 @@ export function CardDetailModal({
                 <Clock className="w-3 h-3" />
                 Start Time
               </label>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <select
+                  value={startTime ? startTime.split(':')[0] : ''}
+                  onChange={(e) => {
+                    const hour = e.target.value;
+                    const minute = startTime ? startTime.split(':')[1] : '00';
+                    setStartTime(hour ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Hour</option>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={startTime ? startTime.split(':')[1] : ''}
+                  onChange={(e) => {
+                    const hour = startTime ? startTime.split(':')[0] : '09';
+                    const minute = e.target.value;
+                    setStartTime(minute !== '' ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Min</option>
+                  <option value="00">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 End Time
               </label>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <select
+                  value={endTime ? endTime.split(':')[0] : ''}
+                  onChange={(e) => {
+                    const hour = e.target.value;
+                    const minute = endTime ? endTime.split(':')[1] : '00';
+                    setEndTime(hour ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Hour</option>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={endTime ? endTime.split(':')[1] : ''}
+                  onChange={(e) => {
+                    const hour = endTime ? endTime.split(':')[0] : '09';
+                    const minute = e.target.value;
+                    setEndTime(minute !== '' ? `${hour}:${minute}` : '');
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Min</option>
+                  <option value="00">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+              </div>
             </div>
           </div>
 

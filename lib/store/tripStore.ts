@@ -66,6 +66,10 @@ export const useTripStore = create<TripStore>()(
         });
       } catch (error) {
         console.error('Failed to add trip:', error);
+        // Re-throw with more user-friendly message if it's an Error object
+        if (error instanceof Error) {
+          throw new Error(error.message);
+        }
         throw error;
       }
     },

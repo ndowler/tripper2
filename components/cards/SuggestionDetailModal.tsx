@@ -150,23 +150,25 @@ export function SuggestionDetailModal({
           )}
 
           {/* Confidence Score */}
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">
-              Match Confidence: {Math.round(suggestion.confidence * 100)}%
-            </p>
-            <div className="flex gap-1">
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-2 flex-1 rounded ${
-                    idx < Math.round(suggestion.confidence * 5)
-                      ? "bg-primary"
-                      : "bg-secondary"
-                  }`}
-                />
-              ))}
+          {suggestion.confidence !== undefined && !isNaN(suggestion.confidence) && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Match Confidence: {Math.round(suggestion.confidence * 100)}%
+              </p>
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2 flex-1 rounded ${
+                      idx < Math.round(suggestion.confidence * 5)
+                        ? "bg-primary"
+                        : "bg-secondary"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Actions */}

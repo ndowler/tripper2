@@ -126,23 +126,23 @@ export default function TripsPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Enhanced Header */}
       <header className="border-b sticky top-0 bg-background/80 backdrop-blur-lg z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-6">
             {/* Logo */}
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
               <Image
                 src="/tripper.png"
                 alt="Tripper"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
+                width={400}
+                height={134}
+                className="h-16 w-auto"
                 priority
               />
             </Link>
 
             {/* Profile Button */}
             <Link href="/profile">
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="default" className="gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
               </Button>
