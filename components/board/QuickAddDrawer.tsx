@@ -110,14 +110,15 @@ export function QuickAddDrawer({ isOpen, onClose, timeSlot, dayId, tripId, desti
     const card: Card = {
       id: uuidv4(),
       title: manualTitle.trim(),
-      description: manualDescription.trim() || undefined,
+      notes: manualDescription.trim() || undefined,
       type: 'activity',
-      status: 'planned',
+      status: 'todo',
       location: manualLocation.trim() ? {
         name: manualLocation.trim()
       } : undefined,
       startTime: getSuggestedTime(timeSlot),
       tags: [],
+      links: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }

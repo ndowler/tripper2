@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const body: DiscoveryRequest = await request.json();
     console.log("Vibe Suggestions request body:", body);
-    const { destination, vibes, vibe_profile, limit } = body;
+    const { destination, vibes, vibe_profile, limit, category } = body;
 
     if (!destination) {
       return NextResponse.json(

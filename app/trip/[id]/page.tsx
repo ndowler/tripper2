@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useTripStore } from "@/lib/store/tripStore";
 import { Board } from "@/components/board/Board";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
+import { fetchTrip } from "@/lib/services/trips-service";
+import { toast } from "sonner";
 
 export default function TripPage({
   params,
@@ -80,7 +82,10 @@ export default function TripPage({
       }
     }
 
-  if (!isHydrated || !trip) {
+    init();
+  }, [id, trips, router, setCurrentTrip, loadPreferences]);
+
+  if (isLoading) {
     return <LoadingSpinner loadingText="Loading your trip..." />;
   }
 

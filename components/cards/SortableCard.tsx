@@ -9,6 +9,7 @@ interface SortableCardProps {
   card: InfoCard;
   tripId: string;
   dayId: string;
+  userId?: string; // Optional for demo/offline mode
 }
 
 export function SortableCard({ card, tripId, dayId, userId }: SortableCardProps) {

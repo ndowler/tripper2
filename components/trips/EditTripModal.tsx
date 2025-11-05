@@ -28,7 +28,7 @@ export function EditTripModal({ trip, open, onOpenChange, userId }: EditTripModa
     if (trip) {
       setTitle(trip.title)
       setDescription(trip.description || '')
-      setDestination(trip.destination || '')
+      setDestination(typeof trip.destination === 'string' ? trip.destination : (trip.destination?.city || ''))
     }
   }, [trip])
 
@@ -48,7 +48,7 @@ export function EditTripModal({ trip, open, onOpenChange, userId }: EditTripModa
       await updateTrip(trip.id, {
         title: title.trim(),
         description: description.trim() || undefined,
-        destination: destination.trim() || undefined,
+        destination: destination.trim() ? { city: destination.trim() } : undefined,
       }, userId)
 
       toast.success('Trip updated!')
@@ -65,7 +65,7 @@ export function EditTripModal({ trip, open, onOpenChange, userId }: EditTripModa
     if (trip) {
       setTitle(trip.title)
       setDescription(trip.description || '')
-      setDestination(trip.destination || '')
+      setDestination(typeof trip.destination === 'string' ? trip.destination : (trip.destination?.city || ''))
     }
     onOpenChange(false)
   }

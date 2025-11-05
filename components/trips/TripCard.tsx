@@ -6,6 +6,7 @@ import { MapPin, Calendar, Clock, MoreVertical } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import type { Trip } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import {
+  getTripStatus,
+  getStatusConfig,
+  getTripGradient,
+  getDaysUntilTrip,
+  getDestinationEmoji,
+} from "@/lib/utils/trips";
 
 interface TripCardProps {
   trip: Trip;
   onEdit: (trip: Trip) => void;
   onDuplicate: (trip: Trip) => void;
   onDelete: (trip: Trip) => void;
+  index?: number;
 }
 
 export function TripCard({
@@ -26,6 +36,7 @@ export function TripCard({
   onEdit,
   onDuplicate,
   onDelete,
+  index = 0,
 }: TripCardProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,7 +46,20 @@ export function TripCard({
     setIsMounted(true);
   }, []);
 
-  // Calculate trip stats
+  // Calculate trip stats and status
+  const status = getTripStatus(trip);
+  const statusConfig = getStatusConfig(status);
+  const gradient = getTripGradient(trip.title);
+  const daysUntil = getDaysUntilTrip(trip);
+  
+  // Format destination for emoji
+  const destinationString = trip.destination
+    ? [trip.destination.city, trip.destination.state, trip.destination.country]
+        .filter(Boolean)
+        .join(", ")
+    : undefined;
+  const destinationEmoji = getDestinationEmoji(destinationString);
+
   const dayCount = trip.days.length;
   const totalCards =
     trip.days.reduce((sum, day) => sum + day.cards.length, 0) +

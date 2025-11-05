@@ -15,7 +15,7 @@ interface AiDayPlannerProps {
   onClose: () => void;
   tripId: string;
   dayId?: string | undefined;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   destination?: string;
 }
 
@@ -119,7 +119,7 @@ export function AiDayPlanner({
           cost: card.cost,
           links: [],
           status: "todo",
-        } as Omit<Card, "createdAt" | "updatedAt">, userId);
+        } as Omit<Card, "createdAt" | "updatedAt">);
       }
 
       toast.success(`Added ${generatedCards.length} activities!`);

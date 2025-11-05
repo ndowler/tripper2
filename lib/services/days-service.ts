@@ -12,8 +12,18 @@ export async function createDay(
   tripId: string,
   day: Omit<Day, 'cards'>,
   order: number,
-  userId: string
+  userId?: string
 ): Promise<Day> {
+  // If no userId, return local-only day (localStorage mode)
+  if (!userId) {
+    return {
+      id: day.id,
+      date: day.date,
+      title: day.title || `Day ${order + 1}`,
+      cards: [],
+    }
+  }
+
   const supabase = createClient()
   const now = new Date().toISOString()
 
@@ -68,8 +78,13 @@ export async function createDay(
 export async function updateDay(
   dayId: string,
   updates: Partial<Pick<Day, 'title' | 'date'>>,
-  userId: string
+  userId?: string
 ): Promise<void> {
+  // If no userId, skip Supabase update (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
   const now = new Date().toISOString()
 
@@ -109,7 +124,12 @@ export async function updateDay(
 /**
  * Delete a day (cascade deletes cards)
  */
-export async function deleteDay(dayId: string, userId: string): Promise<void> {
+export async function deleteDay(dayId: string, userId?: string): Promise<void> {
+  // If no userId, skip Supabase delete (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
 
   // Verify user owns the day (via trip)
@@ -147,8 +167,13 @@ export async function deleteDay(dayId: string, userId: string): Promise<void> {
 export async function reorderDays(
   tripId: string,
   dayIds: string[],
-  userId: string
+  userId?: string
 ): Promise<void> {
+  // If no userId, skip Supabase update (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
 
   // Verify user owns the trip

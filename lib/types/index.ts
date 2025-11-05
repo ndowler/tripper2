@@ -52,6 +52,9 @@ export interface InfoCard {
   updatedAt: Date;
 }
 
+// Alias for convenience
+export type Card = InfoCard;
+
 export interface Day {
   id: string;
   date: string; // ISO date string "2024-10-15"
@@ -112,38 +115,40 @@ export interface TripStore {
   viewPrefs: ViewPrefs;
   userVibes: UserVibes | null;
 
-  // Trip actions (all async with userId)
-  addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">, userId: string) => Promise<void>;
-  updateTrip: (id: string, updates: Partial<Trip>, userId: string) => Promise<void>;
-  deleteTrip: (id: string, userId: string) => Promise<void>;
-  duplicateTrip: (id: string, userId: string) => Promise<string>;
+  // Trip actions (all async with userId - optional for demo/offline mode)
+  addTrip: (trip: Omit<Trip, "createdAt" | "updatedAt">, userId?: string) => Promise<void>;
+  updateTrip: (id: string, updates: Partial<Trip>, userId?: string) => Promise<void>;
+  deleteTrip: (id: string, userId?: string) => Promise<void>;
+  duplicateTrip: (id: string, userId?: string) => Promise<string>;
   setCurrentTrip: (id: string) => void;
   getAllTrips: () => Trip[];
   loadTrips: (userId: string) => Promise<void>;
 
-  // Day actions (all async with userId)
-  addDay: (tripId: string, day: Omit<Day, "cards">, userId: string) => Promise<void>;
-  updateDay: (tripId: string, dayId: string, updates: Partial<Day>, userId: string) => Promise<void>;
-  deleteDay: (tripId: string, dayId: string, userId: string) => Promise<void>;
-  reorderDays: (tripId: string, oldIndex: number, newIndex: number, userId: string) => Promise<void>;
+  // Day actions (all async with userId - optional for demo/offline mode)
+  addDay: (tripId: string, day: Omit<Day, "cards">, userId?: string) => Promise<void>;
+  updateDay: (tripId: string, dayId: string, updates: Partial<Day>, userId?: string) => Promise<void>;
+  deleteDay: (tripId: string, dayId: string, userId?: string) => Promise<void>;
+  reorderDays: (tripId: string, oldIndex: number, newIndex: number, userId?: string) => Promise<void>;
 
-  // Card actions (all async with userId)
+  // Card actions (all async with userId - optional for demo/offline mode)
   addCard: (
     tripId: string,
     dayId: string | undefined,
-    card: Omit<InfoCard, "createdAt" | "updatedAt">
-  ) => void;
+    card: Omit<InfoCard, "createdAt" | "updatedAt">,
+    userId?: string
+  ) => Promise<void>;
   updateCard: (
     tripId: string,
     dayId: string | undefined,
     cardId: string,
-    updates: Partial<InfoCard>
-  ) => void;
+    updates: Partial<InfoCard>,
+    userId?: string
+  ) => Promise<void>;
   deleteCard: (
     tripId: string,
     dayId: string | undefined,
     cardId: string,
-    userId: string
+    userId?: string
   ) => Promise<void>;
   moveCard: (
     tripId: string,
@@ -151,30 +156,30 @@ export interface TripStore {
     toDayId: string | undefined,
     cardId: string,
     newIndex: number,
-    userId: string
+    userId?: string
   ) => Promise<void>;
   reorderCards: (
     tripId: string,
     dayId: string | undefined,
     oldIndex: number,
     newIndex: number,
-    userId: string
+    userId?: string
   ) => Promise<void>;
   duplicateCard: (
     tripId: string,
     dayId: string | undefined,
     cardId: string,
-    userId: string
+    userId?: string
   ) => Promise<void>;
 
   // View preferences (async with userId)
   updateViewPrefs: (prefs: Partial<ViewPrefs>, userId: string) => Promise<void>;
   loadPreferences: (userId: string) => Promise<void>;
 
-  // User vibes actions (async with userId)
-  setUserVibes: (vibes: UserVibes, userId: string) => Promise<void>;
-  updateUserVibes: (updates: Partial<UserVibes>, userId: string) => Promise<void>;
-  clearUserVibes: (userId: string) => Promise<void>;
+  // User vibes actions (async with userId - optional for demo/offline mode)
+  setUserVibes: (vibes: UserVibes, userId?: string) => Promise<void>;
+  updateUserVibes: (updates: Partial<UserVibes>, userId?: string) => Promise<void>;
+  clearUserVibes: (userId?: string) => Promise<void>;
   getUserVibes: () => UserVibes | null;
 
   // Utility (synchronous getters)

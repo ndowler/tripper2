@@ -18,7 +18,7 @@ import { Calendar } from 'lucide-react'
 interface DayEditModalProps {
   day: Day
   tripId: string
-  userId: string
+  userId?: string // Optional for demo/offline mode
   open: boolean
   onClose: () => void
 }

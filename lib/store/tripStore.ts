@@ -261,8 +261,10 @@ export const useTripStore = create<TripStore>()(
         });
       } catch (error) {
         console.error('Failed to reorder days:', error);
-        // Revert on error
-        await get().loadTrips(userId);
+        // Revert on error (only if userId is provided)
+        if (userId) {
+          await get().loadTrips(userId);
+        }
         throw error;
       }
     },
@@ -286,7 +288,7 @@ export const useTripStore = create<TripStore>()(
 
         const createdCard = await createCardService(
           tripId,
-          dayId === "unassigned" ? null : dayId,
+          dayId === "unassigned" || !dayId ? null : dayId,
           card,
           order,
           userId,
@@ -467,14 +469,16 @@ export const useTripStore = create<TripStore>()(
         // Persist to database
         await moveCardService(
           cardId,
-          toDayId === "unassigned" ? null : toDayId,
+          toDayId === "unassigned" || !toDayId ? null : toDayId,
           newIndex,
           userId
         );
       } catch (error) {
         console.error('Failed to move card:', error);
-        // Revert on error
-        await get().loadTrips(userId);
+        // Revert on error (only if userId is provided)
+        if (userId) {
+          await get().loadTrips(userId);
+        }
         throw error;
       }
     },
@@ -511,15 +515,17 @@ export const useTripStore = create<TripStore>()(
             cardIds = day?.cards.map(c => c.id) || [];
           }
           await reorderCardsService(
-            dayId === "unassigned" ? null : dayId,
+            dayId === "unassigned" || !dayId ? null : dayId,
             cardIds,
             userId
           );
         }
       } catch (error) {
         console.error('Failed to reorder cards:', error);
-        // Revert on error
-        await get().loadTrips(userId);
+        // Revert on error (only if userId is provided)
+        if (userId) {
+          await get().loadTrips(userId);
+        }
         throw error;
       }
     },

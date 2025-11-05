@@ -35,7 +35,6 @@ export function initAnalytics() {
       persistence: 'localStorage',
       autocapture: false, // Manual events only for control
       session_recording: {
-        enabled: true,
         maskAllInputs: true, // Privacy: mask all input fields
         maskTextSelector: '*', // Mask all text by default
       },

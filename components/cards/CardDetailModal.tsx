@@ -40,7 +40,7 @@ interface CardDetailModalProps {
   card: InfoCard;
   tripId: string;
   dayId: string;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   open: boolean;
   onClose: () => void;
 }
@@ -110,7 +110,7 @@ export function CardDetailModal({
       links,
       status,
       thumbnail: thumbnail || undefined,
-    }, userId);
+    });
       toast.success("Card updated");
       onClose();
     } catch (error) {

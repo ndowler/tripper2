@@ -10,7 +10,7 @@ import { format, addDays } from "date-fns";
 
 interface AddDayButtonProps {
   tripId: string;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   activeDayId?: string | null;
 }
 

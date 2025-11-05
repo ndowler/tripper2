@@ -10,7 +10,7 @@ import { Sparkles, ChevronDown, ChevronUp, Settings, Compass } from 'lucide-reac
 import { cn } from '@/lib/utils';
 
 interface VibesCardProps {
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
 }
 
 export function VibesCard({ userId }: VibesCardProps) {
