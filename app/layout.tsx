@@ -5,7 +5,6 @@ import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CookieConsent } from "@/components/analytics/CookieConsent"
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider"
-import { OnboardingProvider } from "@/lib/contexts/OnboardingContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -84,13 +83,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <OnboardingProvider>
-            <AnalyticsProvider>
-              {children}
-              <Toaster position="top-center" richColors />
-              <CookieConsent />
-            </AnalyticsProvider>
-          </OnboardingProvider>
+          <AnalyticsProvider>
+            {children}
+            <Toaster position="top-center" richColors />
+            <CookieConsent />
+          </AnalyticsProvider>
         </ThemeProvider>
       </body>
     </html>

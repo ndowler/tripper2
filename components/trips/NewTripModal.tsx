@@ -6,12 +6,13 @@ import { nanoid } from 'nanoid'
 import { format } from 'date-fns'
 import { useTripStore } from '@/lib/store/tripStore'
 import { DEFAULT_TIMEZONE } from '@/lib/constants'
-import { checkOnboardingStatus } from '@/lib/services/onboarding-service'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
+import { cn } from '@/lib/utils'
 
 interface NewTripModalProps {
   open: boolean
@@ -22,6 +23,7 @@ interface NewTripModalProps {
 export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) {
   const router = useRouter()
   const addTrip = useTripStore((state) => state.addTrip)
+  const isMobile = useIsMobile()
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
   const getAllTrips = useTripStore((state) => state.getAllTrips)
 
@@ -42,23 +44,6 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
     setIsSubmitting(true)
 
     try {
-      // Check if this is user's first trip
-      const currentTripCount = getAllTrips().length
-      const isFirstTrip = currentTripCount === 0
-      
-      // Check if user has already completed onboarding
-      let shouldStartTour = false
-      if (isFirstTrip) {
-        try {
-          const onboardingStatus = await checkOnboardingStatus(userId)
-          shouldStartTour = !onboardingStatus.hasCompleted
-        } catch (error) {
-          console.error('Failed to check onboarding status:', error)
-          // Default to showing tour on first trip if check fails
-          shouldStartTour = true
-        }
-      }
-
       const tripId = nanoid()
       const dayId = nanoid()
 
@@ -90,9 +75,8 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
       
       onOpenChange(false)
       
-      // Navigate to the new trip with tour flag if needed
-      const url = `/trip/${tripId}${shouldStartTour ? '?tour=true' : ''}`
-      router.push(url)
+      // Navigate to the new trip
+      router.push(`/trip/${tripId}`)
     } catch (error) {
       console.error('Failed to create trip:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to create trip. Please try again.'
@@ -112,7 +96,11 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={cn(
+        isMobile 
+          ? 'h-full w-full max-w-full rounded-none' // Full-screen on mobile
+          : 'sm:max-w-[500px]' // Centered on desktop
+      )}>
         <DialogHeader>
           <DialogTitle>Create New Trip</DialogTitle>
           <DialogDescription>

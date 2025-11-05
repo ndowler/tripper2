@@ -82,6 +82,77 @@
   }
 }
 
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  .btn-mobile {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Touch-friendly button sizing */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Comfortable reading on small screens */
+  .text-mobile-body {
+    @apply text-base leading-relaxed; /* 16px for readability */
+  }
+  
+  .text-mobile-title {
+    @apply text-lg font-semibold;
+  }
+  
+  /* Reduced spacing for small screens */
+  .mobile-compact {
+    @apply px-3 py-2;
+  }
+  
+  .mobile-padding {
+    @apply px-4 py-3;
+  }
+  
+  /* Full-width on mobile */
+  .mobile-full {
+    @apply w-full;
+  }
+  
+  /* Mobile-optimized card spacing */
+  .mobile-card-spacing {
+    @apply space-y-2;
+  }
+  
+  /* Hide on mobile */
+  .hide-mobile {
+    @apply hidden;
+  }
+  
+  /* Show only on mobile */
+  .show-mobile {
+    @apply block;
+  }
+  
+  /* Vertical stack on mobile */
+  .mobile-stack {
+    @apply flex flex-col gap-3;
+  }
+  
+  /* Mobile header optimization */
+  .mobile-header {
+    @apply py-3 px-4;
+  }
+  
+  /* Mobile modal full-screen */
+  .mobile-modal {
+    @apply h-full w-full max-w-full rounded-none;
+  }
+  
+  /* Mobile drawer optimization */
+  .mobile-drawer {
+    @apply h-[85vh] rounded-t-xl;
+  }
+}
+
 /* 8-point spacing system utilities */
 @layer utilities {
   .spacing-xs { @apply p-1; }      /* 4px */
@@ -134,8 +205,23 @@
     max-width: 360px;
   }
   
+  /* Full width on mobile */
+  @media (max-width: 768px) {
+    .day-column {
+      min-width: 100%;
+      max-width: 100%;
+    }
+  }
+  
   .day-column-gutter {
     @apply gap-6; /* 24px */
+  }
+  
+  /* Reduced gutter on mobile */
+  @media (max-width: 768px) {
+    .day-column-gutter {
+      @apply gap-4; /* 16px */
+    }
   }
 }
 
