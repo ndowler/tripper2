@@ -76,6 +76,12 @@ export interface Trip {
   currency?: string; // Currency code (default: 'USD')
   days: Day[];
   unassignedCards: InfoCard[]; // Cards not yet assigned to a day
+  isSlingshotGenerated?: boolean; // True if created via Slingshot
+  slingshotMetadata?: {
+    questionnaire: any; // SlingshotRequest (avoid circular dependency)
+    generatedAt: string;
+    explanation: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -120,6 +126,7 @@ export interface TripStore {
   updateTrip: (id: string, updates: Partial<Trip>, userId?: string) => Promise<void>;
   deleteTrip: (id: string, userId?: string) => Promise<void>;
   duplicateTrip: (id: string, userId?: string) => Promise<string>;
+  generateSlingshotTrip: (request: any, userId: string) => Promise<string>; // SlingshotRequest type
   setCurrentTrip: (id: string) => void;
   getAllTrips: () => Trip[];
   loadTrips: (userId: string) => Promise<void>;

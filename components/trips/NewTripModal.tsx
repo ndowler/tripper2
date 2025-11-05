@@ -13,12 +13,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/lib/hooks/useIsMobile'
 import { cn } from '@/lib/utils'
+import { Sparkles, Edit3 } from 'lucide-react'
+import { SlingshotQuestionnaire } from './SlingshotQuestionnaire'
 
 interface NewTripModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   userId: string
 }
+
+type ModalView = 'choice' | 'manual' | 'slingshot'
 
 export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) {
   const router = useRouter()
@@ -27,6 +31,7 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
   const getAllTrips = useTripStore((state) => state.getAllTrips)
 
+  const [view, setView] = useState<ModalView>('choice')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [destination, setDestination] = useState('')
@@ -91,84 +96,176 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
     setDescription('')
     setDestination('')
     setStartDate(format(new Date(), 'yyyy-MM-dd'))
+    setView('choice')
     onOpenChange(false)
   }
 
+  const handleBack = () => {
+    setView('choice')
+  }
+
+  const handleSlingshotComplete = (tripId: string) => {
+    // Reset form and close modal
+    setTitle('')
+    setDescription('')
+    setDestination('')
+    setStartDate(format(new Date(), 'yyyy-MM-dd'))
+    setView('choice')
+    onOpenChange(false)
+    
+    // Navigate to the new trip (handled by SlingshotQuestionnaire)
+  }
+
+  // Reset view when modal closes
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setView('choice')
+    }
+    onOpenChange(open)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className={cn(
         isMobile 
           ? 'h-full w-full max-w-full rounded-none' // Full-screen on mobile
-          : 'sm:max-w-[500px]' // Centered on desktop
+          : view === 'slingshot' ? 'sm:max-w-[600px]' : 'sm:max-w-[500px]' // Wider for slingshot
       )}>
-        <DialogHeader>
-          <DialogTitle>Create New Trip</DialogTitle>
-          <DialogDescription>
-            Start planning your next adventure by creating a new trip
-          </DialogDescription>
-        </DialogHeader>
+        {view === 'choice' && (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create New Trip</DialogTitle>
+              <DialogDescription>
+                Choose how you'd like to plan your trip
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">
-              Trip Title <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Summer in Italy"
-              required
-              autoFocus
-            />
-          </div>
+            <div className="space-y-4 mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-auto py-6 flex flex-col items-start gap-2 hover:bg-accent"
+                onClick={() => setView('manual')}
+              >
+                <div className="flex items-center gap-2">
+                  <Edit3 className="h-5 w-5" />
+                  <span className="font-semibold text-lg">Make my Own</span>
+                </div>
+                <span className="text-sm text-muted-foreground text-left">
+                  Start with a blank canvas and build your itinerary from scratch
+                </span>
+              </Button>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-2">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g., 2-week adventure through Tuscany"
-              rows={3}
-            />
-          </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-auto py-6 flex flex-col items-start gap-2 hover:bg-accent hover:border-primary"
+                onClick={() => setView('slingshot')}
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <span className="font-semibold text-lg">Slingshot</span>
+                </div>
+                <span className="text-sm text-muted-foreground text-left">
+                  Answer a few questions and let AI generate a personalized itinerary
+                </span>
+              </Button>
 
-          <div>
-            <label htmlFor="destination" className="block text-sm font-medium mb-2">
-              Destination
-            </label>
-            <Input
-              id="destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="e.g., Rome, Italy"
-            />
-          </div>
+              <div className="flex justify-end pt-4">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
 
-          <div>
-            <label htmlFor="startDate" className="block text-sm font-medium mb-2">
-              Start Date
-            </label>
-            <Input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
+        {view === 'manual' && (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create New Trip</DialogTitle>
+              <DialogDescription>
+                Start planning your next adventure by creating a new trip
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Trip'}
-            </Button>
-          </div>
-        </form>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium mb-2">
+                  Trip Title <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Summer in Italy"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium mb-2">
+                  Description
+                </label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="e.g., 2-week adventure through Tuscany"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="destination" className="block text-sm font-medium mb-2">
+                  Destination
+                </label>
+                <Input
+                  id="destination"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="e.g., Rome, Italy"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium mb-2">
+                  Start Date
+                </label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="flex justify-between gap-3 pt-4">
+                <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
+                  Back
+                </Button>
+                <div className="flex gap-3">
+                  <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating...' : 'Create Trip'}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </>
+        )}
+
+        {view === 'slingshot' && (
+          <SlingshotQuestionnaire
+            userId={userId}
+            onBack={handleBack}
+            onCancel={handleCancel}
+            onComplete={handleSlingshotComplete}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )

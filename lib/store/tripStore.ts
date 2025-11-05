@@ -137,6 +137,94 @@ export const useTripStore = create<TripStore>()(
       }
     },
 
+    generateSlingshotTrip: async (request, userId) => {
+      try {
+        // Call Slingshot API
+        const response = await fetch('/api/slingshot-trip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to generate trip');
+        }
+
+        const result = await response.json();
+        const { days, explanation, metadata } = result;
+
+        // Build trip structure
+        const { nanoid } = await import('nanoid');
+        const tripId = nanoid();
+        const { DEFAULT_TIMEZONE } = await import('@/lib/constants');
+
+        // Create trip with all generated days and cards
+        const tripDays: Day[] = days.map((dayData: any) => {
+          const dayId = nanoid();
+          const cards: Card[] = dayData.cards.map((cardData: any) => ({
+            id: nanoid(),
+            type: cardData.type || 'activity',
+            title: cardData.title,
+            startTime: cardData.startTime || undefined,
+            endTime: undefined,
+            duration: cardData.duration || undefined,
+            location: cardData.location ? { name: cardData.location } : undefined,
+            notes: cardData.description || undefined,
+            tags: cardData.tags || [],
+            cost: cardData.cost || undefined,
+            links: [],
+            status: 'todo' as const,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }));
+
+          return {
+            id: dayId,
+            date: dayData.date,
+            title: `Day ${dayData.dayNumber}`,
+            cards,
+          };
+        });
+
+        const newTrip: Omit<Trip, 'createdAt' | 'updatedAt'> = {
+          id: tripId,
+          title: `${metadata.destination} ${metadata.duration}-Day Trip`,
+          description: `Slingshot-generated ${metadata.duration}-day itinerary`,
+          destination: { city: metadata.destination },
+          timezone: DEFAULT_TIMEZONE,
+          travelers: metadata.travelers,
+          days: tripDays,
+          unassignedCards: [],
+          isSlingshotGenerated: true,
+          slingshotMetadata: {
+            questionnaire: request,
+            generatedAt: new Date().toISOString(),
+            explanation,
+          },
+        };
+
+        // Save trip using addTrip
+        await get().addTrip(newTrip, userId);
+
+        // Track Slingshot generation
+        track('Slingshot Trip Generated', {
+          tripId,
+          destination: metadata.destination,
+          duration: metadata.duration,
+          budget: metadata.budget,
+          travelers: metadata.travelers,
+          dayCount: tripDays.length,
+          cardCount: tripDays.flatMap(d => d.cards).length,
+        });
+
+        return tripId;
+      } catch (error) {
+        console.error('Failed to generate Slingshot trip:', error);
+        throw error;
+      }
+    },
+
     setCurrentTrip: (id) => {
       set((state) => {
         state.currentTripId = id;

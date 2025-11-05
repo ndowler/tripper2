@@ -8,6 +8,7 @@ import { Board } from "@/components/board/Board";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 import { fetchTrip } from "@/lib/services/trips-service";
 import { toast } from "sonner";
+import { SlingshotExplainOverlay } from "@/components/trips/SlingshotExplainOverlay";
 
 export default function TripPage({
   params,
@@ -21,6 +22,7 @@ export default function TripPage({
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const isLoadingRef = useRef(false);
 
   const { id } = use(params);
@@ -115,5 +117,16 @@ export default function TripPage({
     return null;
   }
 
-  return <Board trip={trip} userId={userId} />;
+  return (
+    <>
+      <Board trip={trip} userId={userId} />
+      {trip.isSlingshotGenerated && trip.slingshotMetadata?.explanation && (
+        <SlingshotExplainOverlay
+          tripId={trip.id}
+          explanation={trip.slingshotMetadata.explanation}
+          onDismiss={() => setShowExplanation(false)}
+        />
+      )}
+    </>
+  );
 }
