@@ -128,3 +128,33 @@ export const SwapCardSchema = z.object({
 export const SwapCardResponseSchema = z.object({
   suggestions: z.array(SwapCardSchema).min(2).max(3),
 });
+
+// Slingshot day generation schema
+export const SlingshotDayCardSchema = z.object({
+  type: z.enum(suggestionTypes),
+  title: z.string().max(80),
+  description: z.string().max(200).optional().nullable(),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+    .optional()
+    .nullable(), // HH:MM 24-hour format
+  duration: z.number().int().min(15).max(480).optional().nullable(),
+  tags: z.array(z.string()).max(5).optional().nullable(),
+  location: z.string().optional().nullable(),
+  cost: z
+    .object({
+      amount: z.number().min(0),
+      currency: z.string().max(3),
+    })
+    .optional()
+    .nullable(),
+});
+
+export const SlingshotDayResponseSchema = z.object({
+  cards: z.array(SlingshotDayCardSchema).min(3).max(10),
+});
+
+export const SlingshotExplanationSchema = z.object({
+  explanation: z.string().min(50).max(500),
+});
