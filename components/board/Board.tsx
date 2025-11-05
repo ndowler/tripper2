@@ -22,6 +22,8 @@ import { DayColumn } from "@/components/board/DayColumn";
 import { AddDayButton } from "@/components/board/AddDayButton";
 import { ThingsToDoDrawer } from "@/components/board/ThingsToDoDrawer";
 import { toast } from "sonner";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
 
 interface BoardProps {
   trip: Trip;
@@ -34,6 +36,7 @@ export function Board({ trip, userId }: BoardProps) {
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
   const [thingsToDoOpen, setThingsToDoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const isMobile = useIsMobile();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -215,13 +218,25 @@ export function Board({ trip, userId }: BoardProps) {
           )}
 
           {/* Main Board Area */}
-          <main className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin overflow-x-hidden p-4">
-            <div className="px-4 py-6">
+          <main className={cn(
+            "flex-1 scrollbar-thin p-4",
+            isMobile 
+              ? "overflow-y-auto overflow-x-hidden" 
+              : "overflow-x-auto overflow-y-hidden"
+          )}>
+            <div className={cn(
+              "px-4 py-6",
+              isMobile ? "space-y-4" : ""
+            )}>
               {/* Vibes Card */}
               {mounted && <VibesCard userId={userId} />}
 
-              <div className="flex gap-6 w-full justify-center grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-                {/* Day Columns - Horizontal Layout (No drag-drop, reorder via date change) */}
+              <div className={cn(
+                isMobile
+                  ? "flex flex-col gap-4 w-full" // Mobile: vertical stack
+                  : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full justify-center" // Desktop: responsive grid
+              )}>
+                {/* Day Columns */}
                 {trip.days.map((day, index) => (
                   <DayColumn
                     key={day.id}
@@ -229,11 +244,14 @@ export function Board({ trip, userId }: BoardProps) {
                     tripId={trip.id}
                     userId={userId}
                     index={index}
+                    isMobile={isMobile}
                   />
                 ))}
 
                 {/* Add day button */}
-                <div className="flex-shrink-0 w-[360px]">
+                <div className={cn(
+                  isMobile ? "w-full" : "flex-shrink-0 w-[360px]"
+                )}>
                   <AddDayButton tripId={trip.id} userId={userId} activeDayId={activeDayId} />
                 </div>
               </div>
@@ -245,7 +263,7 @@ export function Board({ trip, userId }: BoardProps) {
       {/* Drag Overlay */}
       <DragOverlay>
         {activeCard && activeDayId ? (
-          <div className="opacity-90 rotate-3 scale-105">
+          <div className="opacity-90 rotate-3 scale-105" data-tour="drag-handle">
             <TripCard
               card={activeCard}
               tripId={trip.id}

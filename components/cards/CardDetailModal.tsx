@@ -35,6 +35,7 @@ import {
   Ticket,
   Circle,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CardDetailModalProps {
   card: InfoCard;
@@ -43,6 +44,7 @@ interface CardDetailModalProps {
   userId?: string; // Optional for demo/offline mode
   open: boolean;
   onClose: () => void;
+  isMobile?: boolean; // Mobile detection flag
 }
 
 export function CardDetailModal({
@@ -52,6 +54,7 @@ export function CardDetailModal({
   userId,
   open,
   onClose,
+  isMobile = false,
 }: CardDetailModalProps) {
   const updateCard = useTripStore((state) => state.updateCard);
 
@@ -180,7 +183,12 @@ export function CardDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-50">
+      <DialogContent className={cn(
+        "z-50 overflow-y-auto",
+        isMobile 
+          ? "h-full w-full max-w-full rounded-none p-4" // Full-screen on mobile
+          : "max-w-2xl max-h-[90vh]" // Centered on desktop
+      )}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-2xl">{cardType.icon}</span>

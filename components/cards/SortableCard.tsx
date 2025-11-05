@@ -10,9 +10,10 @@ interface SortableCardProps {
   tripId: string;
   dayId: string;
   userId?: string; // Optional for demo/offline mode
+  isMobile?: boolean; // Mobile detection flag
 }
 
-export function SortableCard({ card, tripId, dayId, userId }: SortableCardProps) {
+export function SortableCard({ card, tripId, dayId, userId, isMobile = false }: SortableCardProps) {
   const {
     attributes,
     listeners,
@@ -43,7 +44,13 @@ export function SortableCard({ card, tripId, dayId, userId }: SortableCardProps)
       {...listeners}
       className="cursor-grab active:cursor-grabbing touch-none"
     >
-      <TripCard card={card} tripId={tripId} dayId={dayId} userId={userId} />
+      <TripCard 
+        card={card} 
+        tripId={tripId} 
+        dayId={dayId} 
+        userId={userId}
+        isMobile={isMobile}
+      />
     </div>
   );
 }

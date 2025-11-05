@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
+import { cn } from '@/lib/utils'
 
 interface NewTripModalProps {
   open: boolean
@@ -21,7 +23,9 @@ interface NewTripModalProps {
 export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) {
   const router = useRouter()
   const addTrip = useTripStore((state) => state.addTrip)
+  const isMobile = useIsMobile()
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip)
+  const getAllTrips = useTripStore((state) => state.getAllTrips)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -92,7 +96,11 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={cn(
+        isMobile 
+          ? 'h-full w-full max-w-full rounded-none' // Full-screen on mobile
+          : 'sm:max-w-[500px]' // Centered on desktop
+      )}>
         <DialogHeader>
           <DialogTitle>Create New Trip</DialogTitle>
           <DialogDescription>

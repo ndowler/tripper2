@@ -17,6 +17,8 @@ import { track } from "@/lib/analytics";
 import { trackAiGenerationPerformance } from "@/lib/analytics/performance";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
@@ -38,6 +40,7 @@ export default function DiscoverPage() {
 
   const hasVibes = hasCompletedVibes(userVibes);
   const [isHydrated, setIsHydrated] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -214,18 +217,30 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-background">
       <BackNavbar trip={currentTrip} />
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={cn(
+        "max-w-7xl mx-auto",
+        isMobile ? "px-3 py-4" : "px-4 py-8"
+      )}>
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className={cn(
+          "text-center",
+          isMobile ? "mb-4" : "mb-8"
+        )}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">AI Discovery</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2 select-none">
+          <h1 className={cn(
+            "font-bold mb-2 select-none",
+            isMobile ? "text-2xl" : "text-4xl"
+          )}>
             Discover Things to Do
           </h1>
-          <p className="text-muted-foreground text-lg select-none">
-            Get 20 personalized suggestions powered by AI
+          <p className={cn(
+            "text-muted-foreground select-none",
+            isMobile ? "text-base" : "text-lg"
+          )}>
+            Get 5 personalized suggestions powered by AI
           </p>
         </div>
 
@@ -264,7 +279,10 @@ export default function DiscoverPage() {
                   <label className="block text-sm font-medium mb-2">
                     What type of suggestions? <span className="text-destructive">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className={cn(
+                    "grid gap-2",
+                    isMobile ? "grid-cols-1" : "grid-cols-2"
+                  )}>
                     {[
                       { value: "mixed", label: "Mixed (All Types)", emoji: "🎯" },
                       { value: "food", label: "Food & Dining", emoji: "🍽️" },
@@ -329,7 +347,10 @@ export default function DiscoverPage() {
               <Button
                 onClick={handleGenerate}
                 disabled={!city.trim()}
-                className="w-full"
+                className={cn(
+                  "w-full",
+                  isMobile && "h-12"
+                )}
                 size="lg"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
@@ -409,9 +430,17 @@ export default function DiscoverPage() {
 
             {/* Bulk Actions Bar */}
             {selectedIds.size > 0 && (
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+              <Card className={cn(
+                isMobile ? "p-3" : "p-4"
+              )}>
+                <div className={cn(
+                  "flex items-center",
+                  isMobile ? "flex-col gap-3 items-stretch" : "justify-between"
+                )}>
+                  <div className={cn(
+                    "flex items-center gap-3",
+                    isMobile && "w-full justify-between"
+                  )}>
                     <span className="font-medium">
                       {selectedIds.size} selected
                     </span>
@@ -432,7 +461,12 @@ export default function DiscoverPage() {
                       </Button>
                     )}
                   </div>
-                  <Button onClick={handleSaveSelected}>
+                  <Button 
+                    onClick={handleSaveSelected}
+                    className={cn(
+                      isMobile && "w-full h-11"
+                    )}
+                  >
                     Save {selectedIds.size} to Things to Do
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -450,8 +484,17 @@ export default function DiscoverPage() {
 
             {/* Bottom Actions */}
             {selectedIds.size > 0 && (
-              <div className="flex justify-center pt-6 pb-12">
-                <Button onClick={handleSaveSelected} size="lg">
+              <div className={cn(
+                "flex justify-center",
+                isMobile ? "pt-4 pb-8" : "pt-6 pb-12"
+              )}>
+                <Button 
+                  onClick={handleSaveSelected} 
+                  size="lg"
+                  className={cn(
+                    isMobile && "w-full h-12"
+                  )}
+                >
                   Save {selectedIds.size} to Things to Do
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

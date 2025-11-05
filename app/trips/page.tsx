@@ -17,6 +17,8 @@ import { EditTripModal } from "@/components/trips/EditTripModal";
 import { ModeToggle } from "@/components/ui/theme-toggler";
 import { CustomTooltip } from "@/components/ui/custom-tooltip";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
 
 export default function TripsPage() {
   const router = useRouter();
@@ -29,6 +31,7 @@ export default function TripsPage() {
   const [isNewTripModalOpen, setIsNewTripModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
+  const isMobile = useIsMobile();
 
   // Check auth and load trips
   useEffect(() => {
@@ -70,37 +73,62 @@ export default function TripsPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b sticky top-0 bg-background z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold select-none text-start">
+        <div className={cn(
+          "container mx-auto",
+          isMobile ? "px-3 py-3" : "px-4 py-4"
+        )}>
+          <div className={cn(
+            "flex items-center gap-4",
+            isMobile ? "flex-col items-start" : "justify-between"
+          )}>
+            <div className={cn(isMobile && "w-full")}>
+              <h1 className={cn(
+                "font-bold select-none text-start",
+                isMobile ? "text-xl" : "text-2xl"
+              )}>
                 ✈️ My Trips
               </h1>
               <p className="text-sm text-muted-foreground mt-1 select-none text-start">
                 {trips.length} {trips.length === 1 ? "Trip" : "Trips"}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-2",
+              isMobile && "w-full justify-between"
+            )}>
               <CustomTooltip content="Discover more!" side="bottom">
                 <Link href="/discover">
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className={cn(
+                      "gap-2",
+                      isMobile && "h-11 px-3"
+                    )}
+                  >
                     <Search className="h-5 w-5" />
-                    <span className="hidden md:inline">Discover</span>
+                    <span className={cn(isMobile ? "inline" : "hidden md:inline")}>
+                      Discover
+                    </span>
                   </Button>
                 </Link>
               </CustomTooltip>
 
-              <CustomTooltip content="Theme" side="bottom">
-                <ModeToggle />
-              </CustomTooltip>
+              {!isMobile && (
+                <CustomTooltip content="Theme" side="bottom">
+                  <ModeToggle />
+                </CustomTooltip>
+              )}
 
               <CustomTooltip content="Create a new trip" side="bottom">
                 <Button
                   onClick={() => setIsNewTripModalOpen(true)}
-                  className="gap-2"
+                  className={cn(
+                    "gap-2",
+                    isMobile && "h-11 flex-1"
+                  )}
                 >
                   <PlusCircle className="h-5 w-5" />
-                  New Trip
+                  <span>New Trip</span>
                 </Button>
               </CustomTooltip>
             </div>
@@ -108,7 +136,10 @@ export default function TripsPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className={cn(
+        "container mx-auto",
+        isMobile ? "px-3 py-4" : "px-4 py-8"
+      )}>
         {trips.length === 0 ? (
           <EmptyTripsState onCreateTrip={() => setIsNewTripModalOpen(true)} />
         ) : (

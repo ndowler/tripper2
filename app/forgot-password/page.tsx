@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
+import { InteractiveGradient } from '@/components/ui/interactive-gradient'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -37,17 +39,33 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-md">
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+      {/* Interactive Gradient Background */}
+      <InteractiveGradient />
+      
+      <div className="w-full max-w-md z-10">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">✈️ Tripper</h1>
-          <p className="text-muted-foreground">Reset your password</p>
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/tripper.png" 
+              alt="Triplio Logo" 
+              width={80} 
+              height={80}
+              className="drop-shadow-2xl"
+            />
+          </div>
+          <h1 className="text-5xl sm:text-6xl font-bold text-white mb-3 drop-shadow-lg">
+            Triplio
+          </h1>
+          <p className="text-xl text-white/90">Reset your password</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        {/* Glass-morphism Card */}
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
           {!emailSent ? (
             <>
-              <form onSubmit={handleReset} className="space-y-4">
+              <form onSubmit={handleReset} className="space-y-5">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium mb-2">
                     Email
@@ -60,6 +78,7 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isLoading}
+                    className="h-11"
                   />
                   <p className="text-xs text-muted-foreground mt-2">
                     We'll send you a link to reset your password.
@@ -68,7 +87,7 @@ export default function ForgotPasswordPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:scale-105 transition-transform font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Sending...' : 'Send Reset Link'}
@@ -91,12 +110,19 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to login
             </Link>
           </div>
+        </div>
+
+        {/* Back to Home */}
+        <div className="mt-6 text-center">
+          <Link href="/" className="text-sm text-white/80 hover:text-white transition-colors">
+            ← Back to home
+          </Link>
         </div>
       </div>
     </main>

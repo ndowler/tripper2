@@ -26,6 +26,7 @@ import {
   ChevronUp,
   GripVertical,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TripCardProps {
   card: InfoCard;
@@ -33,6 +34,7 @@ interface TripCardProps {
   dayId: string;
   userId?: string; // Optional for demo/offline mode
   isDragging?: boolean;
+  isMobile?: boolean; // Mobile detection flag
 }
 
 export function TripCard({
@@ -41,6 +43,7 @@ export function TripCard({
   dayId,
   userId,
   isDragging = false,
+  isMobile = false,
 }: TripCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -116,15 +119,26 @@ export function TripCard({
         `}
         onClick={handleCardClick}
       >
-        <div className="p-3 space-y-2">
+        <div className={cn(
+          "space-y-2",
+          isMobile ? "p-2.5" : "p-3" // Slightly reduced padding on mobile
+        )}>
           {/* Header Row 1: Drag Handle • Title • Status • Actions */}
           <div className="flex items-start gap-2">
             <button
-              className="cursor-grab active:cursor-grabbing touch-none p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              className={cn(
+                "cursor-grab active:cursor-grabbing touch-none p-0.5 transition-opacity",
+                isMobile 
+                  ? "opacity-100" // Always visible on mobile
+                  : "opacity-0 group-hover:opacity-100" // Hover on desktop
+              )}
               aria-label="Drag to reorder"
               onClick={(e) => e.stopPropagation()}
             >
-              <GripVertical className="w-4 h-4 text-muted-foreground" />
+              <GripVertical className={cn(
+                "text-muted-foreground",
+                isMobile ? "w-5 h-5" : "w-4 h-4" // Larger on mobile
+              )} />
             </button>
 
             <span className="text-base leading-none mt-0.5">
@@ -143,40 +157,51 @@ export function TripCard({
                 <StatusDot status={card.status} size="sm" showLabel={false} />
               )}
 
-              {/* Actions (on hover) */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+              {/* Actions */}
+              <div className={cn(
+                "transition-opacity flex",
+                isMobile 
+                  ? "opacity-100 gap-1" // Always visible on mobile with tighter spacing
+                  : "opacity-0 group-hover:opacity-100 gap-0.5" // Hover on desktop
+              )}>
                 {hasExpandableContent && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className={cn(
+                      isMobile ? "h-9 w-9" : "h-6 w-6" // 36px on mobile (44px with padding)
+                    )}
                     onClick={toggleExpand}
                     title={isExpanded ? "Collapse" : "Expand"}
                   >
                     {isExpanded ? (
-                      <ChevronUp className="w-3 h-3" />
+                      <ChevronUp className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
                     ) : (
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
                     )}
                   </Button>
                 )}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className={cn(
+                    isMobile ? "h-9 w-9" : "h-6 w-6"
+                  )}
                   onClick={handleDuplicate}
                   title="Duplicate"
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className={cn(
+                    isMobile ? "h-9 w-9" : "h-6 w-6"
+                  )}
                   onClick={handleDelete}
                   title="Delete"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
                 </Button>
               </div>
             </div>
@@ -304,6 +329,7 @@ export function TripCard({
         userId={userId}
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        isMobile={isMobile}
       />
     </>
   );

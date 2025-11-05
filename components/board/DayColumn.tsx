@@ -20,15 +20,17 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
+import { cn } from "@/lib/utils";
 
 interface DayColumnProps {
   day: Day;
   tripId: string;
   userId?: string; // Optional for demo/offline mode
   index: number;
+  isMobile?: boolean; // Mobile detection flag
 }
 
-export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
+export function DayColumn({ day, tripId, userId, index, isMobile = false }: DayColumnProps) {
   const [mounted, setMounted] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMakeDayModalOpen, setIsMakeDayModalOpen] = useState(false);
@@ -106,9 +108,17 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
     cardsByTimeOfDay.evening.length > 0;
 
   return (
-    <div className="h-full bg-card/30 rounded-lg border flex flex-col flex-shrink-0 day-column">
+    <div className={cn(
+      "bg-card/30 rounded-lg border flex flex-col",
+      isMobile 
+        ? "w-full min-h-[400px]" // Mobile: full width, minimum height
+        : "h-full flex-shrink-0 day-column" // Desktop: fixed width
+    )}>
       {/* Day header - Sticky */}
-      <div className="sticky top-0 z-20 px-4 py-3 border-b bg-card/95 backdrop-blur-sm">
+      <div className={cn(
+        "sticky top-0 z-20 border-b bg-card/95 backdrop-blur-sm",
+        isMobile ? "px-3 py-2.5" : "px-4 py-3" // Reduced padding on mobile
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div>
@@ -142,18 +152,30 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={cn(
+                    isMobile ? "h-11 w-11" : "h-8 w-8" // Larger touch target on mobile
+                  )}
                   aria-label="Day options"
                 >
-                  <MoreVertical className="w-4 h-4" />
+                  <MoreVertical className={cn(
+                    isMobile ? "w-5 h-5" : "w-4 h-4"
+                  )} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsMakeDayModalOpen(true)}>
+              <DropdownMenuContent align="end" className={cn(
+                isMobile && "min-w-[200px]" // Wider menu on mobile
+              )}>
+                <DropdownMenuItem 
+                  onClick={() => setIsMakeDayModalOpen(true)}
+                  className={cn(isMobile && "min-h-[44px] text-base")} // Larger touch targets
+                >
                   <Wand2 className="w-4 h-4 mr-2" />
                   Make My Day
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                <DropdownMenuItem 
+                  onClick={() => setIsEditModalOpen(true)}
+                  className={cn(isMobile && "min-h-[44px] text-base")}
+                >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Day
                 </DropdownMenuItem>
@@ -170,7 +192,12 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
       >
         <div 
           ref={setNodeRef}
-          className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-12rem)]"
+          className={cn(
+            "overflow-y-auto",
+            isMobile 
+              ? "p-3 space-y-2.5 max-h-[500px]" // Mobile: less padding, max height for scrolling
+              : "p-4 space-y-3 max-h-[calc(100vh-12rem)]" // Desktop: original
+          )}
         >
           {day.cards.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm text-center gap-1">
@@ -195,6 +222,7 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                       tripId={tripId}
                       dayId={day.id}
                       userId={userId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>
@@ -216,6 +244,7 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                       tripId={tripId}
                       dayId={day.id}
                       userId={userId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>
@@ -237,6 +266,7 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                       tripId={tripId}
                       dayId={day.id}
                       userId={userId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>
@@ -252,6 +282,7 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                       tripId={tripId}
                       dayId={day.id}
                       userId={userId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>
@@ -266,6 +297,7 @@ export function DayColumn({ day, tripId, userId, index }: DayColumnProps) {
                 tripId={tripId}
                 dayId={day.id}
                 userId={userId}
+                isMobile={isMobile}
               />
             ))
           )}
