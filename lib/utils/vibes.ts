@@ -247,29 +247,43 @@ export function calculateThemeWeights(
  * Get a human-readable summary of vibes
  */
 export function getVibesSummary(vibes: UserVibes): string {
-  const packs =
-    vibes.vibe_packs.length > 0
-      ? vibes.vibe_packs.slice(0, 2).join(" + ")
-      : "Custom";
+  if (vibes.vibe_packs.length > 0) {
+    // Show vibe packs if they exist
+    const packs = vibes.vibe_packs.slice(0, 2).join(" + ");
+    const budgetStr = getBudgetSymbol(vibes.logistics.budget_ppd);
+    const daypart =
+      vibes.comfort.daypart_bias === "early"
+        ? "🌅 Early Bird"
+        : vibes.comfort.daypart_bias === "late"
+        ? "🌙 Night Owl"
+        : "😌 Balanced";
+    return `${packs} • ${budgetStr} • ${daypart}`;
+  }
 
-  const budget = vibes.logistics.budget_ppd;
-  const budgetStr =
-    budget <= 50
-      ? "€€"
-      : budget <= 100
-      ? "€€€"
-      : budget <= 200
-      ? "€€€€"
-      : "€€€€€";
+  // Show actual values instead of "Custom"
+  const pace = getPaceLabel(vibes.comfort.pace_score);
+  const budget = `$${vibes.logistics.budget_ppd}/day`;
+  const walking = `${vibes.comfort.walking_km_per_day}km`;
+  return `${pace} • ${budget} • ${walking}`;
+}
 
-  const daypart =
-    vibes.comfort.daypart_bias === "early"
-      ? "🌅 Early Bird"
-      : vibes.comfort.daypart_bias === "late"
-      ? "🌙 Night Owl"
-      : "😌 Balanced";
+/**
+ * Helper to get budget symbol in dollars
+ */
+function getBudgetSymbol(budget: number): string {
+  if (budget <= 50) return "$$";
+  if (budget <= 100) return "$$$";
+  if (budget <= 200) return "$$$$";
+  return "$$$$$";
+}
 
-  return `${packs} • ${budgetStr} • ${daypart}`;
+/**
+ * Helper to get pace label
+ */
+function getPaceLabel(paceScore: number): string {
+  if (paceScore <= 30) return "Relaxed";
+  if (paceScore <= 60) return "Moderate";
+  return "Active";
 }
 
 /**
