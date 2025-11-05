@@ -162,22 +162,27 @@ export const useTripStore = create<TripStore>()(
         // Create trip with all generated days and cards
         const tripDays: Day[] = days.map((dayData: any) => {
           const dayId = nanoid();
-          const cards: Card[] = dayData.cards.map((cardData: any) => ({
-            id: nanoid(),
-            type: cardData.type || 'activity',
-            title: cardData.title,
-            startTime: cardData.startTime || undefined,
-            endTime: undefined,
-            duration: cardData.duration || undefined,
-            location: cardData.location ? { name: cardData.location } : undefined,
-            notes: cardData.description || undefined,
-            tags: cardData.tags || [],
-            cost: cardData.cost || undefined,
-            links: [],
-            status: 'todo' as const,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }));
+          const cards: Card[] = dayData.cards.map((cardData: any) => {
+            // Clean up card data - ensure all fields are properly formatted
+            const card: Card = {
+              id: nanoid(),
+              type: cardData.type || 'activity',
+              title: cardData.title || 'Untitled',
+              startTime: cardData.startTime || undefined,
+              endTime: cardData.endTime || undefined,
+              duration: cardData.duration || undefined,
+              location: cardData.location ? { name: cardData.location } : undefined,
+              notes: cardData.description || cardData.notes || undefined,
+              tags: Array.isArray(cardData.tags) ? cardData.tags : [],
+              cost: cardData.cost || undefined,
+              links: [],
+              status: 'todo',
+              thumbnail: undefined,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            return card;
+          });
 
           return {
             id: dayId,
