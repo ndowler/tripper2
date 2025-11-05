@@ -79,7 +79,18 @@ export async function fetchTrip(tripId: string, userId: string): Promise<Trip | 
 /**
  * Create a new trip
  */
-export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, userId: string): Promise<Trip> {
+export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, userId?: string): Promise<Trip> {
+  const now = new Date().toISOString()
+  
+  // If no userId, return trip for localStorage-only mode (demo/offline)
+  if (!userId) {
+    return {
+      ...trip,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
+    }
+  }
+  
   const supabase = createClient()
   
   // Verify authentication
@@ -91,8 +102,6 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
   if (session.user.id !== userId) {
     throw new Error('User ID mismatch')
   }
-  
-  const now = new Date().toISOString()
 
   // Insert trip
   const { data: newTrip, error: tripError } = await supabase
@@ -232,8 +241,13 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
 export async function updateTrip(
   tripId: string, 
   updates: Partial<Pick<Trip, 'title' | 'description' | 'destination'>>,
-  userId: string
+  userId?: string
 ): Promise<Trip> {
+  // If no userId, return null for localStorage-only mode (handled by store)
+  if (!userId) {
+    throw new Error('Cannot update trip without userId in Supabase mode')
+  }
+  
   const supabase = createClient()
 
   const { error } = await supabase
@@ -261,7 +275,12 @@ export async function updateTrip(
 /**
  * Delete a trip (cascade deletes days and cards)
  */
-export async function deleteTrip(tripId: string, userId: string): Promise<void> {
+export async function deleteTrip(tripId: string, userId?: string): Promise<void> {
+  // If no userId, skip Supabase delete (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+  
   const supabase = createClient()
 
   const { error } = await supabase
@@ -284,7 +303,13 @@ export async function deleteTrip(tripId: string, userId: string): Promise<void> 
 /**
  * Duplicate a trip
  */
-export async function duplicateTrip(tripId: string, userId: string): Promise<Trip> {
+export async function duplicateTrip(tripId: string, userId?: string): Promise<Trip> {
+  // For localStorage-only mode, this will be handled by the store
+  // Since fetchTrip requires userId, this function requires it too
+  if (!userId) {
+    throw new Error('Cannot duplicate trip without userId')
+  }
+  
   const supabase = createClient()
 
   // Fetch original trip

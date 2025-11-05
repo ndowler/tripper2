@@ -14,7 +14,7 @@ import { AISuggestion } from "@/lib/types/suggestions";
 interface AiCardSuggestionProps {
   tripId: string;
   dayId: string;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   onClose: () => void;
 }
 
@@ -147,7 +147,7 @@ export function AiCardSuggestion({
         tags: selectedSuggestion.tags,
         links: [],
         status: "todo",
-      }, userId);
+      });
 
       toast.success(`Added: ${selectedSuggestion.title}`);
       setShowDetailModal(false);
@@ -326,7 +326,6 @@ export function AiCardSuggestion({
         onClose={() => setShowDetailModal(false)}
         onSave={handleAddFromModal}
         onBack={handleBackToSuggestions}
-        onSave={handleAddFromModal}
       />
     </div>
   );

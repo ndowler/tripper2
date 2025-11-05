@@ -65,7 +65,12 @@ export async function fetchPreferences(userId: string): Promise<{
 /**
  * Update user vibes
  */
-export async function updateVibes(userId: string, vibes: UserVibes): Promise<void> {
+export async function updateVibes(userId: string | undefined, vibes: UserVibes): Promise<void> {
+  // If no userId, skip Supabase (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+  
   const supabase = createClient()
 
   const { error } = await supabase
@@ -85,7 +90,12 @@ export async function updateVibes(userId: string, vibes: UserVibes): Promise<voi
 /**
  * Clear user vibes
  */
-export async function clearVibes(userId: string): Promise<void> {
+export async function clearVibes(userId?: string): Promise<void> {
+  // If no userId, skip Supabase (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+  
   const supabase = createClient()
 
   const { error } = await supabase

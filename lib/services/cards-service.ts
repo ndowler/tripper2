@@ -52,9 +52,18 @@ export async function createCard(
   dayId: string | null,
   card: Omit<Card, 'createdAt' | 'updatedAt'>,
   order: number,
-  userId: string,
+  userId?: string,
   dayDate?: string
 ): Promise<Card> {
+  // If no userId, return local-only card (localStorage mode)
+  if (!userId) {
+    return {
+      ...card,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Card
+  }
+
   const supabase = createClient()
   const now = new Date().toISOString()
 
@@ -127,9 +136,14 @@ export async function createCard(
 export async function updateCard(
   cardId: string,
   updates: Partial<Omit<Card, 'id' | 'createdAt' | 'updatedAt'>>,
-  userId: string,
+  userId?: string,
   dayDate?: string
 ): Promise<void> {
+  // If no userId, skip Supabase update (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
   const now = new Date().toISOString()
 
@@ -195,7 +209,11 @@ export async function updateCard(
 /**
  * Delete a card
  */
-export async function deleteCard(cardId: string, userId: string): Promise<void> {
+export async function deleteCard(cardId: string, userId?: string): Promise<void> {
+  // If no userId, skip Supabase delete (localStorage-only mode)
+  if (!userId) {
+    return
+  }
   const supabase = createClient()
 
   // Verify user owns the card (via trip)
@@ -234,8 +252,13 @@ export async function moveCard(
   cardId: string,
   toDayId: string | null,
   newOrder: number,
-  userId: string
+  userId?: string
 ): Promise<void> {
+  // If no userId, skip Supabase update (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
   const now = new Date().toISOString()
 
@@ -277,8 +300,13 @@ export async function moveCard(
 export async function reorderCards(
   dayId: string | null,
   cardIds: string[],
-  userId: string
+  userId?: string
 ): Promise<void> {
+  // If no userId, skip Supabase update (localStorage-only mode)
+  if (!userId) {
+    return
+  }
+
   const supabase = createClient()
 
   // Verify user owns at least one card (they all belong to same trip)
@@ -317,8 +345,13 @@ export async function reorderCards(
  */
 export async function duplicateCard(
   cardId: string,
-  userId: string
+  userId?: string
 ): Promise<Card> {
+  // If no userId, we cannot duplicate from DB (localStorage-only mode would handle this locally)
+  if (!userId) {
+    throw new Error('Cannot duplicate card without userId')
+  }
+
   const supabase = createClient()
 
   // Fetch original card

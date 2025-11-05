@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plane, Calendar, Clock, DollarSign, Loader2 } from 'lucide-react'
 import { useTripStore } from '@/lib/store/tripStore'
-import { FlightDetails } from '@/lib/types'
 import { toast } from 'sonner'
 import { nanoid } from 'nanoid'
 import { format } from 'date-fns'
@@ -28,13 +27,12 @@ export function FlightBookingModal({
   startDate,
   endDate 
 }: FlightBookingModalProps) {
-  const userProfile = useTripStore(state => state.userProfile)
   const addCard = useTripStore(state => state.addCard)
   const getCurrentTrip = useTripStore(state => state.getCurrentTrip)
   const trip = getCurrentTrip()
   
   // Outbound flight
-  const [outboundFrom, setOutboundFrom] = useState(userProfile?.homeAirport?.code || '')
+  const [outboundFrom, setOutboundFrom] = useState('')
   const [outboundTo, setOutboundTo] = useState('')
   const [outboundDate, setOutboundDate] = useState(startDate || '')
   const [outboundTime, setOutboundTime] = useState('08:00')
@@ -46,7 +44,7 @@ export function FlightBookingModal({
   
   // Return flight
   const [returnFrom, setReturnFrom] = useState('')
-  const [returnTo, setReturnTo] = useState(userProfile?.homeAirport?.code || '')
+  const [returnTo, setReturnTo] = useState('')
   const [returnDate, setReturnDate] = useState(endDate || '')
   const [returnTime, setReturnTime] = useState('15:00')
   const [returnAirline, setReturnAirline] = useState('')

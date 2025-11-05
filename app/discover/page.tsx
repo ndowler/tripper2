@@ -13,9 +13,10 @@ import { SuggestionGrid } from "@/components/vibes/SuggestionGrid";
 import { SuggestionCard } from "@/lib/types/suggestions";
 import { saveSuggestionsToTrip } from "@/lib/utils/suggestions";
 import { getVibesSummary, hasCompletedVibes } from "@/lib/utils/vibes";
+import { track } from "@/lib/analytics";
+import { trackAiGenerationPerformance } from "@/lib/analytics/performance";
 import { Sparkles, Loader2, ArrowRight, Settings } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
-import { current } from "immer";
 
 type PageStep = "input" | "loading" | "results" | "error";
 

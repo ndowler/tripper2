@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 
 interface ThingsToDoDrawerProps {
   trip: Trip;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   isOpen: boolean;
   onClose: () => void;
 }

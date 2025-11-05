@@ -24,7 +24,7 @@ import { useDroppable } from "@dnd-kit/core";
 interface DayColumnProps {
   day: Day;
   tripId: string;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   index: number;
 }
 

@@ -31,7 +31,7 @@ interface TripCardProps {
   card: InfoCard;
   tripId: string;
   dayId: string;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
   isDragging?: boolean;
 }
 

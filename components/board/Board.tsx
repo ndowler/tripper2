@@ -25,7 +25,7 @@ import { toast } from "sonner";
 
 interface BoardProps {
   trip: Trip;
-  userId: string;
+  userId?: string; // Optional for demo/offline mode
 }
 
 export function Board({ trip, userId }: BoardProps) {
@@ -162,8 +162,10 @@ export function Board({ trip, userId }: BoardProps) {
     } catch (error) {
       console.error('Failed to move/reorder card:', error);
       toast.error('Failed to update card. Reloading...');
-      // Reload trips to revert optimistic update
-      await loadTrips(userId);
+      // Reload trips to revert optimistic update (only if userId exists)
+      if (userId) {
+        await loadTrips(userId);
+      }
     }
 
     setActiveId(null);
@@ -232,7 +234,7 @@ export function Board({ trip, userId }: BoardProps) {
 
                 {/* Add day button */}
                 <div className="flex-shrink-0 w-[360px]">
-                  <AddDayButton tripId={trip.id} activeDayId={activeDayId} />
+                  <AddDayButton tripId={trip.id} userId={userId} activeDayId={activeDayId} />
                 </div>
               </div>
             </div>

@@ -14,7 +14,6 @@ import { DayStats } from "./components/DayStats";
 import { TimelineStats } from "./components/TimelineStats";
 
 export default function DayViewPage() {
-  const addTrip = useTripStore((state) => state.addTrip);
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip);
   const currentTripId = useTripStore((state) => state.currentTripId);
   const currentTrip = useTripStore((state) => state.getCurrentTrip());
@@ -34,10 +33,13 @@ export default function DayViewPage() {
     // If no current trip, create demo trip
     if (!currentTripId || !currentTrip) {
       const demoTrip = createDemoTrip();
-      addTrip(demoTrip);
-      setCurrentTrip(demoTrip.id);
+      // For demo page, directly set in store without auth
+      useTripStore.setState((state) => {
+        state.trips[demoTrip.id] = demoTrip;
+        state.currentTripId = demoTrip.id;
+      });
     }
-  }, [currentTripId, currentTrip, addTrip, setCurrentTrip]);
+  }, [currentTripId, currentTrip]);
 
   if (!currentTrip || !mounted) {
     return <LoadingSpinner loadingText="Loading your Day View..." />;
@@ -97,13 +99,7 @@ export default function DayViewPage() {
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <BackNavbar trip={currentTrip} />
       <div className="sticky top-0 z-10 bg-background border-b">
@@ -147,6 +143,7 @@ export default function DayViewPage() {
           card={selectedCard}
           open={!!selectedCard}
           onClose={() => setSelectedCard(null)}
+          userId="demo"
         />
       )}
 
@@ -158,7 +155,7 @@ export default function DayViewPage() {
           timeSlot={quickAddTimeSlot}
           dayId={day.id}
           tripId={currentTrip.id}
-          destination={currentTrip.destination}
+          destination={typeof currentTrip.destination === 'string' ? currentTrip.destination : currentTrip.destination?.city || ''}
         />
       )}
 
@@ -170,7 +167,7 @@ export default function DayViewPage() {
           onClose={() => setSwappingCard(null)}
           tripId={currentTrip.id}
           dayId={day.id}
-          destination={currentTrip.destination}
+          destination={typeof currentTrip.destination === 'string' ? currentTrip.destination : currentTrip.destination?.city || ''}
         />
       )}
     </div>

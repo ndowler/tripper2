@@ -47,7 +47,7 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
         id: tripId,
         title: title.trim(),
         description: description.trim() || undefined,
-        destination: destination.trim() || undefined,
+        destination: destination.trim() ? { city: destination.trim() } : undefined,
         timezone: DEFAULT_TIMEZONE,
         days: [
           {

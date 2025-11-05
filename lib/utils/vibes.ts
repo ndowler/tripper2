@@ -124,7 +124,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
       : "fine with popular busy attractions";
 
   const topThemes = Object.entries(taste.theme_weights)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 3)
     .map(
       ([theme, weight]) => `${theme} (${Math.round((weight as number) * 100)}%)`

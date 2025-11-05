@@ -59,6 +59,7 @@ export interface DiscoveryRequest {
   vibes?: any; // UserVibes (optional for LLM)
   vibe_profile?: any; // UserVibes (optional for LLM)
   limit?: number; // Number of suggestions to generate
+  category?: SuggestionCategory; // Optional category filter
 }
 
 export interface DiscoveryResponse {

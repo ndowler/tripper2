@@ -21,7 +21,7 @@ import type { Card } from '@/lib/types'
 interface MakeDayModalProps {
   day: Day
   tripId: string
-  userId: string
+  userId?: string // Optional for demo/offline mode
   open: boolean
   onClose: () => void
 }
@@ -121,7 +121,7 @@ export function MakeDayModal({ day, tripId, userId, open, onClose }: MakeDayModa
           links: [],
         }
         
-        await addCard(tripId, day.id, card, userId)
+        await addCard(tripId, day.id, card)
       }
       
       toast.success(`Day made! Added ${cards.length} activities 🎉`)

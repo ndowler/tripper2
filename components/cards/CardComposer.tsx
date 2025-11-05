@@ -14,7 +14,7 @@ import { AiCardSuggestion } from './AiCardSuggestion'
 interface CardComposerProps {
   tripId: string
   dayId: string
-  userId: string
+  userId?: string // Optional for demo/offline mode
 }
 
 export function CardComposer({ tripId, dayId, userId }: CardComposerProps) {
@@ -47,11 +47,11 @@ export function CardComposer({ tripId, dayId, userId }: CardComposerProps) {
         id: nanoid(),
         type: selectedType,
         title: title.trim(),
-        duration: template.duration,
+        duration: 'duration' in template ? template.duration : undefined,
         tags: [],
         links: [],
         status: 'todo',
-      }, userId)
+      })
       
       toast.success('Card added')
       setTitle('')
