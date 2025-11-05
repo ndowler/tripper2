@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Trip } from "@/lib/types";
 import { useTripStore } from "@/lib/store/tripStore";
-import { PlusCircle, Search } from "lucide-react";
+import { User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { TripGrid } from "@/components/trips/TripGrid";
@@ -14,8 +14,6 @@ import { DeleteTripDialog } from "@/components/trips/DeleteTripDialog";
 import { EmptyTripsState } from "@/components/trips/EmptyTripsState";
 import { NewTripModal } from "@/components/trips/NewTripModal";
 import { EditTripModal } from "@/components/trips/EditTripModal";
-import { ModeToggle } from "@/components/ui/theme-toggler";
-import { CustomTooltip } from "@/components/ui/custom-tooltip";
 import { LoadingSpinner } from "@/components/ui/page-loading-spinner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -77,61 +75,27 @@ export default function TripsPage() {
           "container mx-auto",
           isMobile ? "px-3 py-3" : "px-4 py-4"
         )}>
-          <div className={cn(
-            "flex items-center gap-4",
-            isMobile ? "flex-col items-start" : "justify-between"
-          )}>
-            <div className={cn(isMobile && "w-full")}>
+          <div className="flex justify-center">
+            <div className="flex items-center gap-3">
+              <img src="/tripper.png" alt="Tripper" className="h-8 w-8" />
               <h1 className={cn(
-                "font-bold select-none text-start",
+                "font-bold select-none",
                 isMobile ? "text-xl" : "text-2xl"
               )}>
-                ✈️ My Trips
+                My Adventures
               </h1>
-              <p className="text-sm text-muted-foreground mt-1 select-none text-start">
-                {trips.length} {trips.length === 1 ? "Trip" : "Trips"}
-              </p>
             </div>
-            <div className={cn(
-              "flex items-center gap-2",
-              isMobile && "w-full justify-between"
-            )}>
-              <CustomTooltip content="Discover more!" side="bottom">
-                <Link href="/discover">
-                  <Button 
-                    variant="outline" 
-                    className={cn(
-                      "gap-2",
-                      isMobile && "h-11 px-3"
-                    )}
-                  >
-                    <Search className="h-5 w-5" />
-                    <span className={cn(isMobile ? "inline" : "hidden md:inline")}>
-                      Discover
-                    </span>
-                  </Button>
-                </Link>
-              </CustomTooltip>
-
-              {!isMobile && (
-                <CustomTooltip content="Theme" side="bottom">
-                  <ModeToggle />
-                </CustomTooltip>
-              )}
-
-              <CustomTooltip content="Create a new trip" side="bottom">
-                <Button
-                  onClick={() => setIsNewTripModalOpen(true)}
-                  className={cn(
-                    "gap-2",
-                    isMobile && "h-11 flex-1"
-                  )}
-                >
-                  <PlusCircle className="h-5 w-5" />
-                  <span>New Trip</span>
-                </Button>
-              </CustomTooltip>
-            </div>
+          </div>
+          <div className="flex justify-center mt-3">
+            <Link href="/profile">
+              <Button variant="outline" className={cn(
+                "gap-2",
+                isMobile && "h-11 px-3"
+              )}>
+                <User className="h-5 w-5" />
+                <span>My Profile</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
