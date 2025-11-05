@@ -114,6 +114,10 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
       destination: trip.destination || null,
       start_date: trip.days[0]?.date || null,
       end_date: trip.days[trip.days.length - 1]?.date || null,
+      travelers: trip.travelers || 1,
+      currency: trip.currency || 'USD',
+      is_slingshot_generated: trip.isSlingshotGenerated || false,
+      slingshot_metadata: trip.slingshotMetadata || null,
       created_at: now,
       updated_at: now,
     })
@@ -190,7 +194,10 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
             details: cardsError.details,
             hint: cardsError.hint,
             code: cardsError.code,
+            cardsToInsert: cardsToInsert.slice(0, 2), // Log first 2 cards for debugging
           })
+          // Throw error to prevent silent failures
+          throw new Error(`Failed to create cards for day ${day.id}: ${cardsError.message}`)
         }
       }
     }
@@ -377,6 +384,8 @@ function transformTripFromDb(dbTrip: any): Trip {
     unassignedCards: (dbTrip.unassigned_cards || [])
       .sort((a: any, b: any) => a.order - b.order)
       .map((card: any) => transformCardFromDb(card)),
+    isSlingshotGenerated: dbTrip.is_slingshot_generated || undefined,
+    slingshotMetadata: dbTrip.slingshot_metadata || undefined,
     createdAt: new Date(dbTrip.created_at),
     updatedAt: new Date(dbTrip.updated_at),
   }
