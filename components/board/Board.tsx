@@ -21,14 +21,16 @@ import { Navbar } from "@/components/navbar/TripNavbar";
 import { DayColumn } from "@/components/board/DayColumn";
 import { AddDayButton } from "@/components/board/AddDayButton";
 import { ThingsToDoDrawer } from "@/components/board/ThingsToDoDrawer";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { toast } from "sonner";
 
 interface BoardProps {
   trip: Trip;
   userId?: string; // Optional for demo/offline mode
+  shouldStartTour?: boolean;
 }
 
-export function Board({ trip, userId }: BoardProps) {
+export function Board({ trip, userId, shouldStartTour = false }: BoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<"day" | "card" | null>(null);
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
@@ -245,7 +247,7 @@ export function Board({ trip, userId }: BoardProps) {
       {/* Drag Overlay */}
       <DragOverlay>
         {activeCard && activeDayId ? (
-          <div className="opacity-90 rotate-3 scale-105">
+          <div className="opacity-90 rotate-3 scale-105" data-tour="drag-handle">
             <TripCard
               card={activeCard}
               tripId={trip.id}
@@ -256,6 +258,11 @@ export function Board({ trip, userId }: BoardProps) {
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* Onboarding Tour */}
+      {mounted && userId && shouldStartTour && (
+        <OnboardingTour userId={userId} run={shouldStartTour} />
+      )}
     </DndContext>
   );
 }

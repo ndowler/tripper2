@@ -16,6 +16,8 @@ create table public.user_profiles (
   subscription_status text default 'active' check (subscription_status in ('active', 'cancelled', 'past_due', 'trialing')),
   subscription_period_end timestamp with time zone,
   stripe_customer_id text unique,
+  has_completed_onboarding boolean default false not null,
+  onboarding_completed_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

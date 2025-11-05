@@ -63,6 +63,7 @@ export function AddDayButton({ tripId, userId }: AddDayButtonProps) {
           onClick={handleAddDay}
           disabled={isAdding}
           className="w-full h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg bg-transparent hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center hover:text-gray-900"
+          data-tour="add-day-button"
         >
           <div className="flex flex-col items-center gap-2">
             <Plus className="w-6 h-6" />

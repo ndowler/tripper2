@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, use, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTripStore } from "@/lib/store/tripStore";
 import { Board } from "@/components/board/Board";
@@ -14,6 +14,8 @@ export default function TripPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const searchParams = useSearchParams();
+  const shouldStartTour = searchParams.get("tour") === "true";
   const router = useRouter();
   const trips = useTripStore((state) => state.trips);
   const setCurrentTrip = useTripStore((state) => state.setCurrentTrip);
@@ -115,5 +117,5 @@ export default function TripPage({
     return null;
   }
 
-  return <Board trip={trip} userId={userId} />;
+  return <Board trip={trip} userId={userId} shouldStartTour={shouldStartTour} />;
 }

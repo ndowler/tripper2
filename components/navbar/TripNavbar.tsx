@@ -144,6 +144,7 @@ export function Navbar({
                 size="sm"
                 onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
                 title="To-Do"
+                data-tour="things-to-do"
               >
                 <div className="flex items-center gap-1">
                   <Inbox className="w-4 h-4" />
@@ -190,7 +191,7 @@ export function Navbar({
 
             {/* Actions */}
             <CustomTooltip content="Discover More" side="bottom">
-              <Link href="/discover">
+              <Link href="/discover" data-tour="discover-button">
                 <Button
                   variant="outline"
                   // size="icon"
@@ -249,12 +250,14 @@ export function Navbar({
         </div>
       </div>
       {/* Command Palette */}
-      <CommandPalette
-        isOpen={commandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-        tripId={trip.id}
-        defaultDayId="unassigned"
-      />
+      <div data-tour="command-palette">
+        <CommandPalette
+          isOpen={commandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          tripId={trip.id}
+          defaultDayId="unassigned"
+        />
+      </div>
     </nav>
   );
 }

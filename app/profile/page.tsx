@@ -19,6 +19,7 @@ import {
 import { ProfileInformation } from '@/components/profile/ProfileInformation'
 import { PreferencesSummary } from '@/components/profile/PreferencesSummary'
 import { SecuritySettings } from '@/components/profile/SecuritySettings'
+import { OnboardingSettings } from '@/components/profile/OnboardingSettings'
 
 interface UserProfile {
   id: string
@@ -159,6 +160,9 @@ export default function ProfilePage() {
 
           {/* Security Settings */}
           <SecuritySettings email={profile.email} />
+
+          {/* Onboarding Tutorial */}
+          <OnboardingSettings userId={profile.id} />
 
           {/* Account Actions */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

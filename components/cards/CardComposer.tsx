@@ -76,6 +76,7 @@ export function CardComposer({ tripId, dayId, userId }: CardComposerProps) {
           variant="ghost"
           className="flex-1 justify-start text-muted-foreground hover:text-foreground"
           onClick={() => setIsOpen(true)}
+          data-tour="add-card-button"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add card
