@@ -1,20 +1,29 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { Toaster } from "sonner"
-import { ThemeProvider } from "@/components/theme-provider"
-import { CookieConsent } from "@/components/analytics/CookieConsent"
-import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider"
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { CookieConsent } from "@/components/analytics/CookieConsent";
+import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
     default: "Triplio - Plan Your Dream Trip",
     template: "%s | Triplio",
   },
-  description: "Plan your dream trip in minutes, not hours. Lightning-fast, intuitive trip planner with AI-powered suggestions and beautiful design.",
-  keywords: ["trip planner", "travel planner", "itinerary", "vacation planner", "travel organizer", "trip planning app", "AI travel suggestions"],
+  description:
+    "Plan your dream trip in minutes, not hours. Lightning-fast, intuitive trip planner with AI-powered suggestions and beautiful design.",
+  keywords: [
+    "trip planner",
+    "travel planner",
+    "itinerary",
+    "vacation planner",
+    "travel organizer",
+    "trip planning app",
+    "AI travel suggestions",
+  ],
   authors: [{ name: "Triplio Team" }],
   creator: "Triplio",
   publisher: "Triplio",
@@ -23,13 +32,16 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Triplio - Plan Your Dream Trip",
-    description: "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
+    description:
+      "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
     url: "/",
     siteName: "Triplio",
     locale: "en_US",
@@ -46,7 +58,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Triplio - Plan Your Dream Trip",
-    description: "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
+    description:
+      "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
     images: ["/tripper.png"],
     creator: "@triplioapp",
   },
@@ -62,17 +75,17 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/tripper.png",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -91,5 +104,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
