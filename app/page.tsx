@@ -1,11 +1,13 @@
-import './globals.css';
-import Link from 'next/link';
-import Image from 'next/image';
-import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/server';
-import { InteractiveGradient } from '@/components/ui/interactive-gradient';
-import { titleClasses, taglineClasses, ctaBtnBase } from '@/lib/styles';
+import "./globals.css";
+
+import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { InteractiveGradient } from "@/components/ui/interactive-gradient";
+import { ctaBtnBase, taglineClasses, titleClasses } from "@/lib/styles";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
   // Check if user is authenticated
@@ -16,7 +18,7 @@ export default async function Home() {
 
   // Redirect authenticated users to their trips page
   if (user) {
-    redirect('/trips');
+    redirect("/trips");
   }
 
   return (
@@ -36,26 +38,19 @@ export default async function Home() {
                 src="/tripper.png"
                 alt="Triplio logo"
                 fill
-                sizes="90px"
+                height={90}
+                width={90}
                 className="drop-shadow-2xl"
                 priority
               />
             </div>
           </div>
 
-          <p className={taglineClasses}>
-            Plan your dream trip in minutes, not hours
-          </p>
+          <p className={taglineClasses}>Plan your dream trip in minutes, not hours</p>
 
-          <nav
-            aria-label="Primary"
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6"
-          >
+          <nav aria-label="Primary" className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
             <Link href="/signup" aria-label="Sign up for Triplio">
-              <Button
-                size="lg"
-                className={`${ctaBtnBase} bg-white text-blue-600 hover:bg-white/90`}
-              >
+              <Button size="lg" className={`${ctaBtnBase} bg-white text-blue-600 hover:bg-white/90`}>
                 Get Started Now
               </Button>
             </Link>
