@@ -130,55 +130,55 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
         isMobile 
           ? 'h-full w-full max-w-full rounded-none' // Full-screen on mobile
           : view === 'slingshot' ? 'sm:max-w-[600px]' : 'sm:max-w-[500px]' // Wider for slingshot
-      )}>
+        )}>
         {view === 'choice' && (
-          <>
-            <DialogHeader>
-              <DialogTitle>Create New Trip</DialogTitle>
-              <DialogDescription>
-                Choose how you'd like to plan your trip
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-auto py-6 flex flex-col items-start gap-2 hover:bg-accent"
-                onClick={() => setView('manual')}
-              >
-                <div className="flex items-center gap-2">
-                  <Edit3 className="h-5 w-5" />
-                  <span className="font-semibold text-lg">Make my Own</span>
+        <>
+        <DialogHeader>
+        <DialogTitle>Create New Trip</DialogTitle>
+        <DialogDescription>
+        Choose how you'd like to plan your trip
+        </DialogDescription>
+        </DialogHeader>
+        
+                <div className="mt-4 flex flex-col items-center space-y-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full max-w-md h-auto py-6 flex flex-col items-center gap-2 hover:bg-accent"
+                    onClick={() => setView('manual')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Edit3 className="h-5 w-5" />
+                      <span className="font-semibold text-lg">Make my Own</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground text-center">
+                      Start with a blank canvas and build your itinerary from scratch
+                    </span>
+                  </Button>
+        
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full max-w-md h-auto py-6 flex flex-col items-center gap-2 hover:bg-accent hover:border-primary"
+                    onClick={() => setView('slingshot')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-lg">Slingshot</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground text-center">
+                      Answer a few questions and let AI generate a personalized itinerary
+                    </span>
+                  </Button>
+        
+                  <div className="flex justify-center pt-4 w-full">
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-                <span className="text-sm text-muted-foreground text-left">
-                  Start with a blank canvas and build your itinerary from scratch
-                </span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-auto py-6 flex flex-col items-start gap-2 hover:bg-accent hover:border-primary"
-                onClick={() => setView('slingshot')}
-              >
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <span className="font-semibold text-lg">Slingshot</span>
-                </div>
-                <span className="text-sm text-muted-foreground text-left">
-                  Answer a few questions and let AI generate a personalized itinerary
-                </span>
-              </Button>
-
-              <div className="flex justify-end pt-4">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
+              </>
+            )}
 
         {view === 'manual' && (
           <>

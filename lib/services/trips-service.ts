@@ -7,6 +7,27 @@ import type { Trip, Day, Card } from '@/lib/types'
 import { nanoid } from 'nanoid'
 
 /**
+ * Helper: Convert time string (HH:MM) to full ISO timestamp using day date
+ */
+function timeStringToTimestamp(timeStr: string | undefined, dayDate: string): string | null {
+  if (!timeStr || !dayDate) return null;
+  
+  try {
+    // timeStr = "09:00", dayDate = "2024-11-01"
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    
+    // Create date object from day date
+    const date = new Date(dayDate + 'T00:00:00.000Z');
+    date.setUTCHours(hours, minutes, 0, 0);
+    
+    return date.toISOString();
+  } catch (error) {
+    console.warn('Failed to convert time string to timestamp:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch all trips for a user
  */
 export async function fetchTrips(userId: string): Promise<Trip[]> {
@@ -171,8 +192,8 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
           day_id: day.id,
           type: card.type,
           title: card.title,
-          start_time: card.startTime || null,
-          end_time: card.endTime || null,
+          start_time: timeStringToTimestamp(card.startTime, day.date),
+          end_time: timeStringToTimestamp(card.endTime, day.date),
           location: card.location ? JSON.stringify(card.location) : null,
           cost: card.cost ? JSON.stringify(card.cost) : null,
           status: card.status,
@@ -211,8 +232,9 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
       day_id: null,
       type: card.type,
       title: card.title,
-      start_time: card.startTime || null,
-      end_time: card.endTime || null,
+      // For unassigned cards, use first day's date if available, otherwise null
+      start_time: trip.days[0]?.date ? timeStringToTimestamp(card.startTime, trip.days[0].date) : null,
+      end_time: trip.days[0]?.date ? timeStringToTimestamp(card.endTime, trip.days[0].date) : null,
       location: card.location ? JSON.stringify(card.location) : null,
       cost: card.cost ? JSON.stringify(card.cost) : null,
       status: card.status,

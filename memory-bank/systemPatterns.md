@@ -71,6 +71,7 @@ tripper/
 │   │   ├── ai-regenerate-card/   # Regenerate single card
 │   │   ├── ai-suggestions/       # Get AI card suggestions
 │   │   ├── ai-swap-card/         # Swap card with AI
+│   │   ├── slingshot-trip/       # NEW: Complete trip generation
 │   │   └── vibe-suggestions/     # Personalized travel suggestions
 │   ├── about/                    # About page (NEW)
 │   │   └── page.tsx
@@ -135,8 +136,15 @@ tripper/
 │   │   ├── EditTripModal.tsx
 │   │   ├── EmptyTripsState.tsx
 │   │   ├── NewTripModal.tsx
+│   │   ├── NewTripCard.tsx
+│   │   ├── SlingshotQuestionnaire.tsx  # NEW: Slingshot questionnaire
+│   │   ├── SlingshotLoadingOverlay.tsx # NEW: Loading with progress
+│   │   ├── SlingshotExplainOverlay.tsx # NEW: One-time vibe explanation
 │   │   ├── TripCard.tsx
-│   │   └── TripGrid.tsx
+│   │   ├── TripCardSkeleton.tsx
+│   │   ├── TripGrid.tsx
+│   │   ├── TripStats.tsx
+│   │   └── ViewControls.tsx
 │   ├── ui/                       # shadcn/ui primitives
 │   │   ├── badge.tsx
 │   │   ├── button.tsx
@@ -167,7 +175,7 @@ tripper/
 │   │   └── useUndoRedo.ts
 │   ├── schemas/                  # Zod validation schemas
 │   │   ├── index.ts              # Card & Trip schemas
-│   │   ├── suggestions.ts        # SuggestionCard schema
+│   │   ├── suggestions.ts        # SuggestionCard + Slingshot schemas
 │   │   └── vibes.ts              # UserVibes schema
 │   ├── services/                 # Data access layer (NEW)
 │   │   ├── trips-service.ts      # Trip CRUD operations
@@ -184,7 +192,8 @@ tripper/
 │   ├── types/                    # TypeScript types
 │   │   ├── index.ts              # Core types (Trip, Card, Day)
 │   │   ├── suggestions.ts        # SuggestionCard types
-│   │   └── vibes.ts              # UserVibes types
+│   │   ├── vibes.ts              # UserVibes types
+│   │   └── slingshot.ts          # NEW: Slingshot types
 │   ├── utils/                    # Utility functions
 │   │   ├── dnd.ts                # Drag & drop helpers
 │   │   ├── migration.ts          # Data migration (NEW)

@@ -2,7 +2,7 @@
 
 **Product Name:** Tripper  
 **Tagline:** "Lightning-fast, offline-first trip planning. Think Trello meets Linear for travel."  
-**Version:** 0.1.0 (Phase 4.3 Complete)  
+**Version:** 0.1.6 (Phase 4.6 Complete - Slingshot)  
 **License:** MIT
 
 ---
@@ -304,6 +304,53 @@ Navigate to /profile
   → Log out
 ```
 
+### 12. Slingshot AI Trip Generator
+**Status:** ✅ Complete (Phase 4.6)
+
+**Features:**
+- AI-powered complete trip generation
+- Comprehensive questionnaire (destination, dates, budget, travelers, purpose)
+- Vibes integration for personalization
+- Sequential day generation with context building
+- Avoids duplicate restaurants and locations
+- Balances activity intensity across days
+- Includes logical trip flow (check-in/check-out, transit)
+- 20 funny loading messages while generating
+- Vibe explanation overlay on first visit
+- Honors must-dos and existing plans
+
+**Questionnaire Fields:**
+- Destination (required)
+- Start and end dates (required)
+- Budget level (budget/moderate/comfortable/luxury)
+- Number of travelers (1-20)
+- Trip purpose (honeymoon, family vacation, solo adventure, business+leisure, friend getaway, other)
+- Must-do activities (optional)
+- Existing plans/reservations (optional)
+
+**User Flow:**
+```
+Navigate to /trips
+  → Click "Create New Trip"
+  → Choose "Slingshot" option
+  → Complete vibes quiz if not done (redirects to /vibes)
+  → Fill in questionnaire
+  → Click "Generate Trip"
+  → Watch progress bar (30-60 seconds)
+  → See funny loading messages rotate
+  → Navigate to fully populated trip
+  → Read vibe explanation overlay (one-time)
+  → Dismiss and start using trip
+```
+
+**Generated Trip Structure:**
+- Multiple days based on dates (1-30 days)
+- 5-9 cards per day with realistic timing
+- Hotel check-in on Day 1, check-out on last day
+- No duplicate restaurants across days
+- Balanced activity pacing
+- All cards editable after generation
+
 ---
 
 ## 🎨 User Flows
@@ -373,6 +420,39 @@ Navigate to /profile
 10. Update dates
 11. Save changes
 12. Open trip → Edit cards for new trip
+```
+
+### Flow 5: Slingshot AI Trip Generation
+```
+1. Navigate to /trips
+2. Click "Create New Trip"
+3. See choice: "Make my Own" vs "Slingshot"
+4. Click "Slingshot"
+5. If no vibes: redirected to /vibes quiz
+6. Complete vibes quiz (2 minutes)
+7. Return to Slingshot questionnaire
+8. Fill in form:
+   - Destination: "Tokyo, Japan"
+   - Dates: Next month, 5 days
+   - Budget: Moderate
+   - Travelers: 2
+   - Purpose: Friend Getaway
+   - Must-dos: "Visit TeamLab, try authentic ramen"
+   - Existing: "Dinner reservation Day 2 at 7pm"
+9. Click "Generate Trip"
+10. Loading overlay appears
+11. Watch progress: "Planning Day 1 of 5..."
+12. See funny messages rotate every 2.5s
+13. Wait 45 seconds for 5-day trip
+14. Navigate to fully populated trip
+15. Vibe explanation overlay appears
+16. Read: "Yo! We packed this trip with..."
+17. Dismiss overlay
+18. See all 5 days with 6-8 cards each
+19. Day 1 has hotel check-in
+20. Day 5 has hotel check-out
+21. No duplicate restaurants across days
+22. Edit any card as needed
 ```
 
 ---

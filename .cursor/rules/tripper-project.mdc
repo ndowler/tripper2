@@ -16,6 +16,7 @@ Tripper is a lightning-fast, offline-first trip planning application. Think "Tre
 - Tailwind + shadcn/ui - Utility-first styling with accessible primitives
 - Zod - Runtime validation and TypeScript inference
 - date-fns - Date manipulation and formatting
+- react-day-picker - Accessible date selection (Slingshot feature)
 - Hybrid persistence: localStorage (instant) + Supabase (cloud sync)
 
 ## Critical Implementation Paths
@@ -181,6 +182,48 @@ const { undo, redo, pastStates, futureStates } = useStore(
 );
 ```
 
+**Sequential AI Generation (Slingshot Pattern):**
+```typescript
+// Build context across multiple OpenAI calls
+const previousDaysContext = days
+  .map((day) => ({
+    dayNumber: day.dayNumber,
+    cards: day.cards.map(c => ({
+      type: c.type,
+      title: c.title,
+      startTime: c.startTime
+    }))
+  }));
+
+// Pass to next day generation
+const prompt = `
+Previous days:
+${JSON.stringify(previousDaysContext)}
+
+Now plan Day ${dayNumber}:
+- Avoid duplicate restaurants from previous days
+- Balance activity intensity
+- Include logical transitions
+`;
+```
+
+**One-Time Overlay Pattern:**
+```typescript
+// Track dismissible overlays in localStorage
+const storageKey = `slingshot-explained-${tripId}`;
+const [hasSeenOverlay, setHasSeenOverlay] = useState(() => {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(storageKey) === 'true';
+});
+
+const handleDismiss = () => {
+  localStorage.setItem(storageKey, 'true');
+  setHasSeenOverlay(true);
+};
+
+return !hasSeenOverlay && <Overlay onDismiss={handleDismiss} />;
+```
+
 ## Known Constraints
 
 ### Performance Targets
@@ -274,7 +317,7 @@ middleware.ts       # Route protection (NEW)
 - Chose dnd-kit over react-beautiful-dnd (maintenance)
 - Using App Router despite learning curve (future-proof)
 
-### Key Learnings (Phases 1-3)
+### Key Learnings (Phases 1-6)
 1. **Unassigned Cards Pattern:** Use special dayId `"unassigned"` instead of creating fake days
 2. **Dynamic Dates:** Recalculate dates on day reorder to maintain chronological order
 3. **Hydration Fixes:** Use `mounted` state for client-only rendering (dates, dynamic content)
@@ -283,6 +326,12 @@ middleware.ts       # Route protection (NEW)
 6. **Inline Editing:** Click-to-edit pattern with Enter/Escape handling is intuitive
 7. **Defensive Programming:** Always null-check optional properties before accessing
 8. **Client-Only Components:** Mark with 'use client' and handle SSR appropriately
+9. **Sequential AI Generation:** Build context across multiple OpenAI calls for coherent multi-day trips
+10. **Context Building:** Pass previous days' data to next day generation to avoid duplicates and balance intensity
+11. **One-Time Overlays:** Use localStorage to track dismissible overlays (e.g., `slingshot-explained-${tripId}`)
+12. **Loading UX:** Rotate funny messages every 2.5s to keep users engaged during long AI operations
+13. **Vibe Integration:** Always check for vibes before AI generation; redirect to /vibes if missing
+14. **Date Selection:** React Day Picker with disabled past dates for intuitive date range selection
 
 ## Roadmap: Phases Completed & Planned
 
@@ -296,12 +345,30 @@ middleware.ts       # Route protection (NEW)
 - Auth middleware for route protection
 - **Result:** Production-ready with cloud sync
 
-### Phase 4.5: Affiliate Links (Planned - 6-8 hours)
-- Export/import (JSON)
-- Accessibility audit (WCAG 2.1 AA)
-- Mobile optimizations
-- Performance tuning (Lighthouse 95+)
-- **Result:** Production-ready MVP
+### Phase 4.5: Mobile Optimization (✅ COMPLETE - Nov 5, 2025)
+- Mobile detection hook (useIsMobile)
+- Responsive board layout (vertical stacking on mobile)
+- Touch-friendly interactions (44px targets)
+- Full-screen modals on mobile
+- Mobile-specific CSS utilities
+- **Result:** Full mobile parity
+
+### Phase 4.6: Slingshot AI Trip Generator (✅ COMPLETE - Nov 11, 2025)
+- AI-powered complete trip generation
+- Comprehensive questionnaire (8 fields)
+- Sequential day generation with context building
+- Vibe integration and personalization
+- Loading experience with progress updates
+- One-time vibe explanation overlay
+- React Day Picker integration
+- **Result:** One-click trip generation with AI
+
+### Phase 4.7: Affiliate Links (Planned - 6-8 hours)
+- Booking.com, Skyscanner, Viator integration
+- Link generators with parameter extraction
+- BookingActions component
+- Revenue tracking
+- **Result:** Monetization ready
 
 ### Phase 5: Multi-Select & Bulk Operations (1 evening)
 - Multi-select with Shift/Ctrl modifiers
@@ -343,8 +410,10 @@ middleware.ts       # Route protection (NEW)
 
 ## Version Milestones
 - **MVP (Post-Phase 4.3):** Offline planner, no auth ✅
-- **v0.9 (Post-Phase 4.4):** Cloud sync, auth ✅ CURRENT
-- **v1.0 (Post-Phase 4.5):** Affiliate links, revenue generation
+- **v0.9 (Post-Phase 4.4):** Cloud sync, auth ✅
+- **v0.95 (Post-Phase 4.5):** Mobile optimization ✅
+- **v0.96 (Post-Phase 4.6):** Slingshot AI trip generator ✅ CURRENT
+- **v1.0 (Post-Phase 4.7):** Affiliate links, revenue generation
 - **v1.5 (Post-Phase 5-6):** Multi-select, visual polish, AI improvements
 - **v2.0 (Future):** Mobile apps, real-time collaboration, premium features
 
@@ -356,7 +425,8 @@ middleware.ts       # Route protection (NEW)
 ## Timeline Estimate
 - **Phases 1-3:** 3 evenings (✅ COMPLETE)
 - **Phase 4.1-4.4:** 8-10 hours (✅ COMPLETE)
-- **Phase 4.5:** 6-8 hours (⏳ PLANNED)
+- **Phase 4.5-4.6:** 10-12 hours (✅ COMPLETE)
+- **Phase 4.7:** 6-8 hours (⏳ PLANNED)
 - **Phases 5-6:** 8-10 hours (⏳ PLANNED)
-- **Total to v1.0:** ~40-50 hours
-- **Total to v2.0:** ~80-100 hours
+- **Total to v1.0:** ~46-56 hours
+- **Total to v2.0:** ~90-110 hours
