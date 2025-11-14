@@ -135,7 +135,9 @@ export async function POST(request: NextRequest) {
       const contextPrompt = buildContextPrompt(dayContext, dayNum);
 
       // Calculate daypart time shift based on vibes
-      const daypartBias = vibes.daypartBias || 3; // 1=early bird, 5=night owl
+      // Convert daypart_bias string to numeric value: early=1, balanced=3, late=5
+      const daypartBiasStr = vibes.comfort?.daypart_bias || "balanced";
+      const daypartBias = daypartBiasStr === "early" ? 1 : daypartBiasStr === "late" ? 5 : 3;
       const timeShift = (daypartBias - 3) * 60; // -120 to +120 minutes
       
       // Adjust base times based on daypart preference
