@@ -18,8 +18,6 @@ import { StatusDot } from "./StatusDot";
 import { toast } from "sonner";
 import {
   Clock,
-  MapPin,
-  Copy,
   Trash2,
   ExternalLink,
   ChevronDown,
@@ -48,7 +46,6 @@ export function TripCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const deleteCard = useTripStore((state) => state.deleteCard);
-  const duplicateCard = useTripStore((state) => state.duplicateCard);
   const viewPrefs = useTripStore((state) => state.viewPrefs);
 
   const cardType = CARD_TYPES[card.type];
@@ -65,17 +62,6 @@ export function TripCard({
         console.error('Failed to delete card:', error);
         toast.error('Failed to delete card');
       }
-    }
-  };
-
-  const handleDuplicate = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await duplicateCard(tripId, dayId, card.id, userId);
-      toast.success("Card duplicated");
-    } catch (error) {
-      console.error('Failed to duplicate card:', error);
-      toast.error('Failed to duplicate card');
     }
   };
 
@@ -187,17 +173,6 @@ export function TripCard({
                   className={cn(
                     isMobile ? "h-9 w-9" : "h-6 w-6"
                   )}
-                  onClick={handleDuplicate}
-                  title="Duplicate"
-                >
-                  <Copy className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    isMobile ? "h-9 w-9" : "h-6 w-6"
-                  )}
                   onClick={handleDelete}
                   title="Delete"
                 >
@@ -236,45 +211,6 @@ export function TripCard({
               </div>
             )}
           </div>
-
-          {/* Row 3: Location with thumbnail */}
-          {card.location && (
-            <div className="flex items-center gap-2">
-              {card.thumbnail && (
-                <img
-                  src={card.thumbnail}
-                  alt={card.title}
-                  className="w-6 h-6 rounded object-cover"
-                />
-              )}
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate text-sm">{card.location.name}</span>
-            </div>
-          )}
-
-          {/* Compact tags (max 2) */}
-          {card.tags && card.tags.length > 0 && !isExpanded && (
-            <div className="flex flex-wrap gap-1">
-              {card.tags.slice(0, 2).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="text-xs font-normal"
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {card.tags.length > 2 && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs font-normal cursor-pointer"
-                  onClick={toggleExpand}
-                >
-                  +{card.tags.length - 2}
-                </Badge>
-              )}
-            </div>
-          )}
 
           {/* Expanded details area */}
           {isExpanded && hasExpandableContent && (

@@ -128,30 +128,42 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className={cn(
         isMobile 
-          ? 'h-full w-full max-w-full rounded-none' // Full-screen on mobile
+          ? 'h-full w-full max-w-full rounded-none p-6 flex flex-col' // Full-screen with flex layout on mobile
           : view === 'slingshot' ? 'sm:max-w-[600px]' : 'sm:max-w-[500px]' // Wider for slingshot
         )}>
         {view === 'choice' && (
         <>
         <DialogHeader>
-        <DialogTitle>Create New Trip</DialogTitle>
-        <DialogDescription>
+        <DialogTitle className={cn(isMobile && 'text-2xl')}>Create New Trip</DialogTitle>
+        <DialogDescription className={cn(isMobile && 'text-base')}>
         Choose how you'd like to plan your trip
         </DialogDescription>
         </DialogHeader>
         
-                <div className="mt-4 flex flex-col items-center space-y-4">
+                <div className={cn(
+                  "flex flex-col items-center space-y-4",
+                  isMobile ? "mt-8 flex-1" : "mt-4"
+                )}>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full max-w-md h-auto py-6 flex flex-col items-center gap-2 hover:bg-accent"
+                    className={cn(
+                      "w-full max-w-md h-auto flex flex-col items-center gap-2 hover:bg-accent",
+                      isMobile ? "py-8 min-h-[120px]" : "py-6"
+                    )}
                     onClick={() => setView('manual')}
                   >
                     <div className="flex items-center gap-2">
-                      <Edit3 className="h-5 w-5" />
-                      <span className="font-semibold text-lg">Make my Own</span>
+                      <Edit3 className={cn(isMobile ? "h-6 w-6" : "h-5 w-5")} />
+                      <span className={cn(
+                        "font-semibold",
+                        isMobile ? "text-xl" : "text-lg"
+                      )}>Make my Own</span>
                     </div>
-                    <span className="text-sm text-muted-foreground text-center">
+                    <span className={cn(
+                      "text-muted-foreground text-center px-2",
+                      isMobile ? "text-base" : "text-sm"
+                    )}>
                       Start with a blank canvas and build your itinerary from scratch
                     </span>
                   </Button>
@@ -159,20 +171,40 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full max-w-md h-auto py-6 flex flex-col items-center gap-2 hover:bg-accent hover:border-primary"
+                    className={cn(
+                      "w-full max-w-md h-auto flex flex-col items-center gap-2 hover:bg-accent hover:border-primary",
+                      isMobile ? "py-8 min-h-[120px]" : "py-6"
+                    )}
                     onClick={() => setView('slingshot')}
                   >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-lg">Slingshot</span>
+                      <Sparkles className={cn(
+                        "text-primary",
+                        isMobile ? "h-6 w-6" : "h-5 w-5"
+                      )} />
+                      <span className={cn(
+                        "font-semibold",
+                        isMobile ? "text-xl" : "text-lg"
+                      )}>Slingshot</span>
                     </div>
-                    <span className="text-sm text-muted-foreground text-center">
+                    <span className={cn(
+                      "text-muted-foreground text-center px-2",
+                      isMobile ? "text-base" : "text-sm"
+                    )}>
                       Answer a few questions and let AI generate a personalized itinerary
                     </span>
                   </Button>
         
-                  <div className="flex justify-center pt-4 w-full">
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  <div className={cn(
+                    "flex justify-center w-full",
+                    isMobile ? "pt-8 mt-auto" : "pt-4"
+                  )}>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => onOpenChange(false)}
+                      className={cn(isMobile && "h-11 min-w-[120px]")}
+                    >
                       Cancel
                     </Button>
                   </div>
@@ -183,74 +215,124 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
         {view === 'manual' && (
           <>
             <DialogHeader>
-              <DialogTitle>Create New Trip</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className={cn(isMobile && 'text-2xl')}>Create New Trip</DialogTitle>
+              <DialogDescription className={cn(isMobile && 'text-base')}>
                 Start planning your next adventure by creating a new trip
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium mb-2">
-                  Trip Title <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Summer in Italy"
-                  required
-                  autoFocus
-                />
+            <form onSubmit={handleSubmit} className={cn(
+              "space-y-4",
+              isMobile ? "mt-6 flex-1 flex flex-col" : "mt-4"
+            )}>
+              <div className={cn(isMobile && "flex-1 space-y-4 overflow-y-auto")}>
+                <div>
+                  <label htmlFor="title" className={cn(
+                    "block font-medium mb-2",
+                    isMobile ? "text-base" : "text-sm"
+                  )}>
+                    Trip Title <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Summer in Italy"
+                    required
+                    autoFocus
+                    className={cn(isMobile && "h-12 text-base")}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="description" className={cn(
+                    "block font-medium mb-2",
+                    isMobile ? "text-base" : "text-sm"
+                  )}>
+                    Description
+                  </label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="e.g., 2-week adventure through Tuscany"
+                    rows={isMobile ? 4 : 3}
+                    className={cn(isMobile && "text-base")}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="destination" className={cn(
+                    "block font-medium mb-2",
+                    isMobile ? "text-base" : "text-sm"
+                  )}>
+                    Destination
+                  </label>
+                  <Input
+                    id="destination"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="e.g., Rome, Italy"
+                    className={cn(isMobile && "h-12 text-base")}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="startDate" className={cn(
+                    "block font-medium mb-2",
+                    isMobile ? "text-base" : "text-sm"
+                  )}>
+                    Start Date
+                  </label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className={cn(isMobile && "h-12 text-base")}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium mb-2">
-                  Description
-                </label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g., 2-week adventure through Tuscany"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="destination" className="block text-sm font-medium mb-2">
-                  Destination
-                </label>
-                <Input
-                  id="destination"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  placeholder="e.g., Rome, Italy"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium mb-2">
-                  Start Date
-                </label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
-
-              <div className="flex justify-between gap-3 pt-4">
-                <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
-                  Back
-                </Button>
-                <div className="flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-                    Cancel
+              <div className={cn(
+                "flex gap-3 pt-4",
+                isMobile ? "flex-col border-t pt-6" : "justify-between"
+              )}>
+                {!isMobile && (
+                  <Button type="button" variant="ghost" onClick={handleBack} disabled={isSubmitting}>
+                    Back
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                )}
+                <div className={cn(
+                  "flex gap-3",
+                  isMobile && "flex-col-reverse"
+                )}>
+                  {isMobile && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={handleBack} 
+                      disabled={isSubmitting}
+                      className="h-11"
+                    >
+                      Back
+                    </Button>
+                  )}
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className={cn(isMobile && "h-11")}
+                  >
                     {isSubmitting ? 'Creating...' : 'Create Trip'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCancel} 
+                    disabled={isSubmitting}
+                    className={cn(isMobile && "h-11")}
+                  >
+                    Cancel
                   </Button>
                 </div>
               </div>
