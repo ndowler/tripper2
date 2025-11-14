@@ -308,7 +308,9 @@ export function Board({ trip, userId }: BoardProps) {
               <div className={cn(
                 isMobile
                   ? "flex flex-col gap-4 w-full" // Mobile: vertical stack
-                  : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full justify-center" // Desktop: responsive grid
+                  : "grid gap-6 w-full", // Desktop: responsive grid
+                  // Responsive columns: 2 on tablet, 3 on desktop, 4 on large desktop, 5 on 1080p, 6 on 2K, 8 on 4K
+                  !isMobile && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 5xl:grid-cols-8"
               )}>
                 {/* Day Columns */}
                 {trip.days.map((day, index) => (
@@ -324,7 +326,7 @@ export function Board({ trip, userId }: BoardProps) {
 
                 {/* Add day button */}
                 <div className={cn(
-                  isMobile ? "w-full" : "flex-shrink-0 w-[360px]"
+                  isMobile ? "w-full" : ""
                 )}>
                   <AddDayButton tripId={trip.id} userId={userId} activeDayId={activeDayId} />
                 </div>
