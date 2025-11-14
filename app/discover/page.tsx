@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -46,7 +46,7 @@ const FUNNY_MESSAGES = [
   "Finding the best places to eat",
 ];
 
-export default function DiscoverPage() {
+function DiscoverPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefilledDestination = searchParams.get('destination');
@@ -521,5 +521,13 @@ export default function DiscoverPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <DiscoverPageContent />
+    </Suspense>
   );
 }
