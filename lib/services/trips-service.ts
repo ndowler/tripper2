@@ -147,6 +147,7 @@ export async function createTrip(trip: Omit<Trip, 'createdAt' | 'updatedAt'>, us
     .insert({
       id: trip.id,
       user_id: userId,
+      owner_id: userId,
       title: trip.title,
       description: trip.description || null,
       destination: trip.destination || null,
