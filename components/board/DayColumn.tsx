@@ -112,7 +112,7 @@ export function DayColumn({ day, tripId, userId, index, isMobile = false }: DayC
       "bg-glass backdrop-blur-glass rounded-xl border border-white/20 flex flex-col shadow-glass hover:shadow-glass-hover transition-all duration-300",
       isMobile
         ? "w-full min-h-[400px]" // Mobile: full width, minimum height
-        : "h-full flex-shrink-0 day-column" // Desktop: fixed width
+        : "w-full min-h-[500px] max-h-[calc(100vh-8rem)]" // Desktop: responsive width via grid, constrained height
     )}>
       {/* Day header - Sticky */}
       <div className={cn(

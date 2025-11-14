@@ -225,26 +225,18 @@
   }
 }
 
-/* Column sizing */
+/* Column sizing - Responsive for all screen sizes */
 @layer components {
   .day-column {
-    @apply w-full;
-    min-width: 340px;
-    max-width: 360px;
+    @apply w-full h-full;
+    min-width: 100%;
+    max-width: 100%;
   }
-  
-  /* Full width on mobile */
-  @media (max-width: 768px) {
-    .day-column {
-      min-width: 100%;
-      max-width: 100%;
-    }
-  }
-  
+
   .day-column-gutter {
     @apply gap-6; /* 24px */
   }
-  
+
   /* Reduced gutter on mobile */
   @media (max-width: 768px) {
     .day-column-gutter {
