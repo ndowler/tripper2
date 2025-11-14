@@ -151,7 +151,6 @@ export default function DiscoverPage() {
       );
     } catch (err: any) {
       const duration = performance.now() - startTime;
-      clearInterval(progressInterval);
       setError(err.message || "Something went wrong. Please try again.");
       setStep("error");
       
