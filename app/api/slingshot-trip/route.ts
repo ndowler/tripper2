@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { addDays, format } from "date-fns";
 import { vibesToPrompt } from "@/lib/utils/vibes";
+import { parseTime } from "@/lib/utils/time";
 import { createZodCompletion, defaultModel } from "@/lib/openai-client";
 import {
   SlingshotDayResponseSchema,
@@ -154,40 +155,46 @@ CRITICAL RULES:
 - Return ONLY valid JSON with a "cards" array
 - Each card must have: type, title, startTime (HH:MM 24h format), duration (minutes)
 
-TIMING RULES (VERY IMPORTANT):
+⏰ TIMING RULES (ABSOLUTELY CRITICAL - VIOLATIONS WILL FAIL THE TASK):
 - ALL startTime values MUST be in HH:MM format (24-hour), e.g., "09:00", "14:30", "21:00"
-- Times must flow CHRONOLOGICALLY through the day (no overlaps)
-- Breakfast/morning meals: ${breakfastTime}-10:00 (duration: 45-60 min)
-- Lunch: ${lunchTime}-14:00 (duration: 60-90 min)
-- Dinner: ${dinnerTime}-21:00 (duration: 90-120 min)
-- Morning activities: ${morningStartTime}-12:00 (duration: 90-180 min)
-- Afternoon activities: 14:00-17:00 (duration: 90-180 min)
-- Evening entertainment: 19:00-23:00 (duration: 90-180 min)
-- ${isFirstDay ? "Hotel check-in: 14:00-16:00 (type: hotel, duration: 30)" : ""}
-- ${isLastDay ? "Hotel check-out: 10:00-12:00 (type: hotel, duration: 30)" : ""}
-- Transit between locations: 15-30 minutes
-- Add buffer time between activities (15-30 min)
+- Times MUST flow CHRONOLOGICALLY - NO TWO CARDS CAN HAVE THE SAME START TIME
+- Each card starts AFTER the previous card ends (startTime + duration + buffer)
+- Calculate next start time: previous startTime + previous duration + 15-30 min buffer
 
-EXAMPLE TIMING FOR A DAY:
-${breakfastTime}: Breakfast at local café (meal, 60 min)
-${morningStartTime}: Museum visit (activity, 120 min)
-${lunchTime}: Lunch (restaurant, 90 min)
-14:30: Afternoon tour (activity, 150 min)
-17:30: Transit to dinner area (transit, 20 min)
-${dinnerTime}: Dinner (restaurant, 90 min)
-21:00: Evening show (entertainment, 120 min)
+TIMING SEQUENCE (follow this pattern exactly):
+1. ${breakfastTime}: Breakfast (meal, 60 min) → ends ${formatTime(parseTime(breakfastTime) + 60)}
+2. ${formatTime(parseTime(breakfastTime) + 90)}: Morning activity (activity, 120 min) → ends ${formatTime(parseTime(breakfastTime) + 210)}
+3. ${lunchTime}: Lunch (restaurant, 90 min) → ends ${formatTime(parseTime(lunchTime) + 90)}
+4. ${formatTime(parseTime(lunchTime) + 120)}: Afternoon activity (activity, 150 min) → ends ${formatTime(parseTime(lunchTime) + 270)}
+5. ${formatTime(parseTime(dinnerTime) - 30)}: Transit (transit, 20 min) → ends ${dinnerTime}
+6. ${dinnerTime}: Dinner (restaurant, 90 min) → ends ${formatTime(parseTime(dinnerTime) + 90)}
+7. ${formatTime(parseTime(dinnerTime) + 120)}: Evening activity (entertainment, 120 min)
 
-GEOGRAPHIC CLUSTERING RULES (CRITICAL):
-- Each day MUST focus on ONE primary neighborhood/district/area
-- ALL activities on this day must be in the SAME geographic area
-- DO NOT return to areas from previous days: ${dayContext.primaryAreas.length > 0 ? dayContext.primaryAreas.join(", ") : "none yet"}
-- Include the primary area name in location field for each activity
-- Add transit cards ONLY when moving between sub-areas within the same neighborhood
-- Example for Michigan: Day 1 = Detroit downtown (all activities), Day 2 = Ann Arbor (all activities), NO returning to Detroit
-- Example for Paris: Day 1 = Eiffel Tower/Trocadéro area, Day 2 = Marais district, Day 3 = Montmartre, NO returning to Eiffel Tower area
+SPECIAL CARDS:
+- ${isFirstDay ? `Hotel check-in MUST be around 15:00 (type: hotel, duration: 30)` : ""}
+- ${isLastDay ? `Hotel check-out MUST be around 10:00-11:00 (type: hotel, duration: 30)` : ""}
+
+🍽️ RESTAURANT DUPLICATION RULES (BREAKING THESE = COMPLETE FAILURE):
+${dayContext.restaurants.length > 0 ? `
+- FORBIDDEN RESTAURANTS (NEVER USE): ${dayContext.restaurants.join(", ")}
+- You have used ${dayContext.restaurants.length} restaurants so far
+- Today's restaurants MUST have completely different names
+- If you use a chain (e.g., Starbucks), vary location: "Starbucks Downtown" vs "Starbucks Airport"
+- Double-check EVERY restaurant name against the forbidden list above
+` : "- This is the first day, no restrictions yet"}
+
+🗺️ GEOGRAPHIC CLUSTERING RULES (CRITICAL):
+- Choose ONE neighborhood/district for this entire day
+- State it clearly: "Today's area: [NEIGHBORHOOD NAME]"
+${dayContext.primaryAreas.length > 0 ? `
+- FORBIDDEN AREAS (already visited): ${dayContext.primaryAreas.join(", ")}
+- You MUST choose a DIFFERENT area not in the list above
+` : ""}
+- ALL activities, meals, and entertainment MUST be within 2km of each other
+- Include the neighborhood name in every location field
+- Add transit cards only for moves within the same neighborhood
 
 OTHER RULES:
-- DO NOT repeat restaurants from previous days: ${dayContext.restaurants.join(", ") || "none yet"}
 - Balance activity intensity: ${dayContext.totalActivityMinutes > 300 ? "Today should be lighter (2-3 main activities)" : "Can be more active (3-4 main activities)"}
 - Budget per person per day: ${budgetRange}
 - Trip purpose: ${purposeContext}
@@ -195,10 +202,8 @@ ${mustDos ? `- MUST INCLUDE if possible: ${mustDos}` : ""}
 ${existingPlans ? `- WORK AROUND existing plans: ${existingPlans}` : ""}
 
 Card types: activity, restaurant, meal, hotel, transit, entertainment, shopping
-Costs should stay within budget
 Include brief descriptions (optional but helpful)
-Tags should be relevant (max 5)
-Location field should include the neighborhood/area name`;
+Tags should be relevant (max 5)`;
 
       const userPrompt = `Create a complete itinerary for Day ${dayNum} of ${duration} in ${destination}.
 Date: ${currentDate}
@@ -233,6 +238,70 @@ Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activity cards for this day.
         if (dayCards.length < 3) {
           throw new Error(`Only ${dayCards.length} cards generated for day ${dayNum}`);
         }
+
+        // ✅ POST-GENERATION VALIDATION
+        
+        // 1. Check for duplicate start times
+        const startTimes = dayCards
+          .filter(c => c.startTime)
+          .map(c => c.startTime);
+        const uniqueStartTimes = new Set(startTimes);
+        if (uniqueStartTimes.size !== startTimes.length) {
+          console.warn(`⚠️  Day ${dayNum}: Found ${startTimes.length - uniqueStartTimes.size} cards with duplicate start times`);
+          // Sort by startTime to ensure chronological order
+          dayCards.sort((a, b) => {
+            if (!a.startTime || !b.startTime) return 0;
+            return parseTime(a.startTime) - parseTime(b.startTime);
+          });
+        }
+
+        // 2. Check for duplicate restaurants
+        const dayRestaurants = dayCards
+          .filter(c => c.type === 'restaurant' || c.type === 'meal')
+          .map(c => c.title.toLowerCase().trim());
+        
+        // Check against previous days
+        const conflicts = dayRestaurants.filter(r => 
+          dayContext.restaurants.some(prev => prev.toLowerCase().trim() === r)
+        );
+        
+        if (conflicts.length > 0) {
+          console.warn(`⚠️  Day ${dayNum}: Found ${conflicts.length} duplicate restaurants:`, conflicts);
+          // Remove conflicting restaurant cards
+          dayCards = dayCards.filter(c => {
+            if (c.type === 'restaurant' || c.type === 'meal') {
+              const isDuplicate = conflicts.includes(c.title.toLowerCase().trim());
+              if (isDuplicate) {
+                console.log(`   Removing duplicate: ${c.title}`);
+              }
+              return !isDuplicate;
+            }
+            return true;
+          });
+        }
+
+        // 3. Verify chronological order
+        let lastTime = 0;
+        let hasTimingIssues = false;
+        dayCards.forEach((card, idx) => {
+          if (card.startTime) {
+            const currentTime = parseTime(card.startTime);
+            if (currentTime < lastTime) {
+              hasTimingIssues = true;
+              console.warn(`⚠️  Day ${dayNum}: Card ${idx + 1} (${card.title}) starts at ${card.startTime} but previous card was at ${formatTime(lastTime)}`);
+            }
+            lastTime = currentTime + (card.duration || 60);
+          }
+        });
+
+        if (hasTimingIssues) {
+          console.log(`   Sorting cards chronologically for Day ${dayNum}`);
+          dayCards.sort((a, b) => {
+            if (!a.startTime || !b.startTime) return 0;
+            return parseTime(a.startTime) - parseTime(b.startTime);
+          });
+        }
+
       } catch (error) {
         console.error(`Error generating day ${dayNum}:`, error);
         // Fallback: create basic day structure
@@ -360,12 +429,15 @@ function buildContextPrompt(context: DayContext, currentDay: number): string {
     prompt += `- You MUST choose a NEW area/neighborhood for Day ${currentDay} that is different from the above\n`;
   }
 
+  // Track ALL restaurants (not just last 5) - CRITICAL to prevent duplicates
   if (context.restaurants.length > 0) {
-    prompt += `- Restaurants used (DO NOT REPEAT): ${context.restaurants.slice(-5).join(", ")}\n`;
+    prompt += `- ALL restaurants used so far (NEVER REPEAT ANY): ${context.restaurants.join(", ")}\n`;
   }
 
+  // Track recent activities for variety
   if (context.activities.length > 0) {
-    prompt += `- Recent activities: ${context.activities.slice(-5).join(", ")}\n`;
+    const recentActivities = context.activities.slice(-8); // Show last 8 for context
+    prompt += `- Recent activities (aim for variety): ${recentActivities.join(", ")}\n`;
   }
 
   const avgActivityMinutes = Math.round(context.totalActivityMinutes / (currentDay - 1));
