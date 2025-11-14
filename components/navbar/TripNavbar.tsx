@@ -4,13 +4,9 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
-  Compass,
-  Inbox,
   MoreVertical,
   Redo2,
-  Sun,
   Undo2,
-  User,
 } from "lucide-react";
 
 import { useUndoRedo } from "@/lib/hooks/useUndoRedo";
@@ -36,6 +32,11 @@ interface NavbarProps {
     id: string;
     title: string;
     description?: string;
+    destination?: {
+      city: string;
+      state?: string;
+      country?: string;
+    };
     unassignedCards?: any[];
   };
   thingsToDoOpen: boolean;
@@ -108,9 +109,10 @@ export function Navbar({
         >
           <div
             id="header"
-            className="flex flex-row items-center gap-2 flex-1 min-w-0"
+            className="flex flex-row items-center gap-2 w-full"
           >
-            <div id="back-button" className="flex justify-start flex-shrink-0">
+            {/* Left: Back button */}
+            <div id="back-button" className="flex justify-start flex-shrink-0 w-[40px]">
               <Link href="/trips" className="flex items-center">
                 <Image
                   src="/tripper.png"
@@ -123,13 +125,19 @@ export function Navbar({
               </Link>
             </div>
 
-            <div id="title" className="flex-1 min-w-0 overflow-hidden">
-              <EditableHeader
-                tripId={trip.id}
-                title={trip.title}
-                description={trip.description}
-              />
+            {/* Center: Title */}
+            <div id="title" className="flex-1 flex justify-center min-w-0 overflow-hidden">
+              <div className="max-w-2xl w-full">
+                <EditableHeader
+                  tripId={trip.id}
+                  title={trip.title}
+                  description={trip.description}
+                />
+              </div>
             </div>
+
+            {/* Right: Spacer to balance left */}
+            <div className="w-[40px] flex-shrink-0" />
           </div>
           {/* Actions */}
           <div
@@ -139,33 +147,6 @@ export function Navbar({
               isMobile ? "gap-1" : "gap-2"
             )}
           >
-            {/* To-Do Toggle */}
-            <CustomTooltip content="To-Do List" side="bottom">
-              <Button
-                variant="outline"
-                size={isMobile ? "icon" : "sm"}
-                onClick={() => setThingsToDoOpen(!thingsToDoOpen)}
-                title="To-Do"
-                data-tour="things-to-do"
-                className={cn(isMobile && "h-9 w-9 relative")}
-              >
-                <div className="flex items-center gap-1">
-                  <Inbox className="w-4 h-4" />
-                  {!isMobile && <span className="hidden sm:inline">To-Do</span>}
-                  {trip.unassignedCards && trip.unassignedCards.length > 0 && (
-                    <span className={cn(
-                      "text-xs font-medium rounded-full",
-                      isMobile 
-                        ? "absolute -top-1 -right-1 bg-primary text-primary-foreground px-1.5 py-0.5 min-w-[20px] text-center" 
-                        : "pl-2"
-                    )}>
-                      {trip.unassignedCards.length}
-                    </span>
-                  )}
-                </div>
-              </Button>
-            </CustomTooltip>
-
             {/* Undo/Redo - hidden on mobile, moved to dropdown */}
             {!isMobile && (
               <div id="undo-redo" className="flex gap-1">
@@ -199,23 +180,6 @@ export function Navbar({
               </div>
             )}
 
-            {/* Discover - Icon only on mobile */}
-            {!isMobile && (
-              <CustomTooltip content="Discover More" side="bottom">
-                <Link href="/discover" data-tour="discover-button">
-                  <Button
-                    variant="outline"
-                    className="lg:px-3"
-                  >
-                    <Compass className="w-4 h-4 lg:mr-2" />
-                    <span className="hidden lg:inline whitespace-nowrap">
-                      Discover
-                    </span>
-                  </Button>
-                </Link>
-              </CustomTooltip>
-            )}
-
             {/* Actions Dropdown */}
             <div className="flex items-center">
               <CustomTooltip content="More actions" side="bottom">
@@ -233,12 +197,6 @@ export function Navbar({
                     <DropdownMenuContent align="end" className={cn(isMobile && "min-w-[200px]")}>
                       {isMobile && (
                         <>
-                          <DropdownMenuItem asChild>
-                            <Link href="/discover" className="flex items-center">
-                              <Compass className="w-4 h-4 mr-2" />
-                              Discover
-                            </Link>
-                          </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => {
                               undo();

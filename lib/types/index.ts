@@ -163,14 +163,16 @@ export interface TripStore {
     toDayId: string | undefined,
     cardId: string,
     newIndex: number,
-    userId?: string
+    userId?: string,
+    timeUpdate?: { startTime: string; endTime: string; duration: number }
   ) => Promise<void>;
   reorderCards: (
     tripId: string,
     dayId: string | undefined,
     oldIndex: number,
     newIndex: number,
-    userId?: string
+    userId?: string,
+    timeUpdate?: { startTime: string; endTime: string; duration: number }
   ) => Promise<void>;
   duplicateCard: (
     tripId: string,

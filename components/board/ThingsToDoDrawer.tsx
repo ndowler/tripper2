@@ -11,7 +11,7 @@ import {
   ArrowRight,
   ChevronsLeft,
   ChevronsRight,
-  Calendar,
+  Compass,
 } from "lucide-react";
 import {
   SortableContext,
@@ -87,33 +87,26 @@ export function ThingsToDoDrawer({
                   </span>
                 )}
               </div>
-              <Link href="/day-view">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  aria-label="Go to day view"
-                  title="Day View"
-                >
-                  <Calendar className="w-4 h-4" />
-                </Button>
-              </Link>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Inbox className="w-4 h-4 text-muted-foreground" />
-                  <h2 className="font-semibold text-base select-none">
-                    Things to Do
-                  </h2>
-                  {unassignedCards.length > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                      {unassignedCards.length}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
+                <Link 
+                  href={`/discover?from=trip&destination=${encodeURIComponent(
+                    trip.destination?.city || trip.title
+                  )}`}
+                  className="flex-1"
+                >
+                  <Button
+                    variant="default"
+                    className="w-full justify-start gap-2"
+                    size="lg"
+                  >
+                    <Compass className="w-5 h-5" />
+                    <span className="font-semibold">Discover Activities</span>
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-1 ml-2">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -135,19 +128,17 @@ export function ThingsToDoDrawer({
                   </Button>
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <Link href="/day-view">
-                  <Button
-                    variant="ghost"
-                    // size="icon"
-                    // className="h-8 w-8"
-                    aria-label="Go to day view"
-                    title="Day View"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    Day View
-                  </Button>
-                </Link>
+              {/* Things to Do section label */}
+              <div className="mt-3 flex items-center gap-2">
+                <Inbox className="w-4 h-4 text-muted-foreground" />
+                <h2 className="font-semibold text-sm select-none text-muted-foreground">
+                  Things to Do
+                </h2>
+                {unassignedCards.length > 0 && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                    {unassignedCards.length}
+                  </span>
+                )}
               </div>
               {/* Tip */}
               <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
