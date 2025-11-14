@@ -109,15 +109,15 @@ export function DayColumn({ day, tripId, userId, index, isMobile = false }: DayC
 
   return (
     <div className={cn(
-      "bg-card/30 rounded-lg border flex flex-col",
-      isMobile 
+      "bg-glass backdrop-blur-glass rounded-xl border border-white/20 flex flex-col shadow-glass hover:shadow-glass-hover transition-all duration-300",
+      isMobile
         ? "w-full min-h-[400px]" // Mobile: full width, minimum height
         : "h-full flex-shrink-0 day-column" // Desktop: fixed width
     )}>
       {/* Day header - Sticky */}
       <div className={cn(
-        "sticky top-0 z-20 border-b bg-card/95 backdrop-blur-sm",
-        isMobile ? "px-3 py-2.5" : "px-4 py-3" // Reduced padding on mobile
+        "sticky top-0 z-20 border-b border-white/20 bg-glass-light backdrop-blur-strong rounded-t-xl",
+        isMobile ? "px-3 py-3" : "px-5 py-4" // Slightly increased padding
       )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

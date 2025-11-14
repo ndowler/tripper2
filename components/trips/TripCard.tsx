@@ -109,9 +109,9 @@ export function TripCard({
         animationDelay: `${index * 50}ms`,
       }}
       className={cn(
-        "group relative bg-card border rounded-xl overflow-hidden cursor-pointer",
-        "hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1",
-        "transition-all duration-300 ease-out",
+        "group relative bg-glass backdrop-blur-glass border border-white/20 rounded-2xl overflow-hidden cursor-pointer",
+        "hover:shadow-glass-hover hover:scale-[1.03] hover:-translate-y-2 hover:border-white/30",
+        "transition-all duration-300 ease-out shadow-glass",
         "animate-in fade-in slide-in-from-bottom-4"
       )}
     >

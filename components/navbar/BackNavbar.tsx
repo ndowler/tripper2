@@ -18,7 +18,7 @@ export function BackNavbar({ trip }: BackNavbarProps) {
   return (
     <nav
       id="navbar"
-      className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10"
+      className="border-b border-white/20 bg-glass backdrop-blur-strong sticky top-0 z-10 shadow-lg"
     >
       <div id="navbar-content" className={cn(
         "container mx-auto",
