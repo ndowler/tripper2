@@ -16,7 +16,23 @@ interface DayContext {
   activities: string[];
   restaurants: string[];
   locations: string[];
+  primaryAreas: string[]; // Geographic areas/neighborhoods covered per day
   totalActivityMinutes: number;
+}
+
+// Helper function to format minutes since midnight to HH:MM
+function formatTime(minutes: number): string {
+  const hours = Math.floor(Math.max(0, Math.min(minutes, 1439)) / 60);
+  const mins = Math.floor(Math.max(0, Math.min(minutes, 1439)) % 60);
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+// Helper function to extract primary area from location string
+function extractPrimaryArea(location: string | undefined): string | null {
+  if (!location) return null;
+  // Extract the first meaningful part (usually neighborhood/district)
+  const cleaned = location.split(',')[0].trim();
+  return cleaned.length > 0 ? cleaned : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -100,6 +116,7 @@ export async function POST(request: NextRequest) {
       activities: [],
       restaurants: [],
       locations: [],
+      primaryAreas: [],
       totalActivityMinutes: 0,
     };
 
@@ -117,6 +134,16 @@ export async function POST(request: NextRequest) {
       // Build context from previous days
       const contextPrompt = buildContextPrompt(dayContext, dayNum);
 
+      // Calculate daypart time shift based on vibes
+      const daypartBias = vibes.daypartBias || 3; // 1=early bird, 5=night owl
+      const timeShift = (daypartBias - 3) * 60; // -120 to +120 minutes
+      
+      // Adjust base times based on daypart preference
+      const breakfastTime = formatTime(7 * 60 + timeShift); // Base 07:00
+      const lunchTime = formatTime(12 * 60 + timeShift); // Base 12:00
+      const dinnerTime = formatTime(19 * 60 + timeShift); // Base 19:00
+      const morningStartTime = formatTime(9 * 60 + timeShift); // Base 09:00
+
       // Build system prompt
       const systemPrompt = `You are an expert travel planner creating a detailed itinerary.
 Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activities for a single day in ${destination}.
@@ -124,23 +151,52 @@ Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activities for a single day 
 CRITICAL RULES:
 - Return ONLY valid JSON with a "cards" array
 - Each card must have: type, title, startTime (HH:MM 24h format), duration (minutes)
-- ${isFirstDay ? "Include hotel check-in around 14:00-15:00 (type: hotel, duration: 30)" : ""}
-- ${isLastDay ? "Include hotel check-out at 11:00 (type: hotel, duration: 30)" : ""}
+
+TIMING RULES (VERY IMPORTANT):
+- ALL startTime values MUST be in HH:MM format (24-hour), e.g., "09:00", "14:30", "21:00"
+- Times must flow CHRONOLOGICALLY through the day (no overlaps)
+- Breakfast/morning meals: ${breakfastTime}-10:00 (duration: 45-60 min)
+- Lunch: ${lunchTime}-14:00 (duration: 60-90 min)
+- Dinner: ${dinnerTime}-21:00 (duration: 90-120 min)
+- Morning activities: ${morningStartTime}-12:00 (duration: 90-180 min)
+- Afternoon activities: 14:00-17:00 (duration: 90-180 min)
+- Evening entertainment: 19:00-23:00 (duration: 90-180 min)
+- ${isFirstDay ? "Hotel check-in: 14:00-16:00 (type: hotel, duration: 30)" : ""}
+- ${isLastDay ? "Hotel check-out: 10:00-12:00 (type: hotel, duration: 30)" : ""}
+- Transit between locations: 15-30 minutes
+- Add buffer time between activities (15-30 min)
+
+EXAMPLE TIMING FOR A DAY:
+${breakfastTime}: Breakfast at local café (meal, 60 min)
+${morningStartTime}: Museum visit (activity, 120 min)
+${lunchTime}: Lunch (restaurant, 90 min)
+14:30: Afternoon tour (activity, 150 min)
+17:30: Transit to dinner area (transit, 20 min)
+${dinnerTime}: Dinner (restaurant, 90 min)
+21:00: Evening show (entertainment, 120 min)
+
+GEOGRAPHIC CLUSTERING RULES (CRITICAL):
+- Each day MUST focus on ONE primary neighborhood/district/area
+- ALL activities on this day must be in the SAME geographic area
+- DO NOT return to areas from previous days: ${dayContext.primaryAreas.length > 0 ? dayContext.primaryAreas.join(", ") : "none yet"}
+- Include the primary area name in location field for each activity
+- Add transit cards ONLY when moving between sub-areas within the same neighborhood
+- Example for Michigan: Day 1 = Detroit downtown (all activities), Day 2 = Ann Arbor (all activities), NO returning to Detroit
+- Example for Paris: Day 1 = Eiffel Tower/Trocadéro area, Day 2 = Marais district, Day 3 = Montmartre, NO returning to Eiffel Tower area
+
+OTHER RULES:
 - DO NOT repeat restaurants from previous days: ${dayContext.restaurants.join(", ") || "none yet"}
-- DO NOT duplicate locations from previous days unless different activity
-- Balance activity intensity: ${dayContext.totalActivityMinutes > 300 ? "Today should be lighter" : "Can be more active"}
-- Include realistic travel time between locations (15-30 min transit cards)
-- Honor vibes: daypart, pace, budget, crowd tolerance
+- Balance activity intensity: ${dayContext.totalActivityMinutes > 300 ? "Today should be lighter (2-3 main activities)" : "Can be more active (3-4 main activities)"}
 - Budget per person per day: ${budgetRange}
 - Trip purpose: ${purposeContext}
 ${mustDos ? `- MUST INCLUDE if possible: ${mustDos}` : ""}
 ${existingPlans ? `- WORK AROUND existing plans: ${existingPlans}` : ""}
 
 Card types: activity, restaurant, meal, hotel, transit, entertainment, shopping
-Times must follow daypart preferences (early/balanced/late)
 Costs should stay within budget
 Include brief descriptions (optional but helpful)
-Tags should be relevant (max 5)`;
+Tags should be relevant (max 5)
+Location field should include the neighborhood/area name`;
 
       const userPrompt = `Create a complete itinerary for Day ${dayNum} of ${duration} in ${destination}.
 Date: ${currentDate}
@@ -181,7 +237,8 @@ Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activity cards for this day.
         dayCards = createFallbackDay(dayNum, isFirstDay, isLastDay);
       }
 
-      // Update context
+      // Update context and extract primary area for this day
+      let dayPrimaryArea: string | null = null;
       dayCards.forEach((card) => {
         if (card.type === "restaurant" || card.type === "meal") {
           dayContext.restaurants.push(card.title);
@@ -191,9 +248,18 @@ Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activity cards for this day.
         }
         if (card.location) {
           dayContext.locations.push(card.location);
+          // Extract primary area from first non-hotel activity
+          if (!dayPrimaryArea && card.type !== "hotel" && card.type !== "transit") {
+            dayPrimaryArea = extractPrimaryArea(card.location);
+          }
         }
         dayContext.totalActivityMinutes += card.duration || 120;
       });
+      
+      // Track the primary area for this day
+      if (dayPrimaryArea) {
+        dayContext.primaryAreas.push(dayPrimaryArea);
+      }
 
       allDays.push({
         dayNumber: dayNum,
@@ -281,25 +347,33 @@ Example tone: "Yo! We packed this trip with slow morning starts and late-night j
 
 function buildContextPrompt(context: DayContext, currentDay: number): string {
   if (currentDay === 1) {
-    return "This is the first day. No previous context.";
+    return "This is the first day. No previous context. Choose a primary neighborhood/district for today's activities.";
   }
 
   let prompt = `Previous days context:\n`;
 
+  // Show geographic areas covered (MOST IMPORTANT)
+  if (context.primaryAreas.length > 0) {
+    prompt += `- Geographic areas ALREADY COVERED (DO NOT REUSE): ${context.primaryAreas.join(", ")}\n`;
+    prompt += `- You MUST choose a NEW area/neighborhood for Day ${currentDay} that is different from the above\n`;
+  }
+
   if (context.restaurants.length > 0) {
-    prompt += `- Restaurants used: ${context.restaurants.slice(-5).join(", ")}\n`;
+    prompt += `- Restaurants used (DO NOT REPEAT): ${context.restaurants.slice(-5).join(", ")}\n`;
   }
 
   if (context.activities.length > 0) {
     prompt += `- Recent activities: ${context.activities.slice(-5).join(", ")}\n`;
   }
 
-  if (context.locations.length > 0) {
-    prompt += `- Visited areas: ${[...new Set(context.locations.slice(-8))].join(", ")}\n`;
-  }
-
   const avgActivityMinutes = Math.round(context.totalActivityMinutes / (currentDay - 1));
-  prompt += `- Average activity time: ${avgActivityMinutes} min/day\n`;
+  prompt += `- Average activity time per day: ${avgActivityMinutes} min\n`;
+  
+  if (avgActivityMinutes > 350) {
+    prompt += `- Previous days were very active. Consider a lighter day today.\n`;
+  } else if (avgActivityMinutes < 250) {
+    prompt += `- Previous days were light. You can add more activities today.\n`;
+  }
 
   return prompt;
 }

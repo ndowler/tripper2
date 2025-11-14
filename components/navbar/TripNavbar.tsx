@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
   Compass,
-  Home,
   Inbox,
   MoreVertical,
   Redo2,
@@ -112,29 +111,17 @@ export function Navbar({
             className="flex flex-row items-center gap-2 flex-1 min-w-0"
           >
             <div id="back-button" className="flex justify-start flex-shrink-0">
-              <Link href="/trips">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  title="Back to all trips"
-                  className={cn(isMobile && "h-9 w-9")}
-                >
-                  <Home className="w-4 h-4" />
-                </Button>
-              </Link>
-            </div>
-
-            {!isMobile && (
-              <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <Link href="/trips" className="flex items-center">
                 <Image
                   src="/tripper.png"
                   alt="Tripper"
-                  width={32}
-                  height={32}
-                  className="rounded-md"
+                  width={isMobile ? 28 : 32}
+                  height={isMobile ? 28 : 32}
+                  className="rounded-md hover:opacity-80 transition-opacity"
+                  title="Back to all trips"
                 />
               </Link>
-            )}
+            </div>
 
             <div id="title" className="flex-1 min-w-0 overflow-hidden">
               <EditableHeader
