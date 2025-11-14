@@ -1,5 +1,10 @@
 import OpenAI from "openai";
-import { zodTextFormat } from "openai/helpers/zod";
+import { zodResponseFormat } from "openai/helpers/zod";
+
+// Validate API key exists
+if (!process.env.OPENAI_API_KEY) {
+  console.error("⚠️ OPENAI_API_KEY is not set in environment variables");
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
@@ -22,6 +27,7 @@ export async function createCompletion(
   if (!content) {
     throw new Error("No response from OpenAI");
   }
+  return content;
 }
 
 export async function createZodCompletion(
@@ -31,23 +37,38 @@ export async function createZodCompletion(
   schemaType: string, // e.g. "vibeSuggestions"
   options: any = {}
 ) {
-  const response = await openai.responses.parse({
-    model,
-    input: messages,
-    text: {
-      format: zodTextFormat(schema, schemaType),
-    },
-    ...options,
-  });
-  const parsed = response.output_parsed;
-  // console.log("Parsed response:", parsed);
-  if (!parsed) {
-    throw new Error("Structured output parsing failed.");
+  // Validate API key before making request
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OpenAI API key is not configured. Please add OPENAI_API_KEY to your .env.local file.");
   }
-  return {
-    parsed,
-    model: response.model,
-    usage: response.usage,
-    response,
-  };
+
+  try {
+    // Use stable API without .beta namespace (beta was removed in newer SDK versions)
+    const completion = await openai.chat.completions.parse({
+      model,
+      messages,
+      response_format: zodResponseFormat(schema, schemaType),
+      ...options,
+    });
+    
+    const parsed = completion.choices[0]?.message?.parsed;
+    
+    if (!parsed) {
+      console.error("Structured output parsing failed. Refusal:", completion.choices[0]?.message?.refusal);
+      throw new Error("Structured output parsing failed.");
+    }
+    
+    return {
+      parsed,
+      model: completion.model,
+      usage: completion.usage,
+      response: completion,
+    };
+  } catch (error: any) {
+    // Provide more helpful error messages
+    if (error.message?.includes("API key")) {
+      throw new Error("Invalid OpenAI API key. Please check your .env.local file.");
+    }
+    throw error;
+  }
 }

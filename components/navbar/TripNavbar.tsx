@@ -5,12 +5,10 @@ import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
   Compass,
-  Download,
   Home,
   Inbox,
   MoreVertical,
   Redo2,
-  Share2,
   Sun,
   Undo2,
   User,
@@ -276,14 +274,6 @@ export function Navbar({
                           </DropdownMenuItem>
                         </>
                       )}
-                      <DropdownMenuItem>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export JSON
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
                       <ThemeMenuItems />
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -294,12 +284,6 @@ export function Navbar({
             {/* Full Actions - visible on lg+ desktop only */}
             {!isMobile && (
               <div id="full-actions" className="hidden lg:flex gap-2">
-                <Button variant="outline" size="icon" title="Export JSON">
-                  <Download className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="icon" title="Share">
-                  <Share2 className="w-4 h-4" />
-                </Button>
                 {/* Theme Toggle */}
                 <ModeToggle />
               </div>

@@ -1,9 +1,9 @@
 # Active Context
 
-**Last Updated:** November 5, 2025  
-**Current Phase:** Mobile Optimization Complete  
+**Last Updated:** November 11, 2025  
+**Current Phase:** Phase 4.6 (Slingshot) Complete  
 **Next Phase:** Phase 4.5 (Affiliate Link Integration)  
-**Project Status:** 🟢 Production Ready with Cloud Sync + Mobile Optimized
+**Project Status:** 🟢 Production Ready with Cloud Sync + Slingshot AI
 
 ---
 
@@ -25,6 +25,7 @@
 - ✅ **Profile Management** - Enhanced user profile with preferences, security settings
 - ✅ **Cloud sync** - Multi-device synchronization with Supabase
 - ✅ **Data migration** - Automatic localStorage to Supabase migration
+- ✅ **Slingshot AI Trip Generator** - Complete trip generation with AI (NEW)
 
 ### Key Routes
 - `/` - Landing page with CTAs
@@ -44,57 +45,30 @@
 - `/terms` - Terms of service
 - `/auth/callback` - OAuth callback handler
 
-### Recent Changes (Mobile Optimization - Nov 5, 2025)
-1. **Mobile Detection System** - Created useIsMobile hook for viewport-based detection (<768px)
-2. **Board Layout** - Days stack vertically on mobile (full width), horizontal grid on desktop
-3. **Touch Targets** - All interactive elements minimum 44px on mobile (Apple HIG standard)
-4. **Card Actions** - Always visible on mobile (no hover), optimized button sizes (36px base + padding)
-5. **Navigation** - Compact navbar on mobile, hamburger menu for overflow actions
-6. **Modals** - Full-screen on mobile, centered on desktop
-7. **Typography** - Responsive text sizing (16px minimum body text on mobile)
-8. **Spacing** - Reduced padding on mobile (px-3 vs px-4)
-9. **Page Headers** - Stack vertically on mobile, horizontal on desktop
-10. **Mobile-specific CSS utilities** - Added .btn-mobile, .touch-target, .mobile-full, etc.
-
-### Previous Changes (Phase 4.4 - Nov 1, 2025)
-1. **Supabase Integration** - Full cloud sync with PostgreSQL database
-2. **User Authentication** - Email/password, OAuth providers, magic links
-3. **Auth Middleware** - Route protection with automatic redirects
-4. **Services Layer** - Abstracted data access with `lib/services/`
-5. **Enhanced Profile Management** - Complete overhaul of `/profile` page
-6. **Profile Information Component** - Better UI with avatar support (placeholder), full name editing, member since date
-7. **Travel Preferences Summary** - Displays user vibes with quick edit link to `/preferences`
-8. **Security Settings** - Password change, email change with verification
-9. **Modular Components** - Created reusable profile components in `components/profile/`
-10. **Data Migration** - Automatic migration from localStorage to Supabase
-11. **Migration Dialog** - User-friendly migration experience with progress
-12. **Better Loading States** - Added spinner and improved UX
-13. **Integrated Store** - Connected profile to tripStore for vibes display
-
-### Previous Changes (Phase 4.3 - Oct 6, 2025)
-1. Created trips overview page at `/trips`
-2. Added TripCard component with hover actions
-3. Implemented duplicate trip functionality
-4. Added Edit/Delete trip modals
-5. Created dynamic route `/trip/[id]`
-6. Updated navigation flow (home → trips → trip board)
-7. Added `destination` field to Trip type
-8. Integrated dropdown menus for trip actions
+### Key API Routes
+- `/api/slingshot-trip` - AI-powered multi-day trip generation (NEW)
+- `/api/ai-suggestions` - Generate 20 personalized cards for a destination
+- `/api/ai-day-plan` - Generate 5-8 cards for a single day
+- `/api/ai-regenerate-card` - Regenerate a single card with AI
+- `/api/ai-swap-card` - Swap a card for an alternative
+- `/api/vibe-suggestions` - Get recommendations from user vibes
+- `/auth/callback` - Supabase OAuth callback handler
 
 ---
 
 ## 🎯 What We're Working On
 
 ### Current Focus
-**Mobile Optimization Complete** ✅
+**Phase 4.6: Slingshot AI Trip Generator Complete** ✅
 
-Tripper now provides an excellent mobile experience with:
-- Automatic viewport detection and responsive layouts
-- Touch-friendly interface (44px minimum touch targets)
-- Full-screen modals on mobile devices
-- Vertical day stacking for easy scrolling
-- Optimized spacing and typography for readability
-- All pages optimized: Board, Trips, Discover, Profile, Preferences
+Tripper now features a complete AI-powered trip generation workflow:
+- One-click trip creation with comprehensive questionnaire
+- Sequential AI day generation with context building
+- Vibe-personalized suggestions throughout
+- Logical trip flow (hotel check-in/out, balanced activities)
+- No duplicate restaurants, realistic timing
+- Fun loading experience with progress updates
+- One-time vibe explanation overlay
 
 **Next: Phase 4.5 - Affiliate Link Integration** (Planned)
 
@@ -120,6 +94,35 @@ Goal: Transform Tripper from a planning tool into a booking platform by integrat
 ---
 
 ## 🔄 Recent Sessions
+
+### Session: November 11, 2025
+**Goal:** Complete Phase 4.6 - Slingshot AI Trip Generator  
+**Completed:**
+- Implemented complete Slingshot feature from trip creation choice to generated trip display
+- Created comprehensive questionnaire with 8 fields (destination, dates, budget, travelers, purpose, must-dos, existing plans)
+- Built sequential AI day generation system with context building (previous days inform next)
+- Added vibe check integration (redirects to `/vibes` if not completed)
+- Created 3 new components: `SlingshotQuestionnaire`, `SlingshotLoadingOverlay`, `SlingshotExplainOverlay`
+- Enhanced `NewTripModal` with "Make my Own" vs "Slingshot" choice screen
+- Built `/api/slingshot-trip` route with iterative OpenAI calls
+- Added 20 funny loading messages that rotate every 2.5 seconds
+- Created one-time dismissible vibe explanation overlay with localStorage tracking
+- Extended Trip type with `isSlingshotGenerated` and `slingshotMetadata` fields
+- Created new types in `lib/types/slingshot.ts`
+- Added Slingshot-specific Zod schemas for validation
+- Implemented `generateSlingshotTrip` action in tripStore
+- Integrated with existing trip system (all cards editable after generation)
+- Created comprehensive testing checklist in `SLINGSHOT_IMPLEMENTATION.md`
+
+**Outcomes:**
+- Users can now generate complete multi-day trips with one questionnaire
+- AI creates 5-9 cards per day with realistic timing and logical flow
+- No duplicate restaurants, balanced activity intensity
+- Hotel check-in/out handled automatically
+- Vibe-personalized suggestions throughout
+- Smooth UX with progress feedback and fun loading messages
+- No linter errors, full TypeScript type safety
+- Production ready
 
 ### Session: November 1, 2025
 **Goal:** Complete Phase 4.4 - Enhanced Profile Management  
@@ -218,7 +221,21 @@ Goal: Transform Tripper from a planning tool into a booking platform by integrat
 
 ## 🐛 Known Issues
 
-**None currently** - All phases tested and working
+**Recently Fixed (Nov 12, 2025):**
+- ✅ OpenAI API beta namespace error: Fixed by removing deprecated `.beta` from `openai.beta.chat.completions.parse()` → `openai.chat.completions.parse()`
+- ✅ Modal Cancel button alignment: Fixed to center-align in `NewTripModal.tsx` choice screen
+- ✅ Removed Export JSON and Share buttons: Cleaned up TripNavbar by removing unused functionality
+- ✅ AI generation errors: Fixed "Cannot read properties of undefined (reading 'completions')" error across all AI features
+- ✅ Discover page AI generation: Now working properly with correct SDK API usage
+- ✅ Slingshot trip generation: Now working with stable OpenAI SDK API
+
+**Previously Fixed (Nov 11, 2025):**
+- ✅ Slingshot timestamp error: Fixed by adding proper time-to-timestamp conversion in `trips-service.ts`
+- ✅ Favicon 404 errors: Fixed by updating layout.tsx to use existing tripper.png
+- ✅ Vibes check showing unnecessarily: Fixed by loading preferences first before checking vibes in `SlingshotQuestionnaire`
+
+**Current:**
+- ⚠️ share-modal.js error: Caused by browser extension, not the app (safe to ignore)
 
 ---
 

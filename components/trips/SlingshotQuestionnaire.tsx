@@ -27,6 +27,7 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
   const router = useRouter()
   const isMobile = useIsMobile()
   const userVibes = useTripStore((state) => state.getUserVibes())
+  const loadPreferences = useTripStore((state) => state.loadPreferences)
   const generateSlingshotTrip = useTripStore((state) => state.generateSlingshotTrip)
 
   // Form state
@@ -42,15 +43,33 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
   // UI state
   const [isGenerating, setIsGenerating] = useState(false)
   const [showVibeCheck, setShowVibeCheck] = useState(false)
+  const [isLoadingVibes, setIsLoadingVibes] = useState(true)
   const [currentDay, setCurrentDay] = useState(0)
   const [totalDays, setTotalDays] = useState(0)
 
-  // Check if user has vibes
+  // Load user preferences and check if vibes exist
   useEffect(() => {
-    if (!userVibes) {
-      setShowVibeCheck(true)
+    async function checkVibes() {
+      try {
+        setIsLoadingVibes(true)
+        await loadPreferences(userId)
+        
+        // Check again after loading
+        const vibes = useTripStore.getState().getUserVibes()
+        if (!vibes) {
+          setShowVibeCheck(true)
+        }
+      } catch (error) {
+        console.error('Failed to load preferences:', error)
+        // If we can't load, assume vibes are missing
+        setShowVibeCheck(true)
+      } finally {
+        setIsLoadingVibes(false)
+      }
     }
-  }, [userVibes])
+    
+    checkVibes()
+  }, [userId, loadPreferences])
 
   const handleVibeRedirect = () => {
     // Store return path in localStorage
@@ -141,7 +160,28 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
     { value: 'other', label: 'Other' },
   ]
 
-  // Show vibe check modal
+  // Show loading state while checking for vibes
+  if (isLoadingVibes) {
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>Slingshot</DialogTitle>
+          <DialogDescription>
+            Loading your preferences...
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-sm text-muted-foreground">Checking your travel vibes...</p>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // Show vibe check modal if vibes are missing
   if (showVibeCheck) {
     return (
       <>

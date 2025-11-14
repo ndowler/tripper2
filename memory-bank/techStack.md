@@ -115,6 +115,20 @@
   - React Icons (too large)
   - Heroicons (limited selection)
 
+### Date Picker
+**React Day Picker**
+- **Why:** Accessible, customizable, lightweight, excellent date selection UX
+- **Version:** ^9.4.3
+- **Usage:** Used in Slingshot questionnaire for trip start/end date selection
+- **Features Used:**
+  - Single date selection (start and end dates)
+  - Date range constraints (disabled past dates)
+  - Custom styling with Tailwind CSS
+  - Locale support
+- **Alternatives Considered:**
+  - date-fns alone (no UI component)
+  - react-datepicker (less accessible)
+
 ---
 
 ## 📊 State Management
