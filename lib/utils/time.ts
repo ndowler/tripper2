@@ -64,3 +64,90 @@ export function getCurrentTime(): string {
   const now = new Date()
   return formatTime(now.getHours() * 60 + now.getMinutes())
 }
+
+/**
+ * Default durations by card type (in minutes)
+ */
+const DEFAULT_DURATIONS: Record<string, number> = {
+  activity: 120,    // 2 hours
+  meal: 90,         // 1.5 hours
+  restaurant: 90,   // 1.5 hours
+  transit: 30,      // 30 minutes
+  flight: 180,      // 3 hours
+  hotel: 0,         // Check-in/out, no duration
+  shopping: 90,     // 1.5 hours
+  entertainment: 150, // 2.5 hours
+  note: 0,          // No duration
+}
+
+const DEFAULT_GAP_MINUTES = 15 // Default gap between activities
+
+/**
+ * Calculate appropriate time slot for a card being dropped at a position
+ * based on surrounding cards
+ */
+export function calculateTimeSlot(
+  prevCard: { endTime?: string; startTime?: string; duration?: number; type?: string } | null | undefined,
+  nextCard: { startTime?: string; endTime?: string } | null | undefined,
+  cardType: string = 'activity',
+  cardDuration?: number
+): { startTime: string; endTime: string; duration: number } | null {
+  const duration = cardDuration || DEFAULT_DURATIONS[cardType] || 60
+
+  // Case 1: Between two timed cards
+  if (prevCard?.endTime && nextCard?.startTime) {
+    const prevEndMinutes = parseTime(prevCard.endTime)
+    const nextStartMinutes = parseTime(nextCard.startTime)
+    const availableTime = nextStartMinutes - prevEndMinutes
+    
+    // If there's enough space, place after previous with gap
+    if (availableTime >= duration + DEFAULT_GAP_MINUTES) {
+      const startMinutes = prevEndMinutes + DEFAULT_GAP_MINUTES
+      const startTime = formatTime(startMinutes)
+      const endTime = formatTime(startMinutes + duration)
+      return { startTime, endTime, duration }
+    }
+    
+    // If tight fit, use midpoint
+    const midpoint = prevEndMinutes + Math.floor(availableTime / 2)
+    const startTime = formatTime(midpoint)
+    const endTime = formatTime(midpoint + duration)
+    return { startTime, endTime, duration }
+  }
+
+  // Case 2: Only previous card has time - continue after it
+  if (prevCard?.endTime) {
+    const prevEndMinutes = parseTime(prevCard.endTime)
+    const startMinutes = prevEndMinutes + DEFAULT_GAP_MINUTES
+    const startTime = formatTime(startMinutes)
+    const endTime = formatTime(startMinutes + duration)
+    return { startTime, endTime, duration }
+  }
+
+  // Case 3: Only next card has time - place before it
+  if (nextCard?.startTime) {
+    const nextStartMinutes = parseTime(nextCard.startTime)
+    const startMinutes = Math.max(0, nextStartMinutes - duration - DEFAULT_GAP_MINUTES)
+    const startTime = formatTime(startMinutes)
+    const endTime = formatTime(startMinutes + duration)
+    return { startTime, endTime, duration }
+  }
+
+  // Case 4: No surrounding times - default to morning start
+  const defaultStartMinutes = 9 * 60 // 9:00 AM
+  const startTime = formatTime(defaultStartMinutes)
+  const endTime = formatTime(defaultStartMinutes + duration)
+  return { startTime, endTime, duration }
+}
+
+/**
+ * Check if a card should receive automatic time assignment
+ * Returns true if the card is being placed in a scheduled section
+ */
+export function shouldAutoAssignTime(
+  prevCard: { startTime?: string } | null | undefined,
+  nextCard: { startTime?: string } | null | undefined
+): boolean {
+  // Auto-assign time if either neighbor has a time
+  return !!(prevCard?.startTime || nextCard?.startTime)
+}

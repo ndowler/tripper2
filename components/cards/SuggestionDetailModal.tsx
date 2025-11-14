@@ -9,12 +9,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { SuggestionCard } from "@/lib/types/suggestions";
 import {
   formatDuration,
   formatPriceTier,
-  getDaypartInfo,
   getCategoryEmoji,
   getGoogleSearchUrl,
 } from "@/lib/utils/suggestions";
@@ -39,7 +37,6 @@ export function SuggestionDetailModal({
 }: SuggestionDetailModalProps) {
   if (!suggestion) return null;
 
-  const daypartInfo = getDaypartInfo(suggestion.best_time);
   const categoryEmoji = getCategoryEmoji(suggestion.category);
 
   const handleSave = () => {
@@ -75,33 +72,11 @@ export function SuggestionDetailModal({
             </p>
           </div>
 
-          {/* Best Time */}
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Best Time</p>
-            <p className="font-medium">
-              {daypartInfo.emoji} {daypartInfo.label}
-            </p>
-          </div>
-
           {/* Area */}
           {suggestion.area && (
             <div>
               <p className="text-xs text-muted-foreground mb-1">Location</p>
               <p className="font-medium">📍 {suggestion.area}</p>
-            </div>
-          )}
-
-          {/* Tags */}
-          {suggestion.tags.length > 0 && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Tags</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestion.tags.map((tag, idx) => (
-                  <Badge key={idx} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
             </div>
           )}
 
@@ -176,7 +151,7 @@ export function SuggestionDetailModal({
           <div className="flex gap-3">
             <Button onClick={handleSave} className="flex-1">
               <Plus className="w-4 h-4 mr-2" />
-              Add to Day
+              Add to Discovery Board
             </Button>
             <Button variant="outline" onClick={onClose}>
               Close

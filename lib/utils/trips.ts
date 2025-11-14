@@ -178,3 +178,26 @@ export function getDestinationEmoji(destination?: string): string {
   return '✈️'
 }
 
+/**
+ * Get destination image URL from Unsplash Source
+ */
+export function getDestinationImageUrl(trip: Trip): string | null {
+  const destination = trip.destination
+  if (!destination) return null
+  
+  // Build search query from destination components
+  const queryParts = [
+    destination.city,
+    destination.country
+  ].filter(Boolean)
+  
+  if (queryParts.length === 0) return null
+  
+  // Create comma-separated query for better results
+  const query = queryParts.join(',')
+  
+  // Use Unsplash Source API with destination + travel keywords
+  // Size optimized for card display (800x400 = 2:1 aspect ratio)
+  return `https://source.unsplash.com/800x400/?${encodeURIComponent(query)},travel,landscape,cityscape`
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useTripStore } from "@/lib/store/tripStore";
@@ -22,21 +22,48 @@ import { cn } from "@/lib/utils";
 
 type PageStep = "input" | "loading" | "results" | "error";
 
-export default function DiscoverPage() {
+const FUNNY_MESSAGES = [
+  "Putting gas in the tank",
+  "Packing your digital bags",
+  "Finding the best coffee spots",
+  "Checking the vibe... yep, still good",
+  "Plotting world domination... I mean, your route",
+  "Teaching AI about your food preferences",
+  "Bribing local tour guides (with data)",
+  "Convincing museums to open early for you",
+  "Calculating optimal nap times",
+  "Adding spontaneity (ironically)",
+  "Asking locals for the secret spots",
+  "Finding restaurants that don't have tourist menus",
+  "Booking imaginary helicopter rides",
+  "Testing every possible route (virtually)",
+  "Making sure you get the window seat",
+  "Syncing your schedule with the sunset",
+  "Organizing your memories before they happen",
+  "Finding the perfect souvenir shops",
+  "Negotiating with time zones",
+  "Charging the adventure batteries",
+  "Finding the best places to eat",
+];
+
+function DiscoverPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefilledDestination = searchParams.get('destination');
+  
   const currentTripId = useTripStore((state) => state.currentTripId);
   const currentTrip = useTripStore((state) => state.getCurrentTrip());
   const userVibes = useTripStore((state) => state.userVibes);
   const addCard = useTripStore((state) => state.addCard);
 
   const [step, setStep] = useState<PageStep>("input");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(prefilledDestination || "");
   const [country, setCountry] = useState("");
   const [category, setCategory] = useState<string>("mixed");
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
 
   const hasVibes = hasCompletedVibes(userVibes);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -46,6 +73,17 @@ export default function DiscoverPage() {
     setIsHydrated(true);
   }, []);
 
+  // Rotate funny messages every 2.5 seconds during loading
+  useEffect(() => {
+    if (step === "loading") {
+      const interval = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % FUNNY_MESSAGES.length);
+      }, 2500);
+
+      return () => clearInterval(interval);
+    }
+  }, [step]);
+
   const handleGenerate = async () => {
     if (!city.trim()) {
       toast.error("Please enter a city name");
@@ -54,20 +92,9 @@ export default function DiscoverPage() {
 
     setStep("loading");
     setError(null);
-    setProgress(0);
+    setMessageIndex(0); // Reset to first message
 
     const startTime = performance.now();
-
-    // Fake progress animation
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) {
-          clearInterval(progressInterval);
-          return 95;
-        }
-        return prev + 5;
-      });
-    }, 400);
 
     try {
       track('Discover Started', {
@@ -89,9 +116,6 @@ export default function DiscoverPage() {
           category: category !== "mixed" ? category : undefined,
         }),
       });
-
-      clearInterval(progressInterval);
-      setProgress(100);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -127,7 +151,6 @@ export default function DiscoverPage() {
       );
     } catch (err: any) {
       const duration = performance.now() - startTime;
-      clearInterval(progressInterval);
       setError(err.message || "Something went wrong. Please try again.");
       setStep("error");
       
@@ -365,26 +388,20 @@ export default function DiscoverPage() {
           <div className="max-w-xl mx-auto">
             <Card className="p-8">
               <div className="text-center space-y-6">
-                <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
+                <div className="relative inline-block">
+                  <Sparkles className="w-16 h-16 mx-auto text-primary animate-pulse" />
+                  <div className="absolute inset-0 w-16 h-16 rounded-full bg-primary/20 animate-ping" />
+                </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">
+                  <h2 className="text-xl font-semibold mb-4">
                     Generating your personalized suggestions...
                   </h2>
-                  <p className="text-muted-foreground">
-                    Creating 5 perfect picks for {city}
-                    {hasVibes && " based on your travel style"}
-                  </p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
+                  {/* Rotating Funny Messages */}
+                  <div className="min-h-[24px] flex items-center justify-center">
+                    <p className="text-muted-foreground text-sm animate-in fade-in duration-300">
+                      {FUNNY_MESSAGES[messageIndex]}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{progress}%</p>
                 </div>
               </div>
             </Card>
@@ -504,5 +521,13 @@ export default function DiscoverPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <DiscoverPageContent />
+    </Suspense>
   );
 }

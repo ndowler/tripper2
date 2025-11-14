@@ -514,7 +514,7 @@ export const useTripStore = create<TripStore>()(
       }
     },
 
-    moveCard: async (tripId, fromDayId, toDayId, cardId, newIndex, userId) => {
+    moveCard: async (tripId, fromDayId, toDayId, cardId, newIndex, userId, timeUpdate) => {
       try {
         // Optimistic update
         set((state) => {
@@ -548,6 +548,13 @@ export const useTripStore = create<TripStore>()(
             }
 
             if (card) {
+              // Apply time update if provided
+              if (timeUpdate) {
+                card.startTime = timeUpdate.startTime;
+                card.endTime = timeUpdate.endTime;
+                card.duration = timeUpdate.duration;
+              }
+              
               if (toDayId === "unassigned") {
                 if (!trip.unassignedCards) trip.unassignedCards = [];
                 trip.unassignedCards.splice(newIndex, 0, card);
@@ -564,7 +571,8 @@ export const useTripStore = create<TripStore>()(
           cardId,
           toDayId === "unassigned" || !toDayId ? null : toDayId,
           newIndex,
-          userId
+          userId,
+          timeUpdate
         );
       } catch (error) {
         console.error('Failed to move card:', error);
@@ -576,8 +584,11 @@ export const useTripStore = create<TripStore>()(
       }
     },
 
-    reorderCards: async (tripId, dayId, oldIndex, newIndex, userId) => {
+    reorderCards: async (tripId, dayId, oldIndex, newIndex, userId, timeUpdate) => {
       try {
+        // Get the card ID being moved for time update
+        let movedCardId: string | undefined;
+        
         // Optimistic update
         set((state) => {
           const trip = state.trips[tripId];
@@ -585,12 +596,22 @@ export const useTripStore = create<TripStore>()(
             if (dayId === "unassigned") {
               if (trip.unassignedCards) {
                 const [removed] = trip.unassignedCards.splice(oldIndex, 1);
+                movedCardId = removed.id;
                 trip.unassignedCards.splice(newIndex, 0, removed);
               }
             } else {
               const day = trip.days.find((d) => d.id === dayId);
               if (day) {
                 const [removed] = day.cards.splice(oldIndex, 1);
+                movedCardId = removed.id;
+                
+                // Apply time update if provided
+                if (timeUpdate) {
+                  removed.startTime = timeUpdate.startTime;
+                  removed.endTime = timeUpdate.endTime;
+                  removed.duration = timeUpdate.duration;
+                }
+                
                 day.cards.splice(newIndex, 0, removed);
               }
             }
@@ -610,7 +631,9 @@ export const useTripStore = create<TripStore>()(
           await reorderCardsService(
             dayId === "unassigned" || !dayId ? null : dayId,
             cardIds,
-            userId
+            userId,
+            movedCardId,
+            timeUpdate
           );
         }
       } catch (error) {

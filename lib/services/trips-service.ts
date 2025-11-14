@@ -28,6 +28,23 @@ function timeStringToTimestamp(timeStr: string | undefined, dayDate: string): st
 }
 
 /**
+ * Helper: Convert ISO timestamp back to time string (HH:MM)
+ */
+function timestampToTimeString(timestamp: string | null | undefined): string | undefined {
+  if (!timestamp) return undefined;
+  
+  try {
+    const date = new Date(timestamp);
+    const hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  } catch (error) {
+    console.warn('Failed to convert timestamp to time string:', error);
+    return undefined;
+  }
+}
+
+/**
  * Fetch all trips for a user
  */
 export async function fetchTrips(userId: string): Promise<Trip[]> {
@@ -421,8 +438,8 @@ function transformCardFromDb(dbCard: any): Card {
     id: dbCard.id,
     type: dbCard.type,
     title: dbCard.title,
-    startTime: dbCard.start_time || undefined,
-    endTime: dbCard.end_time || undefined,
+    startTime: timestampToTimeString(dbCard.start_time),
+    endTime: timestampToTimeString(dbCard.end_time),
     duration: dbCard.duration || undefined,
     location: dbCard.location ? JSON.parse(dbCard.location) : undefined,
     cost: dbCard.cost ? JSON.parse(dbCard.cost) : undefined,

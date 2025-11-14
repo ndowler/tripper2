@@ -24,9 +24,6 @@ export function TripGrid({ trips, onEdit, onDuplicate, onDelete, onCreateNew, vi
         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" 
         : "flex flex-col max-w-3xl mx-auto"
     )}>
-      {/* New Trip Card - Always first */}
-      {viewMode === 'grid' && <NewTripCard onClick={onCreateNew} />}
-      
       {/* Existing trips */}
       {trips.map((trip, index) => (
         <TripCard
@@ -39,12 +36,8 @@ export function TripGrid({ trips, onEdit, onDuplicate, onDelete, onCreateNew, vi
         />
       ))}
       
-      {/* New Trip Card in list view */}
-      {viewMode === 'list' && (
-        <div className="mt-4">
-          <NewTripCard onClick={onCreateNew} />
-        </div>
-      )}
+      {/* New Trip Card - Always last */}
+      <NewTripCard onClick={onCreateNew} />
     </div>
   )
 }

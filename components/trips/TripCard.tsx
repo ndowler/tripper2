@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Calendar, Clock, MoreVertical } from "lucide-react";
+import { Calendar, Clock, MoreVertical } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
+import Image from "next/image";
 import type { Trip } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ import {
   getTripGradient,
   getDaysUntilTrip,
   getDestinationEmoji,
+  getDestinationImageUrl,
 } from "@/lib/utils/trips";
 
 interface TripCardProps {
@@ -41,6 +43,7 @@ export function TripCard({
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -52,13 +55,14 @@ export function TripCard({
   const gradient = getTripGradient(trip.title);
   const daysUntil = getDaysUntilTrip(trip);
   
-  // Format destination for emoji
+  // Format destination for emoji and image
   const destinationString = trip.destination
     ? [trip.destination.city, trip.destination.state, trip.destination.country]
         .filter(Boolean)
         .join(", ")
     : undefined;
   const destinationEmoji = getDestinationEmoji(destinationString);
+  const imageUrl = getDestinationImageUrl(trip);
 
   const dayCount = trip.days.length;
   const totalCards =
@@ -111,26 +115,47 @@ export function TripCard({
         "animate-in fade-in slide-in-from-bottom-4"
       )}
     >
-      {/* Dynamic gradient cover */}
-      <div className={cn(
-        "relative h-40 bg-gradient-to-br",
-        gradient,
-        "flex items-center justify-center overflow-hidden"
-      )}>
-        {/* Overlay pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-        
-        {/* Destination emoji */}
-        <span className="relative text-7xl filter drop-shadow-lg opacity-80 group-hover:scale-110 transition-transform duration-300">
-          {destinationEmoji}
-        </span>
+      {/* Image or gradient cover */}
+      <div className="relative h-40 overflow-hidden">
+        {imageUrl && !imageError ? (
+          <>
+            {/* Destination image */}
+            <Image
+              src={imageUrl}
+              alt={trip.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImageError(true)}
+            />
+            {/* Dark overlay for better text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          </>
+        ) : (
+          <>
+            {/* Fallback gradient */}
+            <div className={cn(
+              "absolute inset-0 bg-gradient-to-br",
+              gradient
+            )} />
+            {/* Overlay pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
+            
+            {/* Destination emoji (only shown on gradient fallback) */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-7xl filter drop-shadow-lg opacity-80 group-hover:scale-110 transition-transform duration-300">
+                {destinationEmoji}
+              </span>
+            </div>
+          </>
+        )}
 
         {/* Status badge */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 z-10">
           <Badge 
             variant="secondary" 
             className={cn(
-              "border backdrop-blur-sm font-medium",
+              "border backdrop-blur-sm font-medium shadow-lg",
               statusConfig.className
             )}
           >
@@ -140,10 +165,10 @@ export function TripCard({
 
         {/* Days until badge (for upcoming trips) */}
         {status === 'upcoming' && daysUntil !== null && daysUntil > 0 && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 z-10">
             <Badge 
               variant="secondary" 
-              className="border backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 font-semibold"
+              className="border backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 font-semibold shadow-lg"
             >
               {daysUntil} {daysUntil === 1 ? 'day' : 'days'}
             </Badge>
@@ -208,17 +233,6 @@ export function TripCard({
         )}
 
         <div className="space-y-3">
-          {trip.destination && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span className="line-clamp-1">
-                {trip.destination.city && `City: ${trip.destination.city} `}
-                {trip.destination.state && `State: ${trip.destination.state} `}
-                {trip.destination.country &&
-                  `Country: ${trip.destination.country}`}
-              </span>
-            </div>
-          )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4 flex-shrink-0" />
             <span className="line-clamp-1">{dateRangeText}</span>

@@ -164,7 +164,7 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
                       "text-muted-foreground text-center px-2",
                       isMobile ? "text-base" : "text-sm"
                     )}>
-                      Start with a blank canvas and build your itinerary from scratch
+                      Build your itinerary from scratch
                     </span>
                   </Button>
         
@@ -191,7 +191,7 @@ export function NewTripModal({ open, onOpenChange, userId }: NewTripModalProps) 
                       "text-muted-foreground text-center px-2",
                       isMobile ? "text-base" : "text-sm"
                     )}>
-                      Answer a few questions and let AI generate a personalized itinerary
+                      Let AI generate a personalized itinerary
                     </span>
                   </Button>
         

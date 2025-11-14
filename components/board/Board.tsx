@@ -24,6 +24,7 @@ import { ThingsToDoDrawer } from "@/components/board/ThingsToDoDrawer";
 import { toast } from "sonner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
+import { calculateTimeSlot } from "@/lib/utils/time";
 
 interface BoardProps {
   trip: Trip;
@@ -120,7 +121,34 @@ export function Board({ trip, userId }: BoardProps) {
           const newIndex = cards.findIndex((c) => c.id === over.id);
 
           if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
-            await reorderCards(trip.id, activeDayId, oldIndex, newIndex, userId);
+            // Calculate time update for the card being reordered
+            let timeUpdate: { startTime: string; endTime: string; duration: number } | undefined;
+            
+            // Only auto-assign time if reordering within a scheduled day (not unassigned)
+            if (activeDayId !== "unassigned" && activeCard) {
+              // Create a copy of the cards array with the card moved to simulate final state
+              const reorderedCards = [...cards];
+              const [movedCard] = reorderedCards.splice(oldIndex, 1);
+              reorderedCards.splice(newIndex, 0, movedCard);
+              
+              // Get the cards before and after the new position
+              const prevCard = newIndex > 0 ? reorderedCards[newIndex - 1] : null;
+              const nextCard = newIndex < reorderedCards.length - 1 ? reorderedCards[newIndex + 1] : null;
+              
+              // Calculate time slot based on surrounding cards in new position
+              const calculatedTime = calculateTimeSlot(
+                prevCard,
+                nextCard,
+                activeCard.type,
+                activeCard.duration
+              );
+              
+              if (calculatedTime) {
+                timeUpdate = calculatedTime;
+              }
+            }
+
+            await reorderCards(trip.id, activeDayId, oldIndex, newIndex, userId, timeUpdate);
           }
         } else {
           // Moving card to a different day
@@ -134,6 +162,33 @@ export function Board({ trip, userId }: BoardProps) {
             : overDay?.cards || [];
           
           const overCardIndex = overCards.findIndex((c) => c.id === over.id);
+          const finalIndex = overCardIndex !== -1 ? overCardIndex : overCards.length;
+
+          // Calculate appropriate time slot for the card
+          let timeUpdate: { startTime: string; endTime: string; duration: number } | undefined;
+          
+          // Only auto-assign time if moving to a scheduled day (not unassigned)
+          if (overDayId !== "unassigned") {
+            const movingCard = activeCard;
+            
+            // Get the cards before and after the drop position
+            const prevCard = finalIndex > 0 ? overCards[finalIndex - 1] : null;
+            const nextCard = finalIndex < overCards.length ? overCards[finalIndex] : null;
+            
+            // Calculate time slot based on surrounding cards
+            if (movingCard) {
+              const calculatedTime = calculateTimeSlot(
+                prevCard,
+                nextCard,
+                movingCard.type,
+                movingCard.duration
+              );
+              
+              if (calculatedTime) {
+                timeUpdate = calculatedTime;
+              }
+            }
+          }
 
           // Insert at the position of the card we're hovering over
           await moveCard(
@@ -141,8 +196,9 @@ export function Board({ trip, userId }: BoardProps) {
             activeDayId,
             overDayId,
             active.id as string,
-            overCardIndex !== -1 ? overCardIndex : overCards.length,
-            userId
+            finalIndex,
+            userId,
+            timeUpdate
           );
         }
       } 
@@ -151,6 +207,23 @@ export function Board({ trip, userId }: BoardProps) {
         const overDayId = overData.dayId;
 
         if (activeDayId !== overDayId) {
+          // Calculate time for empty day (defaults to 9:00 AM)
+          let timeUpdate: { startTime: string; endTime: string; duration: number } | undefined;
+          
+          // Only auto-assign time if moving to a scheduled day (not unassigned)
+          if (overDayId !== "unassigned" && activeCard) {
+            const calculatedTime = calculateTimeSlot(
+              null,
+              null,
+              activeCard.type,
+              activeCard.duration
+            );
+            
+            if (calculatedTime) {
+              timeUpdate = calculatedTime;
+            }
+          }
+
           // Move to end of the day (which is empty)
           await moveCard(
             trip.id,
@@ -158,7 +231,8 @@ export function Board({ trip, userId }: BoardProps) {
             overDayId,
             active.id as string,
             0, // First position since day is empty
-            userId
+            userId,
+            timeUpdate
           );
         }
       }

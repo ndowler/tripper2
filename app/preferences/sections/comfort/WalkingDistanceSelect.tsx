@@ -3,11 +3,11 @@
 import { BasicSelect } from "@/app/preferences/components/BasicSelect";
 
 const walkingDistances = {
-  "3": "3km - Minimal walking",
-  "5": "5km - Light strolls",
-  "8": "8km - Moderate walking",
-  "12": "12km - Active exploration",
-  "18": "18km+ - All-day adventures",
+  "3": "3k steps - Minimal walking",
+  "5": "5k steps - Light strolls",
+  "8": "8k steps - Moderate walking",
+  "12": "12k steps - Active exploration",
+  "18": "18k steps+ - All-day adventures",
 };
 
 interface WalkingDistanceSelectProps {

@@ -8,7 +8,6 @@ import {
   getCategoryColor,
   formatDuration,
   formatPriceTier,
-  getDaypartInfo,
   getGoogleSearchUrl,
 } from '@/lib/utils/suggestions';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,13 +26,7 @@ export function SuggestionCard({
   onToggleSelect,
   onClick,
 }: SuggestionCardProps) {
-  const daypartInfo = getDaypartInfo(suggestion.best_time);
   const categoryColor = getCategoryColor(suggestion.category);
-  
-  // Calculate visible tags
-  const maxVisibleTags = 2;
-  const visibleTags = suggestion.tags.slice(0, maxVisibleTags);
-  const hiddenCount = suggestion.tags.length - maxVisibleTags;
 
   // Render confidence dots (out of 5)
   const confidenceDots = suggestion.confidence !== undefined && !isNaN(suggestion.confidence)
@@ -83,22 +76,6 @@ export function SuggestionCard({
           {suggestion.description}
         </p>
 
-        {/* Tags */}
-        {suggestion.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {visibleTags.map((tag, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {hiddenCount > 0 && (
-              <Badge variant="outline" className="text-xs">
-                +{hiddenCount}
-              </Badge>
-            )}
-          </div>
-        )}
-
         {/* Footer - Metadata */}
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           {/* Duration */}
@@ -110,12 +87,6 @@ export function SuggestionCard({
           {/* Price */}
           <div className="flex items-center gap-1">
             <span>{formatPriceTier(suggestion.price_tier)}</span>
-          </div>
-
-          {/* Best Time */}
-          <div className="flex items-center gap-1">
-            <span>{daypartInfo.emoji}</span>
-            <span>{daypartInfo.label}</span>
           </div>
 
           {/* Confidence */}

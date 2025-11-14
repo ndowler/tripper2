@@ -252,7 +252,8 @@ export async function moveCard(
   cardId: string,
   toDayId: string | null,
   newOrder: number,
-  userId?: string
+  userId?: string,
+  timeUpdate?: { startTime: string; endTime: string; duration: number }
 ): Promise<void> {
   // If no userId, skip Supabase update (localStorage-only mode)
   if (!userId) {
@@ -262,7 +263,7 @@ export async function moveCard(
   const supabase = createClient()
   const now = new Date().toISOString()
 
-  // Verify user owns the card (via trip)
+  // Verify user owns the card (via trip) and get day date if moving to a day
   const { data: card } = await supabase
     .from('cards')
     .select('trip_id, trips!inner(user_id)')
@@ -273,13 +274,36 @@ export async function moveCard(
     throw new Error('Card not found or unauthorized')
   }
 
+  // Get the day date if moving to a day (for time conversion)
+  let dayDate: string | undefined
+  if (toDayId && timeUpdate) {
+    const { data: day } = await supabase
+      .from('days')
+      .select('date')
+      .eq('id', toDayId)
+      .single()
+    
+    if (day) {
+      dayDate = day.date
+    }
+  }
+
+  // Build update object
+  const dbUpdates: any = {
+    day_id: toDayId,
+    order: newOrder,
+    updated_at: now,
+  }
+
+  // Add time updates if provided
+  if (timeUpdate && dayDate) {
+    dbUpdates.start_time = timeStringToTimestamp(timeUpdate.startTime, dayDate)
+    dbUpdates.end_time = timeStringToTimestamp(timeUpdate.endTime, dayDate)
+  }
+
   const { error } = await supabase
     .from('cards')
-    .update({
-      day_id: toDayId,
-      order: newOrder,
-      updated_at: now,
-    })
+    .update(dbUpdates)
     .eq('id', cardId)
 
   if (error) {
@@ -300,7 +324,9 @@ export async function moveCard(
 export async function reorderCards(
   dayId: string | null,
   cardIds: string[],
-  userId?: string
+  userId?: string,
+  movedCardId?: string,
+  timeUpdate?: { startTime: string; endTime: string; duration: number }
 ): Promise<void> {
   // If no userId, skip Supabase update (localStorage-only mode)
   if (!userId) {
@@ -322,11 +348,33 @@ export async function reorderCards(
     throw new Error('Unauthorized')
   }
 
-  // Update order for each card
+  // Get day date if we need to update times
+  let dayDate: string | undefined
+  if (dayId && timeUpdate && movedCardId) {
+    const { data: day } = await supabase
+      .from('days')
+      .select('date')
+      .eq('id', dayId)
+      .single()
+    
+    if (day) {
+      dayDate = day.date
+    }
+  }
+
+  // Update order for each card (and time for the moved card)
   const updates = cardIds.map(async (cardId, index) => {
+    const updateData: any = { order: index }
+    
+    // Add time update if this is the moved card
+    if (cardId === movedCardId && timeUpdate && dayDate) {
+      updateData.start_time = timeStringToTimestamp(timeUpdate.startTime, dayDate)
+      updateData.end_time = timeStringToTimestamp(timeUpdate.endTime, dayDate)
+    }
+    
     return supabase
       .from('cards')
-      .update({ order: index })
+      .update(updateData)
       .eq('id', cardId)
   })
 
