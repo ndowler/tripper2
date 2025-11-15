@@ -61,7 +61,7 @@
 ### Current Focus
 **Phase 4.6: Slingshot AI Trip Generator Complete** ✅
 
-Tripper now features a complete AI-powered trip generation workflow:
+Trailblazer now features a complete AI-powered trip generation workflow:
 - One-click trip creation with comprehensive questionnaire
 - Sequential AI day generation with context building
 - Vibe-personalized suggestions throughout
@@ -72,7 +72,7 @@ Tripper now features a complete AI-powered trip generation workflow:
 
 **Next: Phase 4.5 - Affiliate Link Integration** (Planned)
 
-Goal: Transform Tripper from a planning tool into a booking platform by integrating affiliate links for flights, hotels, experiences, and restaurants.
+Goal: Transform Trailblazer from a planning tool into a booking platform by integrating affiliate links for flights, hotels, experiences, and restaurants.
 
 #### Priority Tasks
 1. Create affiliate configuration system
@@ -154,7 +154,7 @@ Goal: Transform Tripper from a planning tool into a booking platform by integrat
 - Tested all CRUD operations
 
 **Outcomes:**
-- Tripper is now a multi-trip application
+- Trailblazer is now a multi-trip application
 - Clean navigation between trips list and boards
 - No linter errors, no TypeScript errors
 - Production ready
@@ -180,7 +180,7 @@ Goal: Transform Tripper from a planning tool into a booking platform by integrat
 ### Important Conventions
 - All IDs use `nanoid()`
 - Times stored as ISO strings
-- LocalStorage key: `tripper-store`
+- LocalStorage key: `trailblazer-store`
 - Auto-save debounce: 500ms
 - Modal state pattern: `const [editingTrip, setEditingTrip] = useState<Trip | null>(null)`
 
@@ -342,5 +342,5 @@ Goal: Transform Tripper from a planning tool into a booking platform by integrat
 
 ---
 
-**Remember:** Tripper is an offline-first, keyboard-driven, AI-powered trip planner. Keep it fast, keep it simple, keep it delightful.
+**Remember:** Trailblazer is an offline-first, keyboard-driven, AI-powered trip planner. Keep it fast, keep it simple, keep it delightful.
 

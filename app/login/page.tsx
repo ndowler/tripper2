@@ -73,8 +73,8 @@ export default function LoginPage() {
             <div className="relative">
               <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-magenta opacity-40 animate-glow-pulse" />
               <Image
-                src="/tripper.png"
-                alt="Triplio Logo"
+                src="/Trailblazer.png"
+                alt="Trailblazer Logo"
                 width={80}
                 height={80}
                 className="drop-shadow-2xl relative z-10 rounded-xl"

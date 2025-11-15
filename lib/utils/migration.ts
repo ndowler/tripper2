@@ -25,7 +25,7 @@ export async function migrateLocalStorageToSupabase(userId: string): Promise<Mig
 
   try {
     // Get data from localStorage
-    const storedData = localStorage.getItem('tripper-store')
+    const storedData = localStorage.getItem('trailblazer-store')
     if (!storedData) {
       result.success = true // No data to migrate
       return result
@@ -183,7 +183,7 @@ export async function migrateLocalStorageToSupabase(userId: string): Promise<Mig
  */
 export function hasLocalData(): boolean {
   try {
-    const storedData = localStorage.getItem('tripper-store')
+    const storedData = localStorage.getItem('trailblazer-store')
     if (!storedData) return false
 
     const parsedData = JSON.parse(storedData)
@@ -199,8 +199,8 @@ export function hasLocalData(): boolean {
  */
 export function clearLocalStorage() {
   try {
-    localStorage.removeItem('tripper-store')
-    localStorage.removeItem('tripper-store-temporal')
+    localStorage.removeItem('trailblazer-store')
+    localStorage.removeItem('trailblazer-store-temporal')
   } catch (error) {
     console.error('Failed to clear localStorage:', error)
   }
@@ -221,7 +221,7 @@ export function showMigrationPrompt(onMigrate: () => Promise<void>, onSkip: () =
 
 function getLocalTripCount(): number {
   try {
-    const storedData = localStorage.getItem('tripper-store')
+    const storedData = localStorage.getItem('trailblazer-store')
     if (!storedData) return 0
 
     const parsedData = JSON.parse(storedData)

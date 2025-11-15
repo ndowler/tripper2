@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { ArrowLeft, Heart, Zap, Users } from 'lucide-react'
 
 export const metadata = {
-  title: 'About | Tripper',
-  description: 'Learn more about Tripper and our mission',
+  title: 'About | Trailblazer',
+  description: 'Learn more about Trailblazer and our mission',
 }
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
         </Link>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 sm:p-12">
-          <h1 className="text-4xl font-bold mb-4">About Tripper</h1>
+          <h1 className="text-4xl font-bold mb-4">About Trailblazer</h1>
           <p className="text-xl text-muted-foreground mb-8">
             Fast, simple, beautiful trip planning for everyone
           </p>
@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <h2>Our Mission</h2>
             <p>
-              Travel planning should be exciting, not exhausting. We built Tripper to make organizing your dream trips 
+              Travel planning should be exciting, not exhausting. We built Trailblazer to make organizing your dream trips 
               as fast and enjoyable as planning them in your head.
             </p>
 
@@ -44,7 +44,7 @@ export default function AboutPage() {
 
             <h2>Our Solution</h2>
             <p>
-              Tripper is different. We're building a trip planner that feels like using Linear or Notion:
+              Trailblazer is different. We're building a trip planner that feels like using Linear or Notion:
             </p>
             <ul>
               <li><strong>Lightning fast:</strong> Offline-first with zero latency</li>
@@ -81,7 +81,7 @@ export default function AboutPage() {
             <h3>1. Speed Above All</h3>
             <p>
               We believe software should be fast. Not "pretty fast" or "fast enough" — actually fast. Every interaction 
-              in Tripper takes less than 100ms. No loading spinners. No waiting. Just instant.
+              in Trailblazer takes less than 100ms. No loading spinners. No waiting. Just instant.
             </p>
 
             <h3>2. Simplicity Over Features</h3>
@@ -104,7 +104,7 @@ export default function AboutPage() {
 
             <h2>Our Stack</h2>
             <p>
-              We believe in using the right tools for the job. Tripper is built with:
+              We believe in using the right tools for the job. Trailblazer is built with:
             </p>
             <ul>
               <li><strong>Next.js 15:</strong> React framework with App Router</li>
@@ -132,14 +132,14 @@ export default function AboutPage() {
               We'd love to hear from you! Whether you have feedback, questions, or just want to say hi:
             </p>
             <ul>
-              <li>Email: <a href="mailto:hello@tripper.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">hello@tripper.app</a></li>
-              <li>Support: <a href="mailto:support@tripper.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">support@tripper.app</a></li>
+              <li>Email: <a href="mailto:hello@trailblazer.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">hello@trailblazer.app</a></li>
+              <li>Support: <a href="mailto:support@trailblazer.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">support@trailblazer.app</a></li>
             </ul>
 
             <div className="mt-12 p-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
               <p className="text-lg font-medium mb-2">Ready to plan your next trip?</p>
               <p className="text-muted-foreground mb-4">
-                Join thousands of travelers who are planning better trips with Tripper.
+                Join thousands of travelers who are planning better trips with Trailblazer.
               </p>
               <Link
                 href="/signup"

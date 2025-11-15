@@ -30,8 +30,8 @@ export default async function Home() {
           <div className="relative">
             <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-magenta opacity-50 animate-glow-pulse" />
             <Image
-              src="/tripper.png"
-              alt="Triplio Logo"
+              src="/Trailblazer.png"
+              alt="Trailblazer Logo"
               width={180}
               height={180}
               className="drop-shadow-2xl relative z-10 rounded-2xl"

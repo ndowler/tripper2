@@ -22,7 +22,7 @@ export function WalkingDistanceSelect({
   return (
     <BasicSelect
       label="Walking Distance Preference"
-      value={String(preferences.comfort.walking_km_per_day)}
+      value={String(preferences.comfort.walking_steps_per_day)}
       options={walkingDistances}
       onChange={onChange}
     />

@@ -1,6 +1,6 @@
 # Tech Stack
 
-**Project:** Tripper  
+**Project:** Trailblazer  
 **Last Updated:** November 1, 2025
 
 ---
@@ -149,7 +149,7 @@
     temporal(
       persist(
         (set, get) => ({ /* state and actions */ }),
-        { name: 'tripper-store' }
+        { name: 'trailblazer-store' }
       ),
       { limit: 50 }
     )
@@ -192,7 +192,7 @@
 **Hybrid: localStorage + Supabase**
 - **localStorage:**
   - Offline-first, zero latency
-  - Key: `tripper-store`
+  - Key: `trailblazer-store`
   - Debounce: 500ms
   - Instant updates
 - **Supabase:**

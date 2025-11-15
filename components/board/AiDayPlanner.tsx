@@ -262,7 +262,7 @@ export function AiDayPlanner({
                       ? "Moderate pace"
                       : "Active pace"}
                     , ${userVibes.logistics.budget_ppd}/day budget,{" "}
-                    {userVibes.comfort.walking_km_per_day}km walking
+                    {userVibes.comfort.walking_steps_per_day}km walking
                   </p>
                 </div>
               )}

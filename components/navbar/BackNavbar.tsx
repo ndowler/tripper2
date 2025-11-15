@@ -48,7 +48,7 @@ export function BackNavbar({ trip }: BackNavbarProps) {
               isMobile ? "text-base font-semibold" : "text-lg"
             )}
           >
-            {trip?.title || "Tripper"}
+            {trip?.title || "Trailblazer"}
           </div>
           {!isMobile && <ModeToggle />}
           {isMobile && <div className="w-9" />}{/* Spacer for centering */}

@@ -9,7 +9,7 @@ export function WelcomeModal() {
       <div className="text-center">
         <div className="text-6xl mb-4">✈️</div>
         <h2 className="text-2xl font-bold mb-2">
-          Welcome to Triplio!
+          Welcome to Trailblazer!
         </h2>
         <p className="text-muted-foreground">
           Let's show you how easy trip planning can be

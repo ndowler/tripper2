@@ -1,6 +1,6 @@
 # Progress & Roadmap
 
-**Project:** Tripper  
+**Project:** Trailblazer  
 **Started:** October 2025  
 **Current Phase:** Phase 4.6 (Complete - Slingshot)  
 **Overall Progress:** ~75% to v1.0
@@ -277,7 +277,7 @@ Build AI-powered discovery page that generates personalized suggestions.
 **Completion:** October 6, 2025
 
 ### Goals
-Transform Tripper from single-trip demo to multi-trip application.
+Transform Trailblazer from single-trip demo to multi-trip application.
 
 ### Delivered Features
 - ✅ Trips overview page at `/trips`
@@ -345,7 +345,7 @@ getAllTrips: () => Trip[]                 // Sorted by updatedAt
 **Completion:** November 1, 2025
 
 ### Goals
-Transform Tripper from offline-first to hybrid cloud sync with user authentication and comprehensive profile management.
+Transform Trailblazer from offline-first to hybrid cloud sync with user authentication and comprehensive profile management.
 
 ### Delivered Features
 
@@ -464,7 +464,7 @@ After Phase 4.4:
 **Completion:** November 5, 2025
 
 ### Goals
-Optimize Tripper for mobile devices with responsive layouts and touch-friendly interactions.
+Optimize Trailblazer for mobile devices with responsive layouts and touch-friendly interactions.
 
 ### Delivered Features
 - ✅ Mobile detection system (`useIsMobile` hook)
@@ -610,7 +610,7 @@ Final: Generate vibe explanation → Navigate to populated trip
 **Priority:** High (revenue generation)
 
 ### Goals
-Transform Tripper into a booking platform with affiliate partnerships.
+Transform Trailblazer into a booking platform with affiliate partnerships.
 
 ### Planned Features
 1. **Core Foundation (3-4 hours)**

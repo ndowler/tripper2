@@ -1,6 +1,6 @@
 # System Patterns
 
-**Project:** Tripper  
+**Project:** Trailblazer  
 **Framework:** Next.js 15 (App Router)  
 **Language:** TypeScript 5  
 **Last Updated:** November 1, 2025
@@ -324,7 +324,7 @@ export const useTripStore = create<TripStore>()(
         },
       }),
       {
-        name: 'tripper-store',
+        name: 'trailblazer-store',
         partialize: (state) => ({ trips: state.trips, currentTripId: state.currentTripId }),
       }
     ),
@@ -629,7 +629,7 @@ import type { Trip } from '@/lib/types'
 
 export async function migrateLocalStorageToSupabase(userId: string) {
   // 1. Load from localStorage
-  const storedData = localStorage.getItem('tripper-store')
+  const storedData = localStorage.getItem('trailblazer-store')
   if (!storedData) return
   
   const { trips } = JSON.parse(storedData)
@@ -641,7 +641,7 @@ export async function migrateLocalStorageToSupabase(userId: string) {
   }
   
   // 3. Clear localStorage after successful migration
-  localStorage.removeItem('tripper-store')
+  localStorage.removeItem('trailblazer-store')
 }
 
 async function migrateTrip(supabase: any, trip: Trip, userId: string) {

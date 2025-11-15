@@ -57,7 +57,7 @@ export function CookieConsent() {
           <div className="space-y-2">
             <h3 className="font-semibold text-lg">🍪 Analytics & Cookies</h3>
             <p className="text-sm text-muted-foreground">
-              We use PostHog analytics to understand how you use Tripper and improve your experience. 
+              We use PostHog analytics to understand how you use Trailblazer and improve your experience. 
               We don't sell your data or track you across other websites.
             </p>
             <p className="text-xs text-muted-foreground">

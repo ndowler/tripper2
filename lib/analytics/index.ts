@@ -1,5 +1,5 @@
 /**
- * Analytics Wrapper for Tripper
+ * Analytics Wrapper for Trailblazer
  * 
  * Centralizes all analytics tracking to PostHog.
  * Supports privacy-first tracking with user consent.

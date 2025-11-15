@@ -12,7 +12,7 @@ export interface ProfilePreferences {
 
 export interface ComfortPreferences {
   pace_score: number; // 0-100: 0=slow, 100=intense
-  walking_km_per_day: number; // e.g., 5 for 5km
+  walking_steps_per_day: number; // e.g., 5 for 5km
   daypart_bias: DaypartBias;
   rest_ratio: number; // e.g., 0.33 = 1 rest hour per 3 activity hours
 }
