@@ -121,30 +121,36 @@ export default function SignupPage() {
   const passwordStrength = getPasswordStrength()
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-background/95 retro-grid-bg">
       {/* Interactive Gradient Background */}
       <InteractiveGradient />
-      
+
+      {/* Retro scan lines */}
+      <div className="scan-lines absolute inset-0 pointer-events-none opacity-20" />
+
       <div className="w-full max-w-md z-10">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in">
           <div className="flex justify-center mb-4">
-            <Image 
-              src="/Trailblazer.png" 
-              alt="Trailblazer Logo" 
-              width={80} 
-              height={80}
-              className="drop-shadow-2xl"
-            />
+            <div className="relative">
+              <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-magenta opacity-40 animate-glow-pulse" />
+              <Image
+                src="/Trailblazer.png"
+                alt="Trailblazer Logo"
+                width={80}
+                height={80}
+                className="drop-shadow-2xl relative z-10 rounded-xl"
+              />
+            </div>
           </div>
-          <h1 className="text-5xl sm:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-            Trailblazer
+          <h1 className="text-5xl sm:text-6xl font-bold mb-3 drop-shadow-lg retro-text-gradient">
+            Triplio
           </h1>
-          <p className="text-xl text-white/90">Start planning your dream trip</p>
+          <p className="text-xl text-foreground/90">Start planning your dream trip</p>
         </div>
 
         {/* Glass-morphism Card */}
-        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-glass backdrop-blur-strong rounded-2xl shadow-glass border border-white/20 p-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
           <form onSubmit={handleSignup} className="space-y-5">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium mb-2">
@@ -244,7 +250,9 @@ export default function SignupPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:scale-105 transition-transform font-semibold"
+              variant="neon"
+              size="lg"
+              className="w-full text-base font-bold"
               disabled={isLoading || !acceptTerms}
             >
               {isLoading ? 'Creating account...' : 'Create Account'}

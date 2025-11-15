@@ -20,8 +20,8 @@ export function TripGrid({ trips, onEdit, onDuplicate, onDelete, onCreateNew, vi
   return (
     <div className={cn(
       "gap-6",
-      viewMode === 'grid' 
-        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" 
+      viewMode === 'grid'
+        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 5xl:grid-cols-8"
         : "flex flex-col max-w-3xl mx-auto"
     )}>
       {/* Existing trips */}
