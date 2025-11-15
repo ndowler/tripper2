@@ -10,14 +10,14 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    default: "Triplio - Plan Your Dream Trip",
-    template: "%s | Triplio",
+    default: "Trailblazer - Plan Your Dream Trip",
+    template: "%s | Trailblazer",
   },
   description: "Plan your dream trip in minutes, not hours. Lightning-fast, intuitive trip planner with AI-powered suggestions and beautiful design.",
   keywords: ["trip planner", "travel planner", "itinerary", "vacation planner", "travel organizer", "trip planning app", "AI travel suggestions"],
-  authors: [{ name: "Triplio Team" }],
-  creator: "Triplio",
-  publisher: "Triplio",
+  authors: [{ name: "Trailblazer Team" }],
+  creator: "Trailblazer",
+  publisher: "Trailblazer",
   formatDetection: {
     email: false,
     address: false,
@@ -28,27 +28,27 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Triplio - Plan Your Dream Trip",
+    title: "Trailblazer - Plan Your Dream Trip",
     description: "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
     url: "/",
-    siteName: "Triplio",
+    siteName: "Trailblazer",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: "/tripper.png",
+        url: "/Trailblazer.png",
         width: 512,
         height: 512,
-        alt: "Triplio - Plan Your Dream Trip",
+        alt: "Trailblazer - Plan Your Dream Trip",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Triplio - Plan Your Dream Trip",
+    title: "Trailblazer - Plan Your Dream Trip",
     description: "Plan your dream trip in minutes, not hours. Lightning-fast trip planner with AI-powered suggestions.",
-    images: ["/tripper.png"],
-    creator: "@triplioapp",
+    images: ["/Trailblazer.png"],
+    creator: "@trailblazerapp",
   },
   robots: {
     index: true,
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/tripper.png",
-    shortcut: "/tripper.png",
-    apple: "/tripper.png",
+    icon: "/Trailblazer.png",
+    shortcut: "/Trailblazer.png",
+    apple: "/Trailblazer.png",
   },
   manifest: "/site.webmanifest",
 }

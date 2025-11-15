@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Terms of Service | Tripper',
-  description: 'Terms and conditions for using Tripper',
+  title: 'Terms of Service | Trailblazer',
+  description: 'Terms and conditions for using Trailblazer',
 }
 
 export default function TermsPage() {
@@ -27,13 +27,13 @@ export default function TermsPage() {
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <h2>1. Acceptance of Terms</h2>
             <p>
-              By accessing or using Tripper ("the Service"), you agree to be bound by these Terms of Service ("Terms"). 
+              By accessing or using Trailblazer ("the Service"), you agree to be bound by these Terms of Service ("Terms"). 
               If you do not agree to these Terms, please do not use the Service.
             </p>
 
             <h2>2. Description of Service</h2>
             <p>
-              Tripper is a trip planning application that allows users to create, organize, and manage travel itineraries. 
+              Trailblazer is a trip planning application that allows users to create, organize, and manage travel itineraries. 
               The Service includes features such as:
             </p>
             <ul>
@@ -65,7 +65,7 @@ export default function TermsPage() {
             <h2>4. User Content</h2>
             <h3>4.1 Your Content</h3>
             <p>
-              You retain all rights to the content you create on Tripper, including trip itineraries, notes, and personal information. 
+              You retain all rights to the content you create on Trailblazer, including trip itineraries, notes, and personal information. 
               By using the Service, you grant us a limited license to store and display your content solely for the purpose of providing the Service.
             </p>
 
@@ -82,7 +82,7 @@ export default function TermsPage() {
 
             <h2>5. AI Features</h2>
             <p>
-              Tripper uses AI-powered features to provide travel suggestions and recommendations. These suggestions are:
+              Trailblazer uses AI-powered features to provide travel suggestions and recommendations. These suggestions are:
             </p>
             <ul>
               <li>Provided "as is" without warranties</li>
@@ -109,7 +109,7 @@ export default function TermsPage() {
 
             <h2>7. Intellectual Property</h2>
             <p>
-              The Service, including its original content, features, and functionality, is owned by Tripper and is 
+              The Service, including its original content, features, and functionality, is owned by Trailblazer and is 
               protected by international copyright, trademark, and other intellectual property laws.
             </p>
 
@@ -166,7 +166,7 @@ export default function TermsPage() {
             <h2>13. Governing Law</h2>
             <p>
               These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which 
-              Tripper operates, without regard to its conflict of law provisions.
+              Trailblazer operates, without regard to its conflict of law provisions.
             </p>
 
             <h2>14. Contact Information</h2>
@@ -174,8 +174,8 @@ export default function TermsPage() {
               If you have any questions about these Terms, please contact us at:
             </p>
             <p>
-              Email: <a href="mailto:support@tripper.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                support@tripper.app
+              Email: <a href="mailto:support@trailblazer.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                support@trailblazer.app
               </a>
             </p>
 

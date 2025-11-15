@@ -88,7 +88,7 @@ export function VibesCard({ userId }: VibesCardProps) {
             </div>
             <div>
               <span className="text-muted-foreground">Walking:</span>
-              <span className="ml-2 font-medium">{userVibes.comfort.walking_km_per_day}km/day</span>
+              <span className="ml-2 font-medium">{userVibes.comfort.walking_steps_per_day}km/day</span>
             </div>
             <div>
               <span className="text-muted-foreground">Budget:</span>

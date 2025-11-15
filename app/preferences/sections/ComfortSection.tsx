@@ -38,7 +38,7 @@ export function ComfortSection({
         preferences={preferences}
         onChange={(value) =>
           updatePreference("comfort", {
-            walking_km_per_day: Number(value),
+            walking_steps_per_day: Number(value),
           })
         }
       />

@@ -83,7 +83,7 @@ export function PreferencesSummary({ vibes }: PreferencesSummaryProps) {
           <div className="space-y-1">
             <p className="text-sm">{paceLabel}</p>
             <p className="text-sm">{daypartLabels[vibes.comfort.daypart_bias]}</p>
-            <p className="text-sm">🚶 {vibes.comfort.walking_km_per_day}km walking/day</p>
+            <p className="text-sm">🚶 {vibes.comfort.walking_steps_per_day}km walking/day</p>
           </div>
         </div>
 

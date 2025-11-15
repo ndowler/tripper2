@@ -1,6 +1,6 @@
 # Product Context
 
-**Product Name:** Tripper  
+**Product Name:** Trailblazer  
 **Tagline:** "Lightning-fast, offline-first trip planning. Think Trello meets Linear for travel."  
 **Version:** 0.1.6 (Phase 4.6 Complete - Slingshot)  
 **License:** MIT
@@ -18,7 +18,7 @@ Existing trip planners are:
 - **Expensive** - $50+ per trip or subscription required
 
 ### The Solution
-Tripper is a **keyboard-first, offline-first trip planner** that feels like using Linear or Notion:
+Trailblazer is a **keyboard-first, offline-first trip planner** that feels like using Linear or Notion:
 - ⚡ **Instant** - No loading spinners, 60fps animations
 - 🎯 **Focused** - Only what you need, nothing more
 - 🎨 **Flexible** - Build your itinerary your way
@@ -467,7 +467,7 @@ Navigate to /trips
 - **Needs:** Speed, keyboard shortcuts, offline mode
 - **Quote:** "I want to plan my trip as fast as I write code"
 - **Usage Pattern:**
-  - Opens Tripper on flight booking
+  - Opens Trailblazer on flight booking
   - Uses Cmd+K exclusively
   - Never touches mouse
   - Plans entire 5-day trip in 15 minutes
@@ -576,7 +576,7 @@ Navigate to /trips
 
 ## 🎯 Competitive Positioning
 
-| Feature | Tripper | TripIt | Wanderlog | Sygic | Google Trips |
+| Feature | Trailblazer | TripIt | Wanderlog | Sygic | Google Trips |
 |---------|---------|--------|-----------|-------|--------------|
 | **Offline-first** | ✅ | ❌ | ❌ | Partial | ❌ |
 | **Keyboard shortcuts** | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -626,5 +626,5 @@ Navigate to /trips
 
 ---
 
-**Remember:** Tripper is not about having every feature. It's about having the *right* features, executed perfectly, with uncompromising speed and simplicity.
+**Remember:** Trailblazer is not about having every feature. It's about having the *right* features, executed perfectly, with uncompromising speed and simplicity.
 

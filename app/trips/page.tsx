@@ -77,7 +77,7 @@ export default function TripsPage() {
         )}>
           <div className="flex justify-center">
             <div className="flex items-center gap-3">
-              <img src="/tripper.png" alt="Tripper" className="h-8 w-8" />
+              <img src="/Trailblazer.png" alt="Trailblazer" className="h-8 w-8" />
               <h1 className={cn(
                 "font-bold select-none",
                 isMobile ? "text-xl" : "text-2xl"

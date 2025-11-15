@@ -41,7 +41,7 @@ export function CongratsModal() {
           You're All Set! 🎉
         </h2>
         <p className="text-muted-foreground">
-          You've learned the essentials of Triplio
+          You've learned the essentials of Trailblazer
         </p>
       </div>
 

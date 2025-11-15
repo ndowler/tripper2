@@ -25,8 +25,8 @@ export default async function Home() {
         {/* Logo */}
         <div className="flex justify-center">
           <Image 
-            src="/tripper.png" 
-            alt="Triplio Logo" 
+            src="/Trailblazer.png" 
+            alt="Trailblazer Logo" 
             width={180} 
             height={180}
             className="drop-shadow-2xl"
@@ -36,7 +36,7 @@ export default async function Home() {
         
         {/* Brand Name */}
         <h1 className="text-7xl sm:text-8xl lg:text-9xl font-bold text-white tracking-tight drop-shadow-lg">
-          Triplio
+          Trailblazer
         </h1>
         
         {/* Tagline */}

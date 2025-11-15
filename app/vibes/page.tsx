@@ -224,12 +224,12 @@ export default function VibesQuizPage() {
                     label: "18k+ steps - all-day adventures",
                   },
                 ]}
-                value={answers.comfort?.walking_km_per_day ?? null}
+                value={answers.comfort?.walking_steps_per_day ?? null}
                 onChange={(value) =>
                   updateAnswer({
                     comfort: {
                       ...answers.comfort!,
-                      walking_km_per_day: value as number,
+                      walking_steps_per_day: value as number,
                     },
                   })
                 }

@@ -308,5 +308,5 @@ The Slingshot feature allows users to generate complete, personalized multi-day 
 - Funny loading messages keep users engaged during 30-60 second wait
 - Context building is critical for quality - prevents monotonous itineraries
 - Mobile optimization was considered from the start
-- All components follow existing Tripper patterns (shadcn/ui, Tailwind, TypeScript)
+- All components follow existing Trailblazer patterns (shadcn/ui, Tailwind, TypeScript)
 

@@ -115,8 +115,8 @@ export function Navbar({
             <div id="back-button" className="flex justify-start flex-shrink-0 w-[40px]">
               <Link href="/trips" className="flex items-center">
                 <Image
-                  src="/tripper.png"
-                  alt="Tripper"
+                  src="/Trailblazer.png"
+                  alt="Trailblazer"
                   width={isMobile ? 28 : 32}
                   height={isMobile ? 28 : 32}
                   className="rounded-md hover:opacity-80 transition-opacity"

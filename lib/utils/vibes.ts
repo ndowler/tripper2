@@ -14,7 +14,7 @@ export function getDefaultVibes(): UserVibes {
     },
     comfort: {
       pace_score: 50,
-      walking_km_per_day: 8,
+      walking_steps_per_day: 8,
       daypart_bias: "balanced",
       rest_ratio: 0.25,
     },
@@ -133,7 +133,7 @@ export function vibesToPrompt(vibes: UserVibes, tripId?: string): string {
 
   let prompt = `User Travel Preferences:
 - Pace: ${paceDesc} (${comfort.pace_score}/100)
-- Walking: ${comfort.walking_km_per_day}km per day
+- Walking: ${comfort.walking_steps_per_day}km per day
 - Timing: ${daypartDesc}
 - Budget: $${logistics.budget_ppd} per person per day (excl. hotel)
 - Food style: ${foodDesc}
@@ -263,7 +263,7 @@ export function getVibesSummary(vibes: UserVibes): string {
   // Show actual values instead of "Custom"
   const pace = getPaceLabel(vibes.comfort.pace_score);
   const budget = `$${vibes.logistics.budget_ppd}/day`;
-  const walking = `${vibes.comfort.walking_km_per_day}km`;
+  const walking = `${vibes.comfort.walking_steps_per_day}km`;
   return `${pace} • ${budget} • ${walking}`;
 }
 

@@ -1,6 +1,6 @@
 {
-  "name": "Tripper - Trip Planner",
-  "short_name": "Tripper",
+  "name": "Trailblazer - Trip Planner",
+  "short_name": "Trailblazer",
   "description": "Plan your dream trips in minutes with our lightning-fast, offline-first trip planner",
   "start_url": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/tripper.png",
+      "src": "/Trailblazer.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

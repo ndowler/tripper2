@@ -9,7 +9,7 @@ export const profilePreferencesSchema = z.object({
 
 export const comfortPreferencesSchema = z.object({
   pace_score: z.number().min(0).max(100).default(50),
-  walking_km_per_day: z.number().min(0).max(30).default(8),
+  walking_steps_per_day: z.number().min(0).max(30).default(8),
   daypart_bias: z.enum(['early', 'balanced', 'late']).default('balanced'),
   rest_ratio: z.number().min(0).max(1).default(0.25),
 });

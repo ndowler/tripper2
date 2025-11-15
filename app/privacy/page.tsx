@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Privacy Policy | Tripper',
-  description: 'How Tripper collects, uses, and protects your data',
+  title: 'Privacy Policy | Trailblazer',
+  description: 'How Trailblazer collects, uses, and protects your data',
 }
 
 export default function PrivacyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <h2>1. Introduction</h2>
             <p>
-              Tripper ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we 
+              Trailblazer ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we 
               collect, use, disclose, and safeguard your information when you use our trip planning service.
             </p>
 
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
 
             <h3>4.4 Business Transfers</h3>
             <p>
-              If Tripper is involved in a merger, acquisition, or sale of assets, your information may be transferred. 
+              If Trailblazer is involved in a merger, acquisition, or sale of assets, your information may be transferred. 
               We will provide notice before your data is transferred and becomes subject to a different privacy policy.
             </p>
 
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
 
             <h2>9. Children's Privacy</h2>
             <p>
-              Tripper is not intended for children under 13 (or 16 in the EU). We do not knowingly collect information 
+              Trailblazer is not intended for children under 13 (or 16 in the EU). We do not knowingly collect information 
               from children. If we learn that we have collected personal information from a child, we will delete it immediately.
             </p>
 
@@ -198,14 +198,14 @@ export default function PrivacyPage() {
               If you have questions or concerns about this Privacy Policy or our data practices, please contact us:
             </p>
             <p>
-              Email: <a href="mailto:privacy@tripper.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                privacy@tripper.app
+              Email: <a href="mailto:privacy@trailblazer.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                privacy@trailblazer.app
               </a>
             </p>
             <p>
               For GDPR-related inquiries, contact our Data Protection Officer at:{' '}
-              <a href="mailto:dpo@tripper.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                dpo@tripper.app
+              <a href="mailto:dpo@trailblazer.app" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                dpo@trailblazer.app
               </a>
             </p>
 

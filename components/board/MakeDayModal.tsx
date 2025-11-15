@@ -197,7 +197,7 @@ export function MakeDayModal({ day, tripId, userId, open, onClose }: MakeDayModa
               <p className="text-sm">
                 {userVibes.comfort.pace_score <= 40 ? 'Relaxed pace' :
                  userVibes.comfort.pace_score <= 60 ? 'Moderate pace' : 'Active pace'}
-                , ${userVibes.logistics.budget_ppd}/day budget, {userVibes.comfort.walking_km_per_day}km walking
+                , ${userVibes.logistics.budget_ppd}/day budget, {userVibes.comfort.walking_steps_per_day}km walking
               </p>
             </div>
           )}

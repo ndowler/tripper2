@@ -1,4 +1,4 @@
-# Tripper Memory Bank
+# Trailblazer Memory Bank
 
 **Purpose:** Long-term project memory and context for AI assistants and developers  
 **Last Updated:** November 11, 2025  
@@ -8,7 +8,7 @@
 
 ## 📖 What is this?
 
-The **Memory Bank** is a living documentation system that captures the complete context of the Tripper project. It serves as:
+The **Memory Bank** is a living documentation system that captures the complete context of the Trailblazer project. It serves as:
 
 1. **AI Assistant Context** - Helps AI understand project state without re-discovering
 2. **Onboarding Resource** - New developers can quickly understand the codebase
@@ -347,7 +347,7 @@ Reach out to tech lead for technical clarifications or to update product vision.
 
 ## 🎉 Conclusion
 
-The Memory Bank is the **brain of the Tripper project**. By maintaining comprehensive, up-to-date documentation, we:
+The Memory Bank is the **brain of the Trailblazer project**. By maintaining comprehensive, up-to-date documentation, we:
 
 1. **Reduce onboarding time** from days to hours
 2. **Prevent knowledge loss** when team members change

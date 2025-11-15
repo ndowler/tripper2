@@ -1,4 +1,4 @@
-# ✈️ Tripper
+# ✈️ Trailblazer
 
 > Lightning-fast, offline-first trip planning. Think "Trello meets Linear for travel."
 
@@ -27,7 +27,7 @@
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd tripper
+cd trailblazer
 
 # Install dependencies
 npm install
@@ -72,7 +72,7 @@ Open [http://localhost:3000](http://localhost:3000)
 ## 📁 Project Structure
 
 ```
-tripper/
+trailblazer/
 ├── app/                      # Next.js App Router
 │   ├── (auth)/              # Auth pages (login, signup)
 │   ├── api/                 # API routes
@@ -172,7 +172,7 @@ MIT License - See [LICENSE](./LICENSE) for details
 ## 🆘 Support
 
 - **Issues**: Open a GitHub issue
-- **Email**: support@tripper.app
+- **Email**: support@trailblazer.app
 - **Documentation**: See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 
 ## 🗺️ Roadmap
@@ -196,4 +196,4 @@ MIT License - See [LICENSE](./LICENSE) for details
 
 ---
 
-Made with ❤️ by the Tripper team
+Made with ❤️ by the Trailblazer team

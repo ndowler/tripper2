@@ -68,15 +68,15 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Image 
-              src="/tripper.png" 
-              alt="Triplio Logo" 
+              src="/Trailblazer.png" 
+              alt="Trailblazer Logo" 
               width={80} 
               height={80}
               className="drop-shadow-2xl"
             />
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-            Triplio
+            Trailblazer
           </h1>
           <p className="text-xl text-white/90">Welcome back!</p>
         </div>
