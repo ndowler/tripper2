@@ -82,7 +82,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold mb-3 drop-shadow-lg retro-text-gradient">
-            Triplio
+            Trailblazer
           </h1>
           <p className="text-xl text-foreground/90">Welcome back!</p>
         </div>

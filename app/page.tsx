@@ -42,7 +42,7 @@ export default async function Home() {
 
         {/* Brand Name with retro text gradient */}
         <h1 className="text-7xl sm:text-8xl lg:text-9xl font-bold tracking-tight drop-shadow-lg retro-text-gradient animate-slide-up">
-          Triplio
+          Trailblazer
         </h1>
 
         {/* Tagline */}
