@@ -33,6 +33,7 @@ interface TripCardProps {
   userId?: string; // Optional for demo/offline mode
   isDragging?: boolean;
   isMobile?: boolean; // Mobile detection flag
+  dragHandleListeners?: any; // Drag handle listeners from useSortable
 }
 
 export function TripCard({
@@ -42,6 +43,7 @@ export function TripCard({
   userId,
   isDragging = false,
   isMobile = false,
+  dragHandleListeners,
 }: TripCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -97,132 +99,123 @@ export function TripCard({
 
   return (
     <>
-      <UICard
-        className={`
-          group relative border-l-4 ${categoryBorderColor}
-          hover:shadow-md transition-all cursor-pointer
-          ${isDragging ? "shadow-lg" : "shadow-none"}
-        `}
+      <div
+        className={cn(
+          "group relative rounded-2xl cursor-pointer transition-all duration-300",
+          "bg-gradient-to-br from-gray-900/95 via-gray-900/90 to-gray-800/95",
+          "border border-amber-400/20 shadow-lg shadow-black/50",
+          "hover:shadow-xl hover:shadow-black/60 hover:-translate-y-1",
+          "hover:border-amber-400/40",
+          isDragging && "shadow-2xl shadow-black/70 scale-105"
+        )}
         onClick={handleCardClick}
       >
-        <div className={cn(
-          "space-y-2",
-          isMobile ? "p-2.5" : "p-3" // Slightly reduced padding on mobile
-        )}>
-          {/* Header Row 1: Drag Handle • Title • Status • Actions */}
-          <div className="flex items-start gap-2">
-            <button
-              className={cn(
-                "cursor-grab active:cursor-grabbing touch-none p-0.5 transition-opacity",
-                isMobile 
-                  ? "opacity-100" // Always visible on mobile
-                  : "opacity-0 group-hover:opacity-100" // Hover on desktop
-              )}
-              aria-label="Drag to reorder"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <GripVertical className={cn(
-                "text-muted-foreground",
-                isMobile ? "w-5 h-5" : "w-4 h-4" // Larger on mobile
-              )} />
-            </button>
-
-            <span className="text-base leading-none mt-0.5">
-              {cardType.icon}
-            </span>
-
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-base leading-tight">
-                {card.title}
-              </h3>
+        <div className={cn("p-4", isMobile && "p-3")}>
+          {/* Top Row: Icon Badge & Price */}
+          <div className="flex items-start justify-between mb-3">
+            {/* Glowing Icon Badge */}
+            <div className={cn(
+              "relative w-10 h-10 rounded-full flex items-center justify-center",
+              "bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-violet-500/30",
+              "border border-pink-400/30",
+              "shadow-lg shadow-pink-500/20",
+              "group-hover:shadow-pink-500/40 transition-shadow duration-300"
+            )}>
+              <span className="text-xl">{cardType.icon}</span>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pink-400/10 to-purple-400/10 blur-sm" />
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Status Dot */}
-              {card.status && (
-                <StatusDot status={card.status} size="sm" showLabel={false} />
-              )}
-
-              {/* Actions */}
-              <div className={cn(
-                "transition-opacity flex",
-                isMobile 
-                  ? "opacity-100 gap-1" // Always visible on mobile with tighter spacing
-                  : "opacity-0 group-hover:opacity-100 gap-0.5" // Hover on desktop
-              )}>
-                {hasExpandableContent && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      isMobile ? "h-9 w-9" : "h-6 w-6" // 36px on mobile (44px with padding)
-                    )}
-                    onClick={toggleExpand}
-                    title={isExpanded ? "Collapse" : "Expand"}
-                  >
-                    {isExpanded ? (
-                      <ChevronUp className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
-                    ) : (
-                      <ChevronDown className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
-                    )}
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    isMobile ? "h-9 w-9" : "h-6 w-6"
-                  )}
-                  onClick={handleDelete}
-                  title="Delete"
-                >
-                  <Trash2 className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Header Row 2: Time & Duration • Price */}
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-3">
-              {/* Time */}
-              {card.startTime && viewPrefs.showTimes && (
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  <span>
-                    {formatTimeDisplay(card.startTime, viewPrefs.timeFormat)}
-                    {card.endTime &&
-                      ` - ${formatTimeDisplay(
-                        card.endTime,
-                        viewPrefs.timeFormat
-                      )}`}
-                    {card.duration &&
-                      !card.endTime &&
-                      ` (${formatDuration(card.duration)})`}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Price (right-aligned) */}
+            {/* Price Pill */}
             {card.cost && (
-              <div className="font-medium">
+              <div className={cn(
+                "px-3 py-1 rounded-full text-xs font-semibold",
+                "bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-amber-500/20",
+                "border border-amber-400/30 text-amber-100",
+                "shadow-md shadow-amber-500/10",
+                "group-hover:shadow-amber-500/30 transition-shadow duration-300"
+              )}>
                 {formatCurrency(card.cost.amount, card.cost.currency)}
               </div>
             )}
           </div>
 
-          {/* Expanded details area */}
-          {isExpanded && hasExpandableContent && (
-            <div className="pt-2 border-t space-y-2">
-              {/* All tags when expanded */}
+          {/* Title Section with Drag Handle */}
+          <div className="mb-3 relative">
+            {/* Drag Handle - Absolute positioned on left */}
+            <button
+              {...dragHandleListeners}
+              className={cn(
+                "cursor-grab active:cursor-grabbing touch-none p-1.5 rounded-lg",
+                "bg-gray-800/60 hover:bg-gray-700/80 transition-all duration-200",
+                "absolute left-0 top-0",
+                isMobile
+                  ? "opacity-100"
+                  : "opacity-0 group-hover:opacity-100"
+              )}
+              aria-label="Drag to reorder"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GripVertical className="w-4 h-4 text-gray-400" />
+            </button>
+
+            {/* Centered Title and Type */}
+            <div className="text-center px-8">
+              <h3 className="font-bold text-base text-white leading-tight mb-1.5 break-words">
+                {card.title}
+              </h3>
+              <div className="text-[10px] uppercase tracking-widest text-gray-400">
+                {cardType.label}
+              </div>
+            </div>
+          </div>
+
+          {/* Status Dot - Top Right Corner */}
+          {card.status && (
+            <div className="absolute top-4 right-4">
+              <StatusDot status={card.status} size="sm" showLabel={false} />
+            </div>
+          )}
+
+          {/* Bottom Row: Time Pill & Details Link */}
+          <div className="flex items-center justify-between">
+            {/* Time Pill */}
+            {card.startTime && viewPrefs.showTimes ? (
+              <div className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium",
+                "border border-gray-600/50 text-gray-300",
+                "flex items-center gap-1.5",
+                "hover:border-gray-500/70 transition-colors duration-200"
+              )}>
+                <Clock className="w-3 h-3" />
+                <span>{formatTimeDisplay(card.startTime, viewPrefs.timeFormat)}</span>
+              </div>
+            ) : (
+              <div /> // Spacer
+            )}
+
+            {/* Details Link */}
+            <button
+              className="text-xs text-white/70 hover:text-white/90 transition-colors duration-200 flex items-center gap-1"
+              onClick={handleCardClick}
+            >
+              <span>Details</span>
+              <ChevronDown className="w-3 h-3 rotate-[-90deg]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Expanded Details */}
+        {isExpanded && hasExpandableContent && (
+          <div className="px-4 pb-4 pt-0 border-t border-gray-700/50 mt-2">
+            <div className="pt-3 space-y-2">
+              {/* Tags */}
               {card.tags && card.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {card.tags.map((tag) => (
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="text-xs font-normal"
+                      className="text-xs font-normal bg-gray-800/50 border-gray-700/50 text-gray-300"
                     >
                       {tag}
                     </Badge>
@@ -232,7 +225,7 @@ export function TripCard({
 
               {/* Notes */}
               {card.notes && (
-                <p className="text-sm leading-relaxed">{card.notes}</p>
+                <p className="text-sm leading-relaxed text-gray-300">{card.notes}</p>
               )}
 
               {/* Links */}
@@ -244,7 +237,7 @@ export function TripCard({
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 hover:underline"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="w-3 h-3" />
@@ -254,9 +247,9 @@ export function TripCard({
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </UICard>
+          </div>
+        )}
+      </div>
 
       <CardDetailModal
         card={card}

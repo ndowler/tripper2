@@ -42,22 +42,22 @@ export function getStatusConfig(status: TripStatus) {
   const configs = {
     upcoming: {
       label: 'Upcoming',
-      className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+      className: 'bg-sky-400/15 text-sky-700 dark:text-sky-300 border-sky-400/30',
       emoji: '📅',
     },
     'in-progress': {
       label: 'In Progress',
-      className: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+      className: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300 border-emerald-400/30',
       emoji: '✈️',
     },
     completed: {
       label: 'Completed',
-      className: 'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20',
+      className: 'bg-slate-400/15 text-slate-700 dark:text-slate-300 border-slate-400/30',
       emoji: '✓',
     },
     draft: {
       label: 'Draft',
-      className: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+      className: 'bg-amber-400/15 text-amber-700 dark:text-amber-300 border-amber-400/30',
       emoji: '📝',
     },
   }
@@ -75,18 +75,18 @@ export function getTripGradient(tripTitle: string): string {
     hash = tripTitle.charCodeAt(i) + ((hash << 5) - hash)
   }
 
-  // Generate gradient colors from hash
+  // Generate gradient colors from hash - softer, more elegant gradients
   const gradients = [
-    'from-blue-500 via-purple-500 to-pink-500',
-    'from-green-500 via-teal-500 to-cyan-500',
-    'from-orange-500 via-red-500 to-pink-500',
-    'from-purple-500 via-indigo-500 to-blue-500',
-    'from-yellow-500 via-orange-500 to-red-500',
-    'from-teal-500 via-green-500 to-emerald-500',
-    'from-pink-500 via-rose-500 to-red-500',
-    'from-indigo-500 via-blue-500 to-cyan-500',
-    'from-rose-500 via-pink-500 to-purple-500',
-    'from-emerald-500 via-teal-500 to-blue-500',
+    'from-blue-400/80 via-indigo-400/70 to-purple-400/80',
+    'from-teal-400/80 via-cyan-400/70 to-sky-400/80',
+    'from-violet-400/80 via-purple-400/70 to-fuchsia-400/80',
+    'from-emerald-400/80 via-teal-400/70 to-cyan-400/80',
+    'from-amber-400/80 via-orange-400/70 to-rose-400/80',
+    'from-sky-400/80 via-blue-400/70 to-indigo-400/80',
+    'from-pink-400/80 via-rose-400/70 to-red-400/80',
+    'from-lime-400/80 via-emerald-400/70 to-teal-400/80',
+    'from-fuchsia-400/80 via-pink-400/70 to-rose-400/80',
+    'from-cyan-400/80 via-teal-400/70 to-emerald-400/80',
   ]
 
   const index = Math.abs(hash) % gradients.length

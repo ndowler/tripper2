@@ -41,15 +41,15 @@ export function SortableCard({ card, tripId, dayId, userId, isMobile = false }: 
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className="cursor-grab active:cursor-grabbing touch-none"
     >
-      <TripCard 
-        card={card} 
-        tripId={tripId} 
-        dayId={dayId} 
+      <TripCard
+        card={card}
+        tripId={tripId}
+        dayId={dayId}
         userId={userId}
         isMobile={isMobile}
+        dragHandleListeners={listeners}
+        isDragging={isDragging}
       />
     </div>
   );

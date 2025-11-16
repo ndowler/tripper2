@@ -160,13 +160,25 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
     { value: 'other', label: 'Other' },
   ]
 
+  const travelerOptions = [
+    { value: 1, label: '1 person', emoji: '🧳' },
+    { value: 2, label: '2 people', emoji: '👫' },
+    { value: 3, label: '3 people', emoji: '👨‍👩‍👦' },
+    { value: 4, label: '4 people', emoji: '👨‍👩‍👧‍👦' },
+    { value: 5, label: '5 people', emoji: '👥' },
+    { value: 6, label: '6 people', emoji: '👥👥' },
+    { value: 7, label: '7-8 people', emoji: '🚌' },
+    { value: 9, label: '9-10 people', emoji: '🎉' },
+    { value: 11, label: '11+ people', emoji: '🎊' },
+  ]
+
   // Show loading state while checking for vibes
   if (isLoadingVibes) {
     return (
       <>
-        <DialogHeader>
-          <DialogTitle>Slingshot</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-center">Slingshot</DialogTitle>
+          <DialogDescription className="text-center">
             Loading your preferences...
           </DialogDescription>
         </DialogHeader>
@@ -185,9 +197,9 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
   if (showVibeCheck) {
     return (
       <>
-        <DialogHeader>
-          <DialogTitle>Complete Your Travel Vibes</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-center">Complete Your Travel Vibes</DialogTitle>
+          <DialogDescription className="text-center">
             Slingshot needs your travel preferences to personalize your trip
           </DialogDescription>
         </DialogHeader>
@@ -231,12 +243,12 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
+      <DialogHeader className="text-center">
+        <DialogTitle className="flex items-center justify-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           Slingshot Trip Generator
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription className="text-center">
           Answer a few questions and we'll create a personalized itinerary
         </DialogDescription>
       </DialogHeader>
@@ -326,16 +338,22 @@ export function SlingshotQuestionnaire({ userId, onBack, onCancel, onComplete }:
             <Users className="h-4 w-4" />
             Number of Travelers <span className="text-destructive">*</span>
           </Label>
-          <Input
+          <select
             id="travelers"
-            type="number"
-            min="1"
-            max="20"
             value={travelers}
-            onChange={(e) => setTravelers(parseInt(e.target.value) || 1)}
+            onChange={(e) => setTravelers(parseInt(e.target.value))}
             required
-            className="mt-2"
-          />
+            className={cn(
+              'mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            )}
+          >
+            {travelerOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.emoji} {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Trip Purpose */}

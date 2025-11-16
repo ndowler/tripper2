@@ -34,6 +34,7 @@ import {
   ShoppingBag,
   Ticket,
   Circle,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ interface CardDetailModalProps {
   open: boolean;
   onClose: () => void;
   isMobile?: boolean; // Mobile detection flag
+  onDelete?: () => void; // Optional delete handler
 }
 
 export function CardDetailModal({
@@ -55,8 +57,10 @@ export function CardDetailModal({
   open,
   onClose,
   isMobile = false,
+  onDelete,
 }: CardDetailModalProps) {
   const updateCard = useTripStore((state) => state.updateCard);
+  const deleteCard = useTripStore((state) => state.deleteCard);
 
   const [title, setTitle] = useState(card.title);
   const [startTime, setStartTime] = useState(card.startTime || "");
@@ -144,6 +148,22 @@ export function CardDetailModal({
 
   const handleRemoveLink = (link: string) => {
     setLinks(links.filter((l) => l !== link));
+  };
+
+  const handleDelete = async () => {
+    if (confirm("Delete this card?")) {
+      try {
+        await deleteCard(tripId, dayId, card.id, userId);
+        toast.success("Card deleted");
+        onClose();
+        if (onDelete) {
+          onDelete();
+        }
+      } catch (error) {
+        console.error('Failed to delete card:', error);
+        toast.error('Failed to delete card');
+      }
+    }
   };
 
   const handleLearnMore = () => {
@@ -481,13 +501,24 @@ export function CardDetailModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>
-            Cancel
+        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-between gap-2">
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isSaving}
+            className="sm:mr-auto"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Card
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -6,50 +6,50 @@ export const CARD_TYPES = {
   activity: {
     label: "Activity",
     icon: "🎯",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
   },
   meal: {
     label: "Meal",
     icon: "🍽️",
     color:
-      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
   },
   restaurant: {
     label: "Restaurant",
     icon: "🍴",
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    color: "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
   },
   transit: {
     label: "Transit",
     icon: "🚗",
-    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    color: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300",
   },
   flight: {
     label: "Flight",
     icon: "✈️",
-    color: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200",
+    color: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300",
   },
   hotel: {
     label: "Hotel",
     icon: "🏨",
     color:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300",
   },
   shopping: {
     label: "Shopping",
     icon: "🛍️",
-    color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+    color: "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-300",
   },
   entertainment: {
     label: "Entertainment",
     icon: "🎭",
     color:
-      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300",
   },
   note: {
     label: "Note",
     icon: "📝",
-    color: "bg-gray-100 dark:bg-gray-900 dark:text-gray-200",
+    color: "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300",
   },
 } as const;
 
@@ -125,11 +125,11 @@ export const CARD_CATEGORIES: {
 
 // Category border colors (4px left border)
 export const CATEGORY_COLORS = {
-  transport: "border-l-blue-500",
-  food: "border-l-orange-500",
-  activity: "border-l-green-500",
-  lodging: "border-l-purple-500",
-  note: "border-l-gray-400",
+  transport: "border-l-sky-400",
+  food: "border-l-amber-400",
+  activity: "border-l-emerald-400",
+  lodging: "border-l-violet-400",
+  note: "border-l-slate-300",
 } as const;
 
 // Get category for a card type
@@ -171,17 +171,17 @@ export const SPACING = {
 export const STATUS_CONFIG = {
   todo: {
     label: "To Do",
-    color: "bg-gray-400",
-    textColor: "text-gray-700",
+    color: "bg-slate-400",
+    textColor: "text-slate-700",
   },
   tentative: {
     label: "Tentative",
-    color: "bg-amber-500",
+    color: "bg-amber-400",
     textColor: "text-amber-700",
   },
   confirmed: {
     label: "Confirmed",
-    color: "bg-green-500",
-    textColor: "text-green-700",
+    color: "bg-emerald-400",
+    textColor: "text-emerald-700",
   },
 } as const;
