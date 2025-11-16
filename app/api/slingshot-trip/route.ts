@@ -166,9 +166,8 @@ TIMING SEQUENCE (follow this pattern exactly):
 2. ${formatTime(parseTime(breakfastTime) + 90)}: Morning activity (activity, 120 min) → ends ${formatTime(parseTime(breakfastTime) + 210)}
 3. ${lunchTime}: Lunch (restaurant, 90 min) → ends ${formatTime(parseTime(lunchTime) + 90)}
 4. ${formatTime(parseTime(lunchTime) + 120)}: Afternoon activity (activity, 150 min) → ends ${formatTime(parseTime(lunchTime) + 270)}
-5. ${formatTime(parseTime(dinnerTime) - 30)}: Transit (transit, 20 min) → ends ${dinnerTime}
-6. ${dinnerTime}: Dinner (restaurant, 90 min) → ends ${formatTime(parseTime(dinnerTime) + 90)}
-7. ${formatTime(parseTime(dinnerTime) + 120)}: Evening activity (entertainment, 120 min)
+5. ${dinnerTime}: Dinner (restaurant, 90 min) → ends ${formatTime(parseTime(dinnerTime) + 90)}
+6. ${formatTime(parseTime(dinnerTime) + 120)}: Evening activity (entertainment, 120 min)
 
 SPECIAL CARDS:
 - ${isFirstDay ? `Hotel check-in MUST be around 15:00 (type: hotel, duration: 30)` : ""}
@@ -192,7 +191,22 @@ ${dayContext.primaryAreas.length > 0 ? `
 ` : ""}
 - ALL activities, meals, and entertainment MUST be within 2km of each other
 - Include the neighborhood name in every location field
-- Add transit cards only for moves within the same neighborhood
+
+📍 ADDRESS REQUIREMENTS (ABSOLUTELY CRITICAL):
+- EVERY activity, restaurant, meal, entertainment, and shopping card MUST have a specific, accurate location
+- Location format MUST be: "Exact Name/Address, Neighborhood, City"
+- DO NOT use generic locations like "Downtown Area" or "City Center"
+- DO NOT use vague descriptions like "Various locations in [area]"
+- Each location must be a REAL, verifiable place that exists at a specific address
+- Examples of CORRECT locations:
+  ✅ "Golden Gate Bridge, Presidio, San Francisco"
+  ✅ "Pike Place Market, 85 Pike St, Seattle"
+  ✅ "The Louvre Museum, Rue de Rivoli, Paris"
+- Examples of INCORRECT locations:
+  ❌ "Downtown Paris"
+  ❌ "Local market in the area"
+  ❌ "Nearby park"
+- If you cannot find a specific, real address for an activity, DO NOT include that activity
 
 OTHER RULES:
 - Balance activity intensity: ${dayContext.totalActivityMinutes > 300 ? "Today should be lighter (2-3 main activities)" : "Can be more active (3-4 main activities)"}
@@ -201,7 +215,7 @@ OTHER RULES:
 ${mustDos ? `- MUST INCLUDE if possible: ${mustDos}` : ""}
 ${existingPlans ? `- WORK AROUND existing plans: ${existingPlans}` : ""}
 
-Card types: activity, restaurant, meal, hotel, transit, entertainment, shopping
+Card types: activity, restaurant, meal, hotel, entertainment, shopping
 Include brief descriptions (optional but helpful)
 Tags should be relevant (max 5)`;
 
@@ -320,7 +334,7 @@ Generate ${isFirstDay || isLastDay ? "5-8" : "6-9"} activity cards for this day.
         if (card.location) {
           dayContext.locations.push(card.location);
           // Extract primary area from first non-hotel activity
-          if (!dayPrimaryArea && card.type !== "hotel" && card.type !== "transit") {
+          if (!dayPrimaryArea && card.type !== "hotel") {
             dayPrimaryArea = extractPrimaryArea(card.location);
           }
         }

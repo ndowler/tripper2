@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import { calculateTimeSlot } from "@/lib/utils/time";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, ScrollText } from "lucide-react";
 
 interface BoardProps {
   trip: Trip;
@@ -37,6 +39,8 @@ export function Board({ trip, userId }: BoardProps) {
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
   const [thingsToDoOpen, setThingsToDoOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [fullscreenDayId, setFullscreenDayId] = useState<string | null>(null);
+  const [scrollMode, setScrollMode] = useState<"trip" | "day">("trip");
   const isMobile = useIsMobile();
 
   // Prevent hydration mismatch
@@ -292,46 +296,95 @@ export function Board({ trip, userId }: BoardProps) {
           )}
 
           {/* Main Board Area */}
-          <main className={cn(
-            "flex-1 scrollbar-thin p-4",
-            isMobile 
-              ? "overflow-y-auto overflow-x-hidden" 
-              : "overflow-x-auto overflow-y-hidden"
-          )}>
-            <div className={cn(
-              "px-4 py-6",
-              isMobile ? "space-y-4" : ""
-            )}>
+          <main
+            className={cn(
+              "flex-1 scrollbar-thin p-4 relative",
+              isMobile
+                ? scrollMode === "trip"
+                  ? "overflow-y-auto overflow-x-hidden"
+                  : "overflow-hidden"
+                : "overflow-x-auto overflow-y-hidden"
+            )}
+          >
+            <div
+              className={cn(
+                "px-4 py-6",
+                isMobile ? "space-y-4" : "",
+                isMobile && scrollMode === "day" && "h-full overflow-hidden"
+              )}
+            >
               {/* Vibes Card */}
               {mounted && <VibesCard userId={userId} />}
 
-              <div className={cn(
-                isMobile
-                  ? "flex flex-col gap-4 w-full" // Mobile: vertical stack
-                  : "grid gap-6 w-full", // Desktop: responsive grid
+              <div
+                className={cn(
+                  isMobile
+                    ? "flex flex-col gap-4 w-full" // Mobile: vertical stack
+                    : "grid gap-6 w-full", // Desktop: responsive grid
                   // Responsive columns: 2 on tablet, 3 on desktop, 4 on large desktop, 5 on 1080p, 6 on 2K, 8 on 4K
-                  !isMobile && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 5xl:grid-cols-8"
-              )}>
+                  !isMobile &&
+                    "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 5xl:grid-cols-8",
+                  // Fullscreen mode: single column, full height
+                  fullscreenDayId && "!flex !flex-col"
+                )}
+              >
                 {/* Day Columns */}
-                {trip.days.map((day, index) => (
-                  <DayColumn
-                    key={day.id}
-                    day={day}
-                    tripId={trip.id}
-                    userId={userId}
-                    index={index}
-                    isMobile={isMobile}
-                  />
-                ))}
+                {trip.days
+                  .filter((day) => !fullscreenDayId || day.id === fullscreenDayId)
+                  .map((day, index) => (
+                    <DayColumn
+                      key={day.id}
+                      day={day}
+                      tripId={trip.id}
+                      userId={userId}
+                      index={index}
+                      isMobile={isMobile}
+                      isFullscreen={fullscreenDayId === day.id}
+                      onToggleFullscreen={() =>
+                        setFullscreenDayId(
+                          fullscreenDayId === day.id ? null : day.id
+                        )
+                      }
+                      scrollMode={scrollMode}
+                    />
+                  ))}
 
-                {/* Add day button */}
-                <div className={cn(
-                  isMobile ? "w-full" : ""
-                )}>
-                  <AddDayButton tripId={trip.id} userId={userId} activeDayId={activeDayId} />
-                </div>
+                {/* Add day button - hide in fullscreen mode */}
+                {!fullscreenDayId && (
+                  <div className={cn(isMobile ? "w-full" : "")}>
+                    <AddDayButton
+                      tripId={trip.id}
+                      userId={userId}
+                      activeDayId={activeDayId}
+                    />
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Floating Scroll Mode Toggle - Mobile Only */}
+            {mounted && isMobile && !fullscreenDayId && (
+              <div className="fixed bottom-6 right-6 z-30">
+                <Button
+                  size="lg"
+                  className="h-14 w-14 rounded-full shadow-lg"
+                  onClick={() =>
+                    setScrollMode(scrollMode === "trip" ? "day" : "trip")
+                  }
+                  title={
+                    scrollMode === "trip"
+                      ? "Switch to Day Scroll"
+                      : "Switch to Trip Scroll"
+                  }
+                >
+                  {scrollMode === "trip" ? (
+                    <ScrollText className="w-6 h-6" />
+                  ) : (
+                    <ArrowUpDown className="w-6 h-6" />
+                  )}
+                </Button>
+              </div>
+            )}
           </main>
         </div>
       </div>
